@@ -13,22 +13,22 @@
     
     <!--- Seo Part-->
     
-    <link rel="canonical" href="https://li-ronin.github.io/post/二分查找.html"/>
+    <link rel="canonical" href="https://li-ronin.github.io/post/【c++】00编译链接.html"/>
     <meta name="robots" content="index,follow">
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
     
-        <meta name="description" content="浅查一下吧1234567891011121314&#x2F;&#x2F;查找有序表中第一个出现的元素K（lower&#x3D;1）,最后一个出现的元素K(lower&#x3D;1)int BiSearch(int A[],int K,int lower)	&amp;#123;      int left&#x3D;0 , right&#x3D;A.size()-1 , mid;      while(left&lt;&#x3D;right)      &amp;#123;">
+        <meta name="description" content="预处理、编译、链接">
 <meta property="og:type" content="article">
-<meta property="og:title" content="二分查找">
-<meta property="og:url" content="https://li-ronin.github.io/post/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE.html">
+<meta property="og:title" content="【C++】编译链接">
+<meta property="og:url" content="https://li-ronin.github.io/post/%E3%80%90C++%E3%80%9100%E7%BC%96%E8%AF%91%E9%93%BE%E6%8E%A5.html">
 <meta property="og:site_name" content="Lkh">
-<meta property="og:description" content="浅查一下吧1234567891011121314&#x2F;&#x2F;查找有序表中第一个出现的元素K（lower&#x3D;1）,最后一个出现的元素K(lower&#x3D;1)int BiSearch(int A[],int K,int lower)	&amp;#123;      int left&#x3D;0 , right&#x3D;A.size()-1 , mid;      while(left&lt;&#x3D;right)      &amp;#123;">
+<meta property="og:description" content="预处理、编译、链接">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2022-03-07T14:29:22.000Z">
-<meta property="article:modified_time" content="2023-08-07T07:22:58.134Z">
+<meta property="article:published_time" content="2023-08-07T08:18:30.000Z">
+<meta property="article:modified_time" content="2023-08-17T09:10:32.882Z">
 <meta property="article:author" content="李可涵">
-<meta property="article:tag" content="algorithm">
+<meta property="article:tag" content="C++">
 <meta name="twitter:card" content="summary">
     
     
@@ -41,7 +41,7 @@
     
     <title>
         
-            二分查找 -
+            【C++】编译链接 -
         
         LKH
     </title>
@@ -209,7 +209,11 @@
 
         <div class="article-title">
             
-                <h1 class="article-title-regular">二分查找</h1>
+                
+                
+                <img src="https://s1.ax1x.com/2023/08/17/pP1KPfK.png" alt="【C++】编译链接" />
+                
+                <h1 class="article-title-cover">【C++】编译链接</h1>
             
             </div>
             
@@ -231,15 +235,15 @@
                         <div class="article-meta-info">
     <span class="article-date article-meta-item">
         <i class="fa-regular fa-pen-fancy"></i>&nbsp;
-        <span class="desktop">2022-03-07 22:29:22</span>
-        <span class="mobile">2022-03-07 22:29:22</span>
+        <span class="desktop">2023-08-07 16:18:30</span>
+        <span class="mobile">2023-08-07 16:18:30</span>
         <span class="hover-info">Created</span>
     </span>
     
         <span class="article-date article-meta-item">
             <i class="fa-regular fa-wrench"></i>&nbsp;
-            <span class="desktop">2023-08-07 15:22:58</span>
-            <span class="mobile">2023-08-07 15:22:58</span>
+            <span class="desktop">2023-08-17 17:10:32</span>
+            <span class="mobile">2023-08-17 17:10:32</span>
             <span class="hover-info">Updated</span>
         </span>
     
@@ -251,7 +255,7 @@
             <ul>
                 
                     <li>
-                        <a href="/tags/algorithm/">algorithm</a>&nbsp;
+                        <a href="/tags/C/">C++</a>&nbsp;
                     </li>
                 
             </ul>
@@ -274,27 +278,38 @@
         
 
         <div class="article-content markdown-body">
-            <span id="more"></span>
+            <blockquote>
+<p>预处理、编译、链接</p>
+</blockquote>
+<span id="more"></span>
 
-<h2 id="浅查一下吧"><a href="#浅查一下吧" class="headerlink" title="浅查一下吧"></a>浅查一下吧</h2><div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//查找有序表中第一个出现的元素K（lower=1）,最后一个出现的元素K(lower=1)</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">BiSearch</span><span class="params">(<span class="type">int</span> A[],<span class="type">int</span> K,<span class="type">int</span> lower)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">      <span class="type">int</span> left=<span class="number">0</span> , right=A.<span class="built_in">size</span>()<span class="number">-1</span> , mid;</span><br><span class="line">      <span class="keyword">while</span>(left&lt;=right)</span><br><span class="line">      &#123;</span><br><span class="line">        mid = left + (right-left)/<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">if</span>(A[mid]&lt;K || (lower&amp;&amp;A[mid]==K))</span><br><span class="line">        	left = mid+<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        	right = mid<span class="number">-1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> left;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure></div>
-<h2 id="快速幂"><a href="#快速幂" class="headerlink" title="快速幂"></a>快速幂</h2><div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">long</span> <span class="type">long</span> <span class="title">fastpow</span><span class="params">(<span class="type">long</span> <span class="type">long</span> a,<span class="type">long</span> <span class="type">long</span> b)</span><span class="comment">//求a^b</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="type">long</span> <span class="type">long</span> sum=<span class="number">1</span>,base=a;</span><br><span class="line">     	<span class="keyword">while</span>(b!=<span class="number">0</span>)</span><br><span class="line">     	&#123;</span><br><span class="line">       	<span class="keyword">if</span>(b%<span class="number">2</span> == <span class="number">1</span>)sum *= base;</span><br><span class="line">       	base *= base;</span><br><span class="line">       	b /= <span class="number">2</span>;</span><br><span class="line">     	&#125;</span><br><span class="line">     	<span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<h2 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h2><h3 id="预处理"><a href="#预处理" class="headerlink" title="预处理"></a>预处理</h3><p><code>.cpp</code> —&gt; <code>.i</code></p>
+<blockquote>
+<p><strong>编译器预处理过程做的就是将include的<code>.h</code>文件复制粘贴到<code>.cpp</code>原位置中。以下面为例：</strong></p>
+</blockquote>
+<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//MyHead.h文件</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
 
+<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Main.cpp</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	std::cout&lt;&lt;<span class="string">&quot;Hello World!&quot;</span>&lt;&lt;endl;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;MyHead.h&quot;</span></span></span><br></pre></td></tr></table></figure></div>
+
+<h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><p><code>.i</code> —&gt; <code>.obj</code></p>
+<h3 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h3><p>将全部<code>.obj</code>文件合起来，合成一个<code>.exe</code>文件</p>
+<h2 id="CMake"><a href="#CMake" class="headerlink" title="CMake"></a>CMake</h2><h2 id="Visual-Studio中的配置"><a href="#Visual-Studio中的配置" class="headerlink" title="Visual Studio中的配置"></a>Visual Studio中的配置</h2>
         </div>
 
         
             <div class="post-copyright-info">
                 <div class="article-copyright-info-container">
     <ul>
-        <li><strong>Title:</strong> 二分查找</li>
+        <li><strong>Title:</strong> 【C++】编译链接</li>
         <li><strong>Author:</strong> LKH</li>
-        <li><strong>Created at:</strong> 2022-03-07 22:29:22</li>
+        <li><strong>Created at:</strong> 2023-08-07 16:18:30</li>
         
             <li>
-                <strong>Updated at:</strong> 2023-08-07 15:22:58
+                <strong>Updated at:</strong> 2023-08-17 17:10:32
             </li>
         
         <li>
-            <strong>Link:</strong> https://redefine.ohevan.com//post/二分查找.html
+            <strong>Link:</strong> https://redefine.ohevan.com//post/【C++】00编译链接.html
         </li>
         <li>
             <strong>License:</strong> This work is licensed under <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>.
@@ -309,7 +324,7 @@
             <ul class="post-tags-box">
                 
                     <li class="tag-item">
-                        <a href="/tags/algorithm/">#algorithm</a>&nbsp;
+                        <a href="/tags/C/">#C++</a>&nbsp;
                     </li>
                 
             </ul>
@@ -323,13 +338,13 @@
                     <div class="article-prev">
                         <a class="prev"
                         rel="prev"
-                        href="/post/%E6%91%98%E5%BD%95%E4%B8%8E%E6%84%9F%E6%82%9F.html"
+                        href="/post/%E3%80%90C++%E3%80%9101%E5%86%85%E5%AD%98.html"
                         >
                             <span class="left arrow-icon flex-center">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </span>
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">摘录与感悟</span>
+                                <span class="post-nav-title-item">【C++】内存</span>
                                 <span class="post-nav-item">Prev posts</span>
                             </span>
                         </a>
@@ -339,10 +354,10 @@
                     <div class="article-next">
                         <a class="next"
                         rel="next"
-                        href="/post/%E5%B9%B6%E6%9F%A5%E9%9B%86.html"
+                        href="/post/%E3%80%90C++%E3%80%9102Static.html"
                         >
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">并查集</span>
+                                <span class="post-nav-title-item">【C++】Static</span>
                                 <span class="post-nav-item">Next posts</span>
                             </span>
                             <span class="right arrow-icon flex-center">
@@ -407,8 +422,8 @@
             <div class="post-toc-wrap">
     <div class="post-toc">
         <div class="toc-title">On this page</div>
-        <div class="page-title">二分查找</div>
-        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%85%E6%9F%A5%E4%B8%80%E4%B8%8B%E5%90%A7"><span class="nav-text">浅查一下吧</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BF%AB%E9%80%9F%E5%B9%82"><span class="nav-text">快速幂</span></a></li></ol>
+        <div class="page-title">【C++】编译链接</div>
+        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84"><span class="nav-text">项目结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%84%E5%A4%84%E7%90%86"><span class="nav-text">预处理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91"><span class="nav-text">编译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5"><span class="nav-text">链接</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CMake"><span class="nav-text">CMake</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Visual-Studio%E4%B8%AD%E7%9A%84%E9%85%8D%E7%BD%AE"><span class="nav-text">Visual Studio中的配置</span></a></li></ol>
 
     </div>
 </div>

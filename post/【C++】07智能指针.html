@@ -13,20 +13,20 @@
     
     <!--- Seo Part-->
     
-    <link rel="canonical" href="https://li-ronin.github.io/post/【c++】右值引用.html"/>
+    <link rel="canonical" href="https://li-ronin.github.io/post/【c++】07智能指针.html"/>
     <meta name="robots" content="index,follow">
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
     
-        <meta name="description" content="什么是左值、右值、移动语义、完美转发">
+        <meta name="description" content="C++ 2.0出现的新特性 template&lt;typename T&gt;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="【C++】右值引用">
-<meta property="og:url" content="https://li-ronin.github.io/post/%E3%80%90C++%E3%80%91%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8.html">
+<meta property="og:title" content="【C++】智能指针">
+<meta property="og:url" content="https://li-ronin.github.io/post/%E3%80%90C++%E3%80%9107%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88.html">
 <meta property="og:site_name" content="Lkh">
-<meta property="og:description" content="什么是左值、右值、移动语义、完美转发">
+<meta property="og:description" content="C++ 2.0出现的新特性 template&lt;typename T&gt;">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-08-07T08:18:30.000Z">
-<meta property="article:modified_time" content="2023-08-07T08:42:27.853Z">
+<meta property="article:modified_time" content="2023-08-07T08:41:05.730Z">
 <meta property="article:author" content="李可涵">
 <meta property="article:tag" content="C++">
 <meta name="twitter:card" content="summary">
@@ -41,7 +41,7 @@
     
     <title>
         
-            【C++】右值引用 -
+            【C++】智能指针 -
         
         LKH
     </title>
@@ -209,7 +209,7 @@
 
         <div class="article-title">
             
-                <h1 class="article-title-regular">【C++】右值引用</h1>
+                <h1 class="article-title-regular">【C++】智能指针</h1>
             
             </div>
             
@@ -238,8 +238,8 @@
     
         <span class="article-date article-meta-item">
             <i class="fa-regular fa-wrench"></i>&nbsp;
-            <span class="desktop">2023-08-07 16:42:27</span>
-            <span class="mobile">2023-08-07 16:42:27</span>
+            <span class="desktop">2023-08-07 16:41:05</span>
+            <span class="mobile">2023-08-07 16:41:05</span>
             <span class="hover-info">Updated</span>
         </span>
     
@@ -275,71 +275,32 @@
 
         <div class="article-content markdown-body">
             <blockquote>
-<p>什么是左值、右值、移动语义、完美转发</p>
+<p>C++ 2.0出现的新特性 <code>template&lt;typename T&gt;</code></p>
 </blockquote>
 <span id="more"></span>
 
+<h3 id="智能指针"><a href="#智能指针" class="headerlink" title="智能指针"></a>智能指针</h3><div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*静态请求：栈内存*/</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func0</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">100</span>;</span><br><span class="line">    <span class="type">int</span>* p = &amp;a; <span class="comment">//指针p存储了a的地址，函数func运行结束后，编译器会自动释放a的内存</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*动态请求：堆内存*/</span></span><br><span class="line"><span class="comment">// 现在的堆内存和数据结构的堆没啥关系了，只是一大块可以用来请求的内存。</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func1</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="type">int</span>* p = <span class="keyword">new</span> <span class="type">int</span>; <span class="comment">//动态请求内存，大小为int</span></span><br><span class="line">    <span class="keyword">delete</span> p;        <span class="comment">// new请求的内存，需要用delete手动删除，delete是释放p指向的内存，而不是删除p本身</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*请求多个元素*/</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func2</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="type">int</span>* p = <span class="keyword">new</span> <span class="type">int</span>[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">delete</span>[] p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
 
 
-<h3 id="右值引用"><a href="#右值引用" class="headerlink" title="右值引用"></a>右值引用</h3><blockquote>
-<p>右值引用是C++11引入的一个新特性，用于实现移动语义和完美转发，</p>
-</blockquote>
+
 <ul>
-<li><p><strong>背景知识</strong></p>
-<p><strong>1、左值：</strong>左值的英文简写为“lvalue”。lvalue 是“<strong>loactor value</strong>”的缩写，表示存储在内存中、有明确存储地址（可寻址）的数据。一般来说，有名称的非临时变量叫做左值。</p>
-<p><strong>2、右值：</strong>右值的英文简写为“rvalue”。rvalue 是“<strong>read value</strong>”的缩写，指的是那些可以提供数据值的数据（不一定可以寻址，例如存储于寄存器中的数据）。一般来说，没名称的临时变量叫做右值。</p>
-</li>
+<li><strong>shared_ptr （引用计数）</strong></li>
 </ul>
-<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">10</span>;</span><br><span class="line"><span class="comment">//左值：a</span></span><br><span class="line"><span class="comment">//右值：10</span></span><br></pre></td></tr></table></figure></div>
-
-<p>​    <strong>3、引用折叠：</strong>编译器不允许我们写下类似<code>int &amp; &amp;&amp;</code>这样的代码，但是它自己却可以推导出<code>int &amp; &amp;&amp;</code>代码出来。它的理由就是：我(编译器)虽然推导出T为<code>int&amp;</code>，但是我在最终生成的代码中，利用引用折叠规则，将<code>int &amp; &amp;&amp;</code>等价生成了<code>int &amp;</code>。推导出来的<code>int &amp; &amp;&amp;</code>只是过渡阶段，最终版本并不存在，所以也不算破坏规定。引用折叠的规则如下：</p>
 <blockquote>
-<p>右值引用的作用主要包括以下几点：</p>
+<p>当指向某个变量的shared_ptr的个数降为0的时候，自动释放空间。用裸指针的时候避免和shared_ptr共用</p>
 </blockquote>
+<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;memory&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 初始化 方法一</span></span><br><span class="line">    shared_ptr&lt;<span class="type">int</span>&gt; p1;</span><br><span class="line">    p1 = <span class="built_in">make_shared</span>&lt;<span class="type">int</span>&gt;(<span class="number">100</span>); <span class="comment">//make_shared会动态分配内存，然后让p指向它</span></span><br><span class="line">    <span class="comment">// 初始化 方法二</span></span><br><span class="line">    shared_ptr&lt;<span class="type">int</span>&gt; p2 &#123;<span class="keyword">new</span> <span class="built_in">int</span>(<span class="number">100</span>)&#125;;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<hr>
+<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Bar</span> &#123;</span><br><span class="line">	<span class="type">int</span> i = <span class="number">23</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line">	Bar bar;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	std::shared_ptr&lt;Foo&gt; f = std::<span class="built_in">make_shared</span>&lt;Foo&gt;();</span><br><span class="line">	std::cout &lt;&lt; f.<span class="built_in">use_count</span>() &lt;&lt; std::endl;	<span class="comment">// 输出：1</span></span><br><span class="line">	<span class="function">std::shared_ptr&lt;Bar&gt; <span class="title">b</span><span class="params">(f, &amp;(f-&gt;bar))</span></span>;		<span class="comment">// &amp;(f-&gt;bar) b拥有了对f指向物体的管理权，b的数据指针指向的是Bar</span></span><br><span class="line">	std::cout &lt;&lt; b.<span class="built_in">use_count</span>() &lt;&lt; std::endl;	<span class="comment">// 输出：2</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+
+
 <ul>
-<li><p>**<a href="#std::move">移动语义</a>**：右值引用可以绑定到临时对象（右值），通过将资源的所有权从一个对象转移到另一个对象，避免了不必要的复制和销毁操作，提高程序效率。移动语义在大规模数据结构中尤为重要，例如std::vector、std::string等。</p>
-</li>
-<li><p>**<a href="#std::forward">完美转发</a>**：右值引用还可以用于函数模板的完美转发，即将参数以原始的形式传递给下一个函数，避免了不必要的复制和类型转换，提高了程序效率。</p>
-<p>在C++中，<code>std::move</code> 和 <code>std::forward</code> 是用于支持移动语义和完美转发的两个重要函数模板</p>
-</li>
-<li><p><strong>避免内存泄漏</strong>：右值引用可以使用<code>std::move()</code>函数将对象强制转换为右值，使得该对象的所有权可以被移交，从而避免了内存泄漏的问题。</p>
-</li>
-<li><p><strong>万能引用</strong>：对于函数模板中使用右值引用的参数来说，它既可以接收右值，也可以接收左值，这个情况下的右值引用也称为万能引用。<code>T&amp;&amp; arg</code></p>
-</li>
-<li><p><strong>浅拷贝</strong>：创建一个新对象。如果原始对象属性是基本类型，拷贝的就是基本类型的值；如果原始对象属性是引用类型，拷贝的就是内存地址。这个内存地址指向同一个堆内存。如果其中一个对象改变了这个地址，就会影响到另一个对象。 一般情况下，浅拷贝没有任何副作用，但是当类中有指针，并且指针指向动态分配的内存空间，析构函数做了动态内存释放的处理，会导致内存问题。</p>
-</li>
-<li><p><strong>深拷贝</strong>：创建一个新对象，如果原始对象属性是基本类型，拷贝的就是基本类型的值；如果原始对象属性是引用类型，则从堆内存中开辟一个新的区域存放该引用类型指向的堆内存中的值，修改新对象的值不会影响原对象。</p>
-</li>
+<li>unique_ptr</li>
 </ul>
-<h3 id="移动语义"><a href="#移动语义" class="headerlink" title="移动语义"></a><a id="std::move">移动语义</a></h3><p>将内存的所有权从一个对象转移到另外一个对象，高效的移动用来替换效率低下的复制，对象的移动语义需要实现移动构造函数（move constructor）和移动赋值运算符（move assignment operator）。</p>
-<p><code>std::move</code>：</p>
-<ul>
-<li><code>std::move</code> 是一个函数模板，用于将一个左值强制转换为右值引用，从而实现移动语义。</li>
-<li>它的声明位于 <code>#include &lt;utility&gt;</code> 头文件中。</li>
-<li>使用 <code>std::move</code> 可以将一个对象的资源所有权从一个对象转移到另一个对象，而无需进行深拷贝。</li>
-<li>一般用于在移动构造函数和移动赋值运算符中，将资源从传入的参数中”窃取”，而不是进行复制操作。</li>
-</ul>
-<p>示例：</p>
-<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;utility&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">myFunction</span><span class="params">(std::string&amp;&amp; str)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 使用 std::move 将资源从 str 转移到新的对象 s</span></span><br><span class="line">    std::string s = std::<span class="built_in">move</span>(str);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::string text = <span class="string">&quot;Hello, World!&quot;</span>;</span><br><span class="line">    <span class="built_in">myFunction</span>(std::<span class="built_in">move</span>(text));</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;After move: &quot;</span> &lt;&lt; text &lt;&lt; std::endl; <span class="comment">// 注意，此处输出可能会是空字符串，因为资源已经转移</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">*	这里用了两次move()。 </span></span><br><span class="line"><span class="comment">*   强调，右值引用类型的变量是一个左值，也就是std::string&amp;&amp; str;这里的str是一个左值</span></span><br><span class="line"><span class="comment">*	在main函数中myFunction(std::move(text));text已经被转换为了右值，在传给str之后，它又变成了左值</span></span><br><span class="line"><span class="comment">*   所以还需要再次将资源所有权交给s。 std::string s = std::move(str);</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure></div>
-
-
-
-
-
-<h3 id="完美转发"><a href="#完美转发" class="headerlink" title="完美转发"></a><a id="std::forward">完美转发</a></h3><blockquote>
-<p><strong>完美转发 &#x3D; std::forward + 万能引用 + 引用折叠</strong></p>
-</blockquote>
-<p>定义一个函数模板，该函数模板可以接收任意类型参数，然后将参数转发给其它目标函数，且保证目标函数接受的参数其类型与传递给模板函数的类型相同。</p>
-<p><strong>有名字的右值引用其实是左值！</strong> 一个右值引用作为函数参数的形参时，在函数内部转发该参数给内部其他函数时，它就变成一个左值，并不是原来的类型了。</p>
-<p><code>std::forward</code>：</p>
-<ul>
-<li><code>std::forward</code> 也是一个函数模板，用于在模板函数或模板类中实现完美转发。</li>
-<li>它的声明位于 <code>&lt;utility&gt;</code> 头文件中。</li>
-<li><code>std::forward</code> 可以根据传入参数的值类别（左值或右值）来保持传递的引用类型，实现完美转发。</li>
-<li>主要用于传递模板参数到其他函数或构造函数，并保持参数的值类别不变，避免额外的拷贝或移动操作。</li>
-</ul>
-<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;utility&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 函数模板使用完美转发，将参数转发给其他函数</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">wrapper</span><span class="params">(T&amp;&amp; arga)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 引用折叠！！！这里不是说T&amp;&amp; arga那么arga就是右值引用了,T可以是int&amp;，三个&amp;折叠为左值引用</span></span><br><span class="line">    <span class="comment">// 所以T&amp;&amp; arga就是保留你传递进来参数的类型，传进来是int左值T=int&amp;,传进来是右值T=int&amp;&amp;</span></span><br><span class="line">    <span class="comment">// 使用std::forward进行完美转发</span></span><br><span class="line">    <span class="built_in">some_function</span>(std::forward&lt;T&gt;(arg));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 下游函数，接收参数</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">some_function</span><span class="params">(<span class="type">int</span>&amp; arg)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 处理左值引用</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">some_function</span><span class="params">(<span class="type">int</span>&amp;&amp; arg)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 处理右值引用</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> x = <span class="number">42</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 调用wrapper函数时，传递左值</span></span><br><span class="line">    <span class="built_in">wrapper</span>(x); <span class="comment">// 调用some_function(int&amp; arg)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 调用wrapper函数时，传递右值</span></span><br><span class="line">    <span class="built_in">wrapper</span>(<span class="number">100</span>); <span class="comment">// 调用some_function(int&amp;&amp; arg)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
-
 
         </div>
 
@@ -347,16 +308,16 @@
             <div class="post-copyright-info">
                 <div class="article-copyright-info-container">
     <ul>
-        <li><strong>Title:</strong> 【C++】右值引用</li>
+        <li><strong>Title:</strong> 【C++】智能指针</li>
         <li><strong>Author:</strong> LKH</li>
         <li><strong>Created at:</strong> 2023-08-07 16:18:30</li>
         
             <li>
-                <strong>Updated at:</strong> 2023-08-07 16:42:27
+                <strong>Updated at:</strong> 2023-08-07 16:41:05
             </li>
         
         <li>
-            <strong>Link:</strong> https://redefine.ohevan.com//post/【C++】右值引用.html
+            <strong>Link:</strong> https://redefine.ohevan.com//post/【C++】07智能指针.html
         </li>
         <li>
             <strong>License:</strong> This work is licensed under <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>.
@@ -385,13 +346,13 @@
                     <div class="article-prev">
                         <a class="prev"
                         rel="prev"
-                        href="/post/%E3%80%90C++%E3%80%91%E5%86%85%E5%AD%98.html"
+                        href="/post/%E3%80%90C++%E3%80%9106%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8.html"
                         >
                             <span class="left arrow-icon flex-center">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </span>
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">【C++】内存</span>
+                                <span class="post-nav-title-item">【C++】右值引用</span>
                                 <span class="post-nav-item">Prev posts</span>
                             </span>
                         </a>
@@ -401,10 +362,10 @@
                     <div class="article-next">
                         <a class="next"
                         rel="next"
-                        href="/post/%E3%80%90C++%E3%80%91%E6%A8%A1%E6%9D%BF.html"
+                        href="/post/%E3%80%90STL%E3%80%91Array.html"
                         >
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">【C++】模板</span>
+                                <span class="post-nav-title-item">【STL】模板</span>
                                 <span class="post-nav-item">Next posts</span>
                             </span>
                             <span class="right arrow-icon flex-center">
@@ -469,8 +430,8 @@
             <div class="post-toc-wrap">
     <div class="post-toc">
         <div class="toc-title">On this page</div>
-        <div class="page-title">【C++】右值引用</div>
-        <ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8"><span class="nav-text">右值引用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89"><span class="nav-text">移动语义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91"><span class="nav-text">完美转发</span></a></li></ol>
+        <div class="page-title">【C++】智能指针</div>
+        <ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88"><span class="nav-text">智能指针</span></a></li></ol>
 
     </div>
 </div>

@@ -13,20 +13,20 @@
     
     <!--- Seo Part-->
     
-    <link rel="canonical" href="https://li-ronin.github.io/post/【c++】智能指针.html"/>
+    <link rel="canonical" href="https://li-ronin.github.io/post/【stl】.html"/>
     <meta name="robots" content="index,follow">
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
     
-        <meta name="description" content="C++ 2.0出现的新特性 template&lt;typename T&gt;">
+        <meta name="description" content="关于C++的学习记录">
 <meta property="og:type" content="article">
-<meta property="og:title" content="【C++】智能指针">
-<meta property="og:url" content="https://li-ronin.github.io/post/%E3%80%90C++%E3%80%91%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88.html">
+<meta property="og:title" content="C++">
+<meta property="og:url" content="https://li-ronin.github.io/post/%E3%80%90STL%E3%80%91.html">
 <meta property="og:site_name" content="Lkh">
-<meta property="og:description" content="C++ 2.0出现的新特性 template&lt;typename T&gt;">
+<meta property="og:description" content="关于C++的学习记录">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-08-07T08:18:30.000Z">
-<meta property="article:modified_time" content="2023-08-07T08:41:05.730Z">
+<meta property="article:published_time" content="2023-05-13T08:47:38.000Z">
+<meta property="article:modified_time" content="2023-06-25T12:34:34.025Z">
 <meta property="article:author" content="李可涵">
 <meta property="article:tag" content="C++">
 <meta name="twitter:card" content="summary">
@@ -41,7 +41,7 @@
     
     <title>
         
-            【C++】智能指针 -
+            C++ -
         
         LKH
     </title>
@@ -209,7 +209,7 @@
 
         <div class="article-title">
             
-                <h1 class="article-title-regular">【C++】智能指针</h1>
+                <h1 class="article-title-regular">C++</h1>
             
             </div>
             
@@ -231,15 +231,15 @@
                         <div class="article-meta-info">
     <span class="article-date article-meta-item">
         <i class="fa-regular fa-pen-fancy"></i>&nbsp;
-        <span class="desktop">2023-08-07 16:18:30</span>
-        <span class="mobile">2023-08-07 16:18:30</span>
+        <span class="desktop">2023-05-13 16:47:38</span>
+        <span class="mobile">2023-05-13 16:47:38</span>
         <span class="hover-info">Created</span>
     </span>
     
         <span class="article-date article-meta-item">
             <i class="fa-regular fa-wrench"></i>&nbsp;
-            <span class="desktop">2023-08-07 16:41:05</span>
-            <span class="mobile">2023-08-07 16:41:05</span>
+            <span class="desktop">2023-06-25 20:34:34</span>
+            <span class="mobile">2023-06-25 20:34:34</span>
             <span class="hover-info">Updated</span>
         </span>
     
@@ -275,49 +275,60 @@
 
         <div class="article-content markdown-body">
             <blockquote>
-<p>C++ 2.0出现的新特性 <code>template&lt;typename T&gt;</code></p>
+<p>关于C++的学习记录 </p>
 </blockquote>
 <span id="more"></span>
 
-<h3 id="智能指针"><a href="#智能指针" class="headerlink" title="智能指针"></a>智能指针</h3><div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*静态请求：栈内存*/</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func0</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">100</span>;</span><br><span class="line">    <span class="type">int</span>* p = &amp;a; <span class="comment">//指针p存储了a的地址，函数func运行结束后，编译器会自动释放a的内存</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*动态请求：堆内存*/</span></span><br><span class="line"><span class="comment">// 现在的堆内存和数据结构的堆没啥关系了，只是一大块可以用来请求的内存。</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func1</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="type">int</span>* p = <span class="keyword">new</span> <span class="type">int</span>; <span class="comment">//动态请求内存，大小为int</span></span><br><span class="line">    <span class="keyword">delete</span> p;        <span class="comment">// new请求的内存，需要用delete手动删除，delete是释放p指向的内存，而不是删除p本身</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*请求多个元素*/</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func2</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="type">int</span>* p = <span class="keyword">new</span> <span class="type">int</span>[<span class="number">100</span>];</span><br><span class="line">    <span class="keyword">delete</span>[] p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
 
 
+<h2 id="一、基础"><a href="#一、基础" class="headerlink" title="一、基础"></a>一、基础</h2><h3 id="const"><a href="#const" class="headerlink" title="const"></a>const</h3><div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 效果相同：不能改变指针指向的内容，可以改变指针的指向</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span>* a = <span class="keyword">new</span> <span class="type">int</span>;</span><br><span class="line"><span class="type">int</span> <span class="type">const</span>* a = <span class="keyword">new</span> <span class="type">int</span></span><br><span class="line"><span class="comment">// 效果：不能改变指针的指向，可以改变指针指向的内容</span></span><br><span class="line"><span class="type">int</span>* <span class="type">const</span> b = <span class="keyword">new</span> <span class="type">int</span>;</span><br></pre></td></tr></table></figure></div>
 
 <ul>
-<li><strong>shared_ptr （引用计数）</strong></li>
+<li>方法中的const</li>
+</ul>
+<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Entity</span>&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="type">int</span> m_X, m_Y;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="type">int</span> <span class="title">GetX</span><span class="params">()</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">		m_X = <span class="number">2</span>;    <span class="comment">// Error! 函数内不能修改类中的成员变量</span></span><br><span class="line">		<span class="keyword">return</span> m_X;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="type">int</span>* m_P;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="comment">// 返回常量指针(不能改内容&amp;不能改指向), 函数内不能修改类中的成员变量</span></span><br><span class="line">	<span class="function"><span class="type">const</span> <span class="type">int</span>* <span class="type">const</span> <span class="title">GetP</span><span class="params">()</span> <span class="type">const</span></span>&#123;</span><br><span class="line">		<span class="keyword">return</span> m_P;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+
+<ul>
+<li>mutable<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Entity</span>&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="keyword">mutable</span> <span class="type">int</span> m_X;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="type">int</span> <span class="title">GetX</span><span class="params">()</span> <span class="type">const</span> </span>&#123;</span><br><span class="line">		m_X = <span class="number">2</span>;    <span class="comment">// mutable的变量可以修改</span></span><br><span class="line">		<span class="keyword">return</span> m_X;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure></div></li>
+</ul>
+<h2 id="二、面向对象-OO"><a href="#二、面向对象-OO" class="headerlink" title="二、面向对象-OO"></a>二、面向对象-OO</h2><h3 id="类"><a href="#类" class="headerlink" title="类"></a>类</h3><div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="keyword">enum</span> <span class="title class_">Num</span>&#123;</span><br><span class="line">		A, B, C</span><br><span class="line">	&#125;;</span><br><span class="line">	string name;</span><br><span class="line">	<span class="type">int</span> age;</span><br><span class="line">	<span class="type">float</span> height, weight;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="built_in">Person</span>()&#123;&#125;</span><br><span class="line">	<span class="function">string <span class="title">GetName</span><span class="params">()</span></span>&#123;<span class="keyword">return</span> <span class="string">&quot;Person&quot;</span>;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div>
+
+<h3 id="继承-amp-amp-多态"><a href="#继承-amp-amp-多态" class="headerlink" title="继承 &amp;&amp; 多态"></a>继承 &amp;&amp; 多态</h3><div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span> : <span class="keyword">public</span> Person &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	string ID;</span><br><span class="line">	string m_Name;</span><br><span class="line">	<span class="type">int</span> grade;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="built_in">Student</span>(<span class="type">const</span> string&amp; name1)</span><br><span class="line">	:<span class="built_in">m_Name</span>(name1)&#123;&#125;</span><br><span class="line">	<span class="function">string <span class="title">GetName</span><span class="params">()</span></span>&#123;<span class="keyword">return</span> m_Name;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h3 id="虚函数"><a href="#虚函数" class="headerlink" title="虚函数"></a>虚函数</h3><blockquote>
+<p><strong>如果你想重写一个函数，必须将基类中的基函数标记为<code>虚函数</code>，包括基类中要有一个成员指针，指向虚函数表(V Table：包含基类中所有虚函数的映射，在运行时，将它们映射到正确的override函数)</strong></p>
+</blockquote>
+<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="keyword">enum</span> <span class="title class_">Num</span>&#123;</span><br><span class="line">		A, B, C</span><br><span class="line">	&#125;;</span><br><span class="line">	string name;</span><br><span class="line">	<span class="type">int</span> age;</span><br><span class="line">	<span class="type">float</span> height, weight;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="built_in">Person</span>()&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> string <span class="title">GetName</span><span class="params">()</span></span>&#123;<span class="keyword">return</span> <span class="string">&quot;Person&quot;</span>;&#125;   <span class="comment">//virtual</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span> : <span class="keyword">public</span> Person &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	string ID;</span><br><span class="line">	string m_Name;</span><br><span class="line">	<span class="type">int</span> grade;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="built_in">Student</span>(<span class="type">const</span> string&amp; name1)</span><br><span class="line">	:<span class="built_in">m_Name</span>(name1)&#123;&#125;</span><br><span class="line">	<span class="function">string <span class="title">GetName</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123;<span class="keyword">return</span> m_Name;&#125;   <span class="comment">// override</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div>
+<ul>
+<li><strong>纯虚函数</strong></li>
 </ul>
 <blockquote>
-<p>当指向某个变量的shared_ptr的个数降为0的时候，自动释放空间。用裸指针的时候避免和shared_ptr共用</p>
+<p><strong>本质上和java中的抽象方法或接口相同，允许基类定义一个没有实现的函数，然后强制子类实现</strong>。</p>
+<p>只有实现所有基类的纯虚函数，子类才能实例化</p>
 </blockquote>
-<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;memory&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// 初始化 方法一</span></span><br><span class="line">    shared_ptr&lt;<span class="type">int</span>&gt; p1;</span><br><span class="line">    p1 = <span class="built_in">make_shared</span>&lt;<span class="type">int</span>&gt;(<span class="number">100</span>); <span class="comment">//make_shared会动态分配内存，然后让p指向它</span></span><br><span class="line">    <span class="comment">// 初始化 方法二</span></span><br><span class="line">    shared_ptr&lt;<span class="type">int</span>&gt; p2 &#123;<span class="keyword">new</span> <span class="built_in">int</span>(<span class="number">100</span>)&#125;;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="keyword">virtual</span> string <span class="title">GetName</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span> : <span class="keyword">public</span> Person &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	string ID;</span><br><span class="line">	string m_Name;</span><br><span class="line">	<span class="type">int</span> grade;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="built_in">Student</span>(<span class="type">const</span> string&amp; name1)</span><br><span class="line">	:<span class="built_in">m_Name</span>(name1)&#123;&#125;</span><br><span class="line">	<span class="function">string <span class="title">GetName</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123;<span class="keyword">return</span> m_Name;&#125;   <span class="comment">// override</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></div>
 
+<h3 id="运算符-及其重载"><a href="#运算符-及其重载" class="headerlink" title="运算符 及其重载"></a>运算符 及其重载</h3><div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Vertor2</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="type">float</span> x,y ;</span><br><span class="line">	<span class="built_in">Vector2</span>(<span class="type">float</span> x, <span class="type">float</span> y) </span><br><span class="line">		: <span class="built_in">x</span>(x), <span class="built_in">y</span>(y) &#123;&#125;</span><br><span class="line">	<span class="function">Vector2 <span class="title">Add</span><span class="params">(<span class="type">const</span> Vector2&amp; other)</span> <span class="type">const</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">Vector2</span>(x + other.x, y + other.y);</span><br><span class="line">	&#125;</span><br><span class="line">	Vector2 <span class="keyword">operator</span>+(<span class="type">const</span> Vector2$ other) <span class="type">const</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="built_in">Add</span>(other);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="function">Vector2 <span class="title">v1</span><span class="params">(<span class="number">4.0f</span>, <span class="number">4.0f</span>)</span></span>;</span><br><span class="line">	<span class="function">Vector2 <span class="title">v2</span><span class="params">(<span class="number">0.5f</span>, <span class="number">0.5f</span>)</span></span>;</span><br><span class="line">	Vector2 Sum = v1 + v2;   <span class="comment">// operator</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
 
-
-<hr>
-<div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Bar</span> &#123;</span><br><span class="line">	<span class="type">int</span> i = <span class="number">23</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line">	Bar bar;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	std::shared_ptr&lt;Foo&gt; f = std::<span class="built_in">make_shared</span>&lt;Foo&gt;();</span><br><span class="line">	std::cout &lt;&lt; f.<span class="built_in">use_count</span>() &lt;&lt; std::endl;	<span class="comment">// 输出：1</span></span><br><span class="line">	<span class="function">std::shared_ptr&lt;Bar&gt; <span class="title">b</span><span class="params">(f, &amp;(f-&gt;bar))</span></span>;		<span class="comment">// &amp;(f-&gt;bar) b拥有了对f指向物体的管理权，b的数据指针指向的是Bar</span></span><br><span class="line">	std::cout &lt;&lt; b.<span class="built_in">use_count</span>() &lt;&lt; std::endl;	<span class="comment">// 输出：2</span></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
-
-
-
-<ul>
-<li>unique_ptr</li>
-</ul>
-
+<h2 id="三、C-2-0-（C-11）"><a href="#三、C-2-0-（C-11）" class="headerlink" title="三、C++ 2.0 （C++11）"></a>三、C++ 2.0 （C++11）</h2><h3 id="1、Variadic-Templates"><a href="#1、Variadic-Templates" class="headerlink" title="1、Variadic Templates"></a>1、Variadic Templates</h3><div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
         </div>
 
         
             <div class="post-copyright-info">
                 <div class="article-copyright-info-container">
     <ul>
-        <li><strong>Title:</strong> 【C++】智能指针</li>
+        <li><strong>Title:</strong> C++</li>
         <li><strong>Author:</strong> LKH</li>
-        <li><strong>Created at:</strong> 2023-08-07 16:18:30</li>
+        <li><strong>Created at:</strong> 2023-05-13 16:47:38</li>
         
             <li>
-                <strong>Updated at:</strong> 2023-08-07 16:41:05
+                <strong>Updated at:</strong> 2023-06-25 20:34:34
             </li>
         
         <li>
-            <strong>Link:</strong> https://redefine.ohevan.com//post/【C++】智能指针.html
+            <strong>Link:</strong> https://redefine.ohevan.com//post/【STL】.html
         </li>
         <li>
             <strong>License:</strong> This work is licensed under <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh">CC BY-NC-SA 4.0</a>.
@@ -346,13 +357,13 @@
                     <div class="article-prev">
                         <a class="prev"
                         rel="prev"
-                        href="/post/%E3%80%90C++%E3%80%91%E6%A8%A1%E6%9D%BF.html"
+                        href="/post/%E3%80%90C++%E3%80%91.html"
                         >
                             <span class="left arrow-icon flex-center">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </span>
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">【C++】模板</span>
+                                <span class="post-nav-title-item">C++</span>
                                 <span class="post-nav-item">Prev posts</span>
                             </span>
                         </a>
@@ -362,10 +373,10 @@
                     <div class="article-next">
                         <a class="next"
                         rel="next"
-                        href="/post/%E3%80%90C++%E3%80%91%E7%B1%BB.html"
+                        href="/post/%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95.html"
                         >
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">【C++】类</span>
+                                <span class="post-nav-title-item">遗传算法</span>
                                 <span class="post-nav-item">Next posts</span>
                             </span>
                             <span class="right arrow-icon flex-center">
@@ -430,8 +441,8 @@
             <div class="post-toc-wrap">
     <div class="post-toc">
         <div class="toc-title">On this page</div>
-        <div class="page-title">【C++】智能指针</div>
-        <ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88"><span class="nav-text">智能指针</span></a></li></ol>
+        <div class="page-title">C++</div>
+        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%9F%BA%E7%A1%80"><span class="nav-text">一、基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#const"><span class="nav-text">const</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1-OO"><span class="nav-text">二、面向对象-OO</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB"><span class="nav-text">类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%A7%E6%89%BF-amp-amp-%E5%A4%9A%E6%80%81"><span class="nav-text">继承 &amp;&amp; 多态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E5%87%BD%E6%95%B0"><span class="nav-text">虚函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%90%E7%AE%97%E7%AC%A6-%E5%8F%8A%E5%85%B6%E9%87%8D%E8%BD%BD"><span class="nav-text">运算符 及其重载</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81C-2-0-%EF%BC%88C-11%EF%BC%89"><span class="nav-text">三、C++ 2.0 （C++11）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81Variadic-Templates"><span class="nav-text">1、Variadic Templates</span></a></li></ol></li></ol>
 
     </div>
 </div>
