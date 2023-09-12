@@ -18,15 +18,15 @@
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
     
-        <meta name="description" content="例：用2、5、7元硬币凑出正好27元，且要求硬币数量最少。##1、类型   计数型 最值型 存在型">
+        <meta name="description" content="计数型 最值型 存在型">
 <meta property="og:type" content="article">
 <meta property="og:title" content="【Algorithm】动态规划">
 <meta property="og:url" content="https://li-ronin.github.io/post/%E3%80%90Algorithm%E3%80%91%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92.html">
 <meta property="og:site_name" content="Lkh">
-<meta property="og:description" content="例：用2、5、7元硬币凑出正好27元，且要求硬币数量最少。##1、类型   计数型 最值型 存在型">
+<meta property="og:description" content="计数型 最值型 存在型">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-03-02T10:48:14.000Z">
-<meta property="article:modified_time" content="2023-08-24T10:52:41.696Z">
+<meta property="article:modified_time" content="2023-08-28T08:17:10.875Z">
 <meta property="article:author" content="李可涵">
 <meta property="article:tag" content="动态规划">
 <meta name="twitter:card" content="summary">
@@ -238,8 +238,8 @@
     
         <span class="article-date article-meta-item">
             <i class="fa-regular fa-wrench"></i>&nbsp;
-            <span class="desktop">2023-08-24 18:52:41</span>
-            <span class="mobile">2023-08-24 18:52:41</span>
+            <span class="desktop">2023-08-28 16:17:10</span>
+            <span class="mobile">2023-08-28 16:17:10</span>
             <span class="hover-info">Updated</span>
         </span>
     
@@ -275,16 +275,30 @@
 
         <div class="article-content markdown-body">
             <blockquote>
-<p><strong>例：用2、5、7元硬币凑出正好27元，且要求硬币数量最少。</strong><br>##1、类型</p>
-</blockquote>
 <ul>
 <li><strong>计数型</strong></li>
 <li><strong>最值型</strong></li>
-<li><strong>存在型</strong><span id="more"></span></li>
+<li><strong>存在型</strong></li>
 </ul>
-<h2 id="2、思路与步骤"><a href="#2、思路与步骤" class="headerlink" title="2、思路与步骤"></a>2、思路与步骤</h2><h3 id="①确定状态"><a href="#①确定状态" class="headerlink" title="①确定状态"></a>①确定状态</h3><p><em>1、</em>f(x)或者f(x)(y)代表什么：凑出x元所需最少硬币数量<br><em>2、</em>最后一步代表什么； $a_1 + a_2 + a_3\cdots+a_k$ ,最后一枚硬币$a_k$</p>
+</blockquote>
+  <span id="more"></span>
+
+
+
+<h2 id="1、DP的类型"><a href="#1、DP的类型" class="headerlink" title="1、DP的类型"></a>1、DP的类型</h2><ul>
+<li><strong>基础类型</strong>：斐波那契、爬楼梯</li>
+<li><strong>背包问题</strong></li>
+<li><strong>打家劫舍</strong></li>
+<li><strong>股票问题</strong>  </li>
+<li><strong>子序列问题</strong></li>
+</ul>
+<h2 id="2、思路与步骤"><a href="#2、思路与步骤" class="headerlink" title="2、思路与步骤"></a>2、思路与步骤</h2><p><strong>第一步</strong>：确定dp数组以及下标的含义</p>
+<p><strong>第二步</strong>：确定不递推公式</p>
+<p><strong>第三步</strong>：dp数组如何初始化</p>
+<p>遍历顺序</p>
+<h3 id="①确定状态"><a href="#①确定状态" class="headerlink" title="①确定状态"></a>①确定状态</h3><p><em>1、</em>f(x)或者f(x)(y)代表什么：凑出x元所需最少硬币数量<br><em>2、</em>最后一步代表什么； $a_1 + a_2 + a_3\cdots+a_k$ ,最后一枚硬币$a_k$</p>
 <p><em>3、</em>化为问题相同但是规模更小的子问题: $27-a_k$最少由k-1枚硬币凑成</p>
-<h3 id="②确定转移方程"><a href="#②确定转移方程" class="headerlink" title="②确定转移方程"></a>②确定转移方程</h3><p>$$f[27] &#x3D; min{f[27-2],f[27-5],f[27-7]} $$</p>
+<h3 id="②确定转移方程"><a href="#②确定转移方程" class="headerlink" title="②确定转移方程"></a>②确定转移方程</h3><p>f[27] &#x3D; min{f[27-2],f[27-5],f[27-7]} </p>
 <h3 id="③确定初始条件与边界"><a href="#③确定初始条件与边界" class="headerlink" title="③确定初始条件与边界"></a>③确定初始条件与边界</h3><ul>
 <li>x-2,x-5,x-7小于零的时候说明凑不出来Y，令f[Y]&#x3D;+∞</li>
 <li>f[0] &#x3D; 0</li>
@@ -316,7 +330,7 @@
         <li><strong>Created at:</strong> 2022-03-02 18:48:14</li>
         
             <li>
-                <strong>Updated at:</strong> 2023-08-24 18:52:41
+                <strong>Updated at:</strong> 2023-08-28 16:17:10
             </li>
         
         <li>
@@ -434,7 +448,7 @@
     <div class="post-toc">
         <div class="toc-title">On this page</div>
         <div class="page-title">【Algorithm】动态规划</div>
-        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#2%E3%80%81%E6%80%9D%E8%B7%AF%E4%B8%8E%E6%AD%A5%E9%AA%A4"><span class="nav-text">2、思路与步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A0%E7%A1%AE%E5%AE%9A%E7%8A%B6%E6%80%81"><span class="nav-text">①确定状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A1%E7%A1%AE%E5%AE%9A%E8%BD%AC%E7%A7%BB%E6%96%B9%E7%A8%8B"><span class="nav-text">②确定转移方程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A2%E7%A1%AE%E5%AE%9A%E5%88%9D%E5%A7%8B%E6%9D%A1%E4%BB%B6%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-text">③确定初始条件与边界</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A3%E7%A1%AE%E5%AE%9A%E8%BF%90%E7%AE%97%E9%A1%BA%E5%BA%8F"><span class="nav-text">④确定运算顺序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3%E3%80%81%E8%83%8C%E5%8C%85%E4%B9%9D%E8%AE%B2"><span class="nav-text">3、背包九讲</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B"><span class="nav-text">类型</span></a></li></ol></li></ol>
+        <ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1%E3%80%81DP%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="nav-text">1、DP的类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2%E3%80%81%E6%80%9D%E8%B7%AF%E4%B8%8E%E6%AD%A5%E9%AA%A4"><span class="nav-text">2、思路与步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A0%E7%A1%AE%E5%AE%9A%E7%8A%B6%E6%80%81"><span class="nav-text">①确定状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A1%E7%A1%AE%E5%AE%9A%E8%BD%AC%E7%A7%BB%E6%96%B9%E7%A8%8B"><span class="nav-text">②确定转移方程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A2%E7%A1%AE%E5%AE%9A%E5%88%9D%E5%A7%8B%E6%9D%A1%E4%BB%B6%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-text">③确定初始条件与边界</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E2%91%A3%E7%A1%AE%E5%AE%9A%E8%BF%90%E7%AE%97%E9%A1%BA%E5%BA%8F"><span class="nav-text">④确定运算顺序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3%E3%80%81%E8%83%8C%E5%8C%85%E4%B9%9D%E8%AE%B2"><span class="nav-text">3、背包九讲</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B"><span class="nav-text">类型</span></a></li></ol></li></ol>
 
     </div>
 </div>

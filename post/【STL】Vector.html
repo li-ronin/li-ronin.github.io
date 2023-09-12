@@ -18,18 +18,20 @@
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
     
-        <meta name="description" content="C++ 2.0出现的新特性 template&lt;typename T&gt;">
+        <meta name="description" content="容器">
 <meta property="og:type" content="article">
-<meta property="og:title" content="【C++】模板">
+<meta property="og:title" content="【STL】Vector">
 <meta property="og:url" content="https://li-ronin.github.io/post/%E3%80%90STL%E3%80%91Vector.html">
 <meta property="og:site_name" content="Lkh">
-<meta property="og:description" content="C++ 2.0出现的新特性 template&lt;typename T&gt;">
+<meta property="og:description" content="容器">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2023-08-07T08:18:30.000Z">
-<meta property="article:modified_time" content="2023-08-07T09:06:03.775Z">
+<meta property="og:image" content="https://s1.ax1x.com/2023/08/29/pPaLWK1.md.png">
+<meta property="article:published_time" content="2023-08-28T08:18:30.000Z">
+<meta property="article:modified_time" content="2023-08-29T07:06:51.205Z">
 <meta property="article:author" content="李可涵">
 <meta property="article:tag" content="C++">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2023/08/29/pPaLWK1.md.png">
     
     
     <!--- Icon Part-->
@@ -41,7 +43,7 @@
     
     <title>
         
-            【C++】模板 -
+            【STL】Vector -
         
         LKH
     </title>
@@ -211,9 +213,9 @@
             
                 
                 
-                <img src="https://picx.zhimg.com/v2-949f6e595177c5774925c1e94699dfdc_1440w.jpg?source=172ae18b" alt="【C++】模板" />
+                <img src="https://s1.ax1x.com/2023/08/29/pPabRJJ.png" alt="【STL】Vector" />
                 
-                <h1 class="article-title-cover">【C++】模板</h1>
+                <h1 class="article-title-cover">【STL】Vector</h1>
             
             </div>
             
@@ -235,15 +237,15 @@
                         <div class="article-meta-info">
     <span class="article-date article-meta-item">
         <i class="fa-regular fa-pen-fancy"></i>&nbsp;
-        <span class="desktop">2023-08-07 16:18:30</span>
-        <span class="mobile">2023-08-07 16:18:30</span>
+        <span class="desktop">2023-08-28 16:18:30</span>
+        <span class="mobile">2023-08-28 16:18:30</span>
         <span class="hover-info">Created</span>
     </span>
     
         <span class="article-date article-meta-item">
             <i class="fa-regular fa-wrench"></i>&nbsp;
-            <span class="desktop">2023-08-07 17:06:03</span>
-            <span class="mobile">2023-08-07 17:06:03</span>
+            <span class="desktop">2023-08-29 15:06:51</span>
+            <span class="mobile">2023-08-29 15:06:51</span>
             <span class="hover-info">Updated</span>
         </span>
     
@@ -279,12 +281,30 @@
 
         <div class="article-content markdown-body">
             <blockquote>
-<p>C++ 2.0出现的新特性 <code>template&lt;typename T&gt;</code></p>
+<p>容器</p>
 </blockquote>
 <span id="more"></span>
 
-<h3 id="模板"><a href="#模板" class="headerlink" title="模板"></a>模板</h3><div class="highlight-container" data-rel="C++"><figure class="iseeu highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">Print</span><span class="params">(T value)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	std::cout&lt;&lt; value &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="type">int</span> N&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Array</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	T m_Array[N];</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="type">int</span> <span class="title">GetSzie</span><span class="params">()</span> <span class="type">const</span></span>&#123;<span class="keyword">return</span> N;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">Print</span>&lt;<span class="type">int</span>&gt;(<span class="number">15</span>);</span><br><span class="line">	<span class="built_in">Print</span>(<span class="number">15</span>);</span><br><span class="line">	<span class="built_in">Print</span>(<span class="number">15.5</span>);</span><br><span class="line">	<span class="built_in">Print</span>(<span class="string">&#x27;1&#x27;</span>);</span><br><span class="line">	<span class="built_in">Print</span>(<span class="string">&quot;Lkh&quot;</span>);</span><br><span class="line">	Array&lt;std::string, <span class="number">50</span>&gt; arr;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
 
+
+
+
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pPaLWK1"><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="https://s1.ax1x.com/2023/08/29/pPaLWK1.md.png"
+                      alt="pPaLWK1.md.png"
+                ></a></p>
+<h3 id="vector添加元素"><a href="#vector添加元素" class="headerlink" title="vector添加元素"></a>vector添加元素</h3><ul>
+<li><strong>push_back()</strong></li>
+</ul>
+<p>该成员函数的功能是在 vector 容器尾部添加一个元素</p>
+<p><code>push_back() </code>向容器尾部添加元素时，首先会创建这个元素，然后再将这个元素拷贝或者移动到容器中（如果是拷贝的话，事后会自行销毁先前创建的这个元素）</p>
+<ul>
+<li><strong>emplace_back()</strong></li>
+</ul>
+<p>该成员函数的功能也是在 vector 容器尾部添加一个元素</p>
+<p><code>emplace_back()</code>在实现时，则是直接在容器尾部创建这个元素，省去了拷贝或移动元素的过程。</p>
 
         </div>
 
@@ -292,12 +312,12 @@
             <div class="post-copyright-info">
                 <div class="article-copyright-info-container">
     <ul>
-        <li><strong>Title:</strong> 【C++】模板</li>
+        <li><strong>Title:</strong> 【STL】Vector</li>
         <li><strong>Author:</strong> LKH</li>
-        <li><strong>Created at:</strong> 2023-08-07 16:18:30</li>
+        <li><strong>Created at:</strong> 2023-08-28 16:18:30</li>
         
             <li>
-                <strong>Updated at:</strong> 2023-08-07 17:06:03
+                <strong>Updated at:</strong> 2023-08-29 15:06:51
             </li>
         
         <li>
@@ -330,13 +350,13 @@
                     <div class="article-prev">
                         <a class="prev"
                         rel="prev"
-                        href="/post/%E3%80%90STL%E3%80%91String.html"
+                        href="/post/%E3%80%90Algorithm%E3%80%91089%20%E6%A0%BC%E9%9B%B7%E7%BC%96%E7%A0%81.html"
                         >
                             <span class="left arrow-icon flex-center">
                                 <i class="fa-solid fa-chevron-left"></i>
                             </span>
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">【C++】模板</span>
+                                <span class="post-nav-title-item">【Leetcode】89.格雷编码</span>
                                 <span class="post-nav-item">Prev posts</span>
                             </span>
                         </a>
@@ -346,10 +366,10 @@
                     <div class="article-next">
                         <a class="next"
                         rel="next"
-                        href="/post/%E3%80%90STL%E3%80%91pair%20&amp;%20tuple.html"
+                        href="/post/%E3%80%90Algorithm%E3%80%91045%20%E8%B7%B3%E8%B7%83%E6%B8%B8%E6%88%8FII.html"
                         >
                             <span class="title flex-center">
-                                <span class="post-nav-title-item">【C++】模板</span>
+                                <span class="post-nav-title-item">【Leetcode】36. Valid Sudoku</span>
                                 <span class="post-nav-item">Next posts</span>
                             </span>
                             <span class="right arrow-icon flex-center">
@@ -414,8 +434,8 @@
             <div class="post-toc-wrap">
     <div class="post-toc">
         <div class="toc-title">On this page</div>
-        <div class="page-title">【C++】模板</div>
-        <ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E6%9D%BF"><span class="nav-text">模板</span></a></li></ol>
+        <div class="page-title">【STL】Vector</div>
+        <ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#vector%E6%B7%BB%E5%8A%A0%E5%85%83%E7%B4%A0"><span class="nav-text">vector添加元素</span></a></li></ol>
 
     </div>
 </div>
