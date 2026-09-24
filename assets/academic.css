@@ -1,0 +1,70 @@
+/* Shared only by the new homepage and writing indexes; legacy posts keep their CSS. */
+:root {
+  color-scheme: light;
+  --ink: #262626;
+  --muted: #686868;
+  --link: #1769aa;
+  --rule: #e7e7e7;
+}
+* { box-sizing: border-box; }
+html { background: #fff; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: #fff;
+  font-family: Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  font-size: 15px;
+  line-height: 1.9;
+  overflow-wrap: break-word;
+}
+a { color: var(--link); text-decoration: none; text-underline-offset: 3px; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--link); outline-offset: 4px; }
+.page { width: min(100% - 48px, 800px); margin: 58px auto 40px; }
+h1, h2 { font-weight: 400; line-height: 1.4; color: #191919; }
+h1 { margin: 0 0 22px; font-size: 30px; }
+h2 { margin: 0 0 13px; font-size: 22px; }
+p { margin: 0 0 15px; }
+.introduction { display: grid; grid-template-columns: minmax(0, 1fr) 176px; gap: 48px; align-items: center; }
+.introduction h1 { text-align: center; }
+.name-en { margin-left: 10px; font-size: 25px; }
+.portrait { display: block; max-width: 100%; height: auto; }
+.profile-links { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 20px; }
+.profile-links span { color: #999; }
+.home-section { margin-top: 39px; }
+.heading-translation { margin-left: 10px; color: var(--muted); font-size: 14px; }
+.site-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 55px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12px; }
+.site-footer a { color: var(--muted); }
+.site-nav { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; border-bottom: 1px solid var(--rule); padding-bottom: 15px; margin-bottom: 38px; }
+.site-name { color: var(--ink); font-size: 17px; }
+.site-nav-links { display: flex; flex-wrap: wrap; gap: 22px; }
+.site-nav a[aria-current="page"] { color: var(--ink); text-decoration: underline; }
+.page-description { color: var(--muted); margin-top: -8px; margin-bottom: 34px; }
+.year-group { margin-top: 30px; }
+.year-group h2 { font-size: 20px; }
+.entry-list { list-style: none; padding: 0; margin: 0; }
+.entry { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 18px; padding: 7px 0; }
+.entry time { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; padding-top: 1px; }
+.entry a { overflow-wrap: anywhere; }
+.empty { color: var(--muted); }
+.skip-link { position: absolute; top: -100px; left: 18px; background: #fff; padding: 6px 12px; z-index: 10; }
+.skip-link:focus { top: 12px; }
+@media (max-width: 620px) {
+  .page { width: calc(100% - 40px); margin-top: 30px; }
+  .introduction { grid-template-columns: 1fr; gap: 25px; }
+  .portrait { grid-row: 1; width: 100px; justify-self: center; }
+  .introduction h1 { font-size: 28px; }
+  .profile-links { gap: 18px; }
+  .profile-links a, .site-nav-links a { padding: 6px 0; }
+  .home-section { margin-top: 30px; }
+  .site-nav { margin-bottom: 28px; }
+  .site-nav-links { gap: 18px; }
+  .entry { grid-template-columns: 87px minmax(0, 1fr); gap: 12px; }
+  .site-footer { margin-top: 38px; }
+}
+@media print {
+  .page { width: 100%; margin: 0; }
+  .skip-link, .site-nav, .site-footer { display: none; }
+  a { color: inherit; }
+  .introduction { break-inside: avoid; }
+}
