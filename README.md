@@ -20,7 +20,11 @@
 
 ## 修改个人介绍
 
-直接编辑 `index.html` 中的 `introduction-copy` 段落。头像暂时复用已有的 `/images/alpaca.svg`；替换 `img.portrait` 的 `src` 和 `alt` 即可换成自己的照片。未填写不确定的邮箱、学历、雇主、论文或履历。
+直接编辑 `index.html` 中的 `introduction-copy` 段落。简介按当前工作、技术方向和个人兴趣组织；修改后也请同步更新页面的 `description` 与 `og:description`。未填写不确定的邮箱、学历、雇主、论文或履历。
+
+头像使用已上传的 `/images/profile.jpg`，不再使用羊驼图标作为主页照片。显示尺寸为桌面端 220 × 220px、手机端 144 × 144px，圆角为 12px，保持圆角方形而非圆形。样式位于 `assets/academic.css` 的 `.portrait` 规则及移动端覆盖规则中。`object-fit: cover` 会等比例裁剪而不拉伸原图；需要调整取景位置时可修改 `object-position`，无需重新上传图片。
+
+首页正文使用 1.65 倍行距、10px 段落间距，相关规则限定在 `.home` 内，不改变 Blog / Notes 目录或旧文章的正文行距。
 
 新页面不加载旧主题脚本，不添加统计服务，不依赖远程字体。它们在关闭 JavaScript 时仍可以阅读和导航。
 
