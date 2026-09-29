@@ -64,18 +64,18 @@ def render_index(kind: str, entries: list[dict[str, str]]) -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="LKH 的{chinese}。{description}">
+  <meta name="description" content="李可涵 Khan Li 的{chinese}。{description}">
   <meta name="author" content="李可涵">
   <link rel="canonical" href="https://li-ronin.github.io{route}">
   <link rel="icon" href="/images/alpaca.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/academic.css">
-  <title>{label} · {chinese} · LKH</title>
+  <title>{label} · {chinese} · Khan Li</title>
 </head>
 <body>
   <a class="skip-link" href="#main">跳到正文</a>
   <div class="page">
     <nav class="site-nav" aria-label="站点导航">
-      <a class="site-name" href="/">李可涵 · LKH</a>
+      <a class="site-name" href="/">李可涵 Khan Li</a>
       <div class="site-nav-links"><a href="/">Home</a><a href="/blog/"{blog_current}>Blog</a><a href="/notes/"{notes_current}>Notes</a></div>
     </nav>
     <main id="main" tabindex="-1">
@@ -83,7 +83,7 @@ def render_index(kind: str, entries: list[dict[str, str]]) -> str:
       <p class="page-description">{description} 共 {len(selected)} 篇。</p>
 {content}
     </main>
-    <footer class="site-footer"><span>© LKH</span><a href="/archives/">全部文章归档</a></footer>
+    <footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/archives/">全部文章归档</a></footer>
   </div>
 </body>
 </html>
