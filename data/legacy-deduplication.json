@@ -1,0 +1,107 @@
+[
+  {
+    "keep": {
+      "date": "2023-08-07",
+      "title": "【C++】模板",
+      "url": "/post/【C++】05模板.html",
+      "kind": "blog"
+    },
+    "remove": [
+      {
+        "date": "2023-08-07",
+        "title": "【C++】模板",
+        "url": "/post/【STL】BitSet.html",
+        "kind": "blog"
+      },
+      {
+        "date": "2023-08-07",
+        "title": "【C++】模板",
+        "url": "/post/【STL】Deque.html",
+        "kind": "blog"
+      },
+      {
+        "date": "2023-08-07",
+        "title": "【STL】模板",
+        "url": "/post/【STL】Array.html",
+        "kind": "blog"
+      },
+      {
+        "date": "2023-08-07",
+        "title": "【C++】模板",
+        "url": "/post/【STL】List.html",
+        "kind": "blog"
+      },
+      {
+        "date": "2023-08-07",
+        "title": "【C++】模板",
+        "url": "/post/【STL】Map.html",
+        "kind": "blog"
+      },
+      {
+        "date": "2023-08-07",
+        "title": "【C++】模板",
+        "url": "/post/【STL】Stack&Queue.html",
+        "kind": "blog"
+      },
+      {
+        "date": "2023-08-07",
+        "title": "【C++】模板",
+        "url": "/post/【STL】String.html",
+        "kind": "blog"
+      },
+      {
+        "date": "2023-08-07",
+        "title": "【C++】模板",
+        "url": "/post/【STL】pair & tuple.html",
+        "kind": "blog"
+      },
+      {
+        "date": "2023-08-07",
+        "title": "【C++】模板",
+        "url": "/post/【STL】set.html",
+        "kind": "blog"
+      }
+    ],
+    "body_html_sha256": "c2cf774e1e6b4571fdbe0a858aaed7d36d9b0ed6290b5ba9ac30ce33334e8888",
+    "body_html_chars": 3424,
+    "comparison": "Exact parsed article body HTML, including code and image attributes; not only title/text."
+  },
+  {
+    "keep": {
+      "date": "2023-05-13",
+      "title": "C++",
+      "url": "/post/【C++】.html",
+      "kind": "blog"
+    },
+    "remove": [
+      {
+        "date": "2023-05-13",
+        "title": "C++",
+        "url": "/post/【STL】.html",
+        "kind": "blog"
+      }
+    ],
+    "body_html_sha256": "d82fe1e4b6087e56f1977dae820bf63c71c9dea43ec4b90e7ac27e9b3a125cb1",
+    "body_html_chars": 16756,
+    "comparison": "Exact parsed article body HTML, including code and image attributes; not only title/text."
+  },
+  {
+    "keep": {
+      "date": "2022-03-08",
+      "title": "【Algorithm】Dijkstra",
+      "url": "/post/【Algorithm】Dijkstra.html",
+      "kind": "blog"
+    },
+    "remove": [
+      {
+        "date": "2022-03-08",
+        "title": "Dijkstra",
+        "url": "/post/【Algorithm】.html",
+        "kind": "blog"
+      }
+    ],
+    "body_html_sha256": "f35d3e3ae6f0c7d252a1160b0f68f704f3ee25e3a3bb499e247d8c81d0e44ebb",
+    "body_html_chars": 17074,
+    "comparison": "Exact parsed article body HTML, including code and image attributes; not only title/text."
+  }
+]
