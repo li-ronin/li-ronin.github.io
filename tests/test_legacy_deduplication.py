@@ -92,3 +92,14 @@ class LegacyDeduplicationTests(unittest.TestCase):
             self.assertNotIn(normalized, seen, entry['url'])
             seen.add(normalized)
         self.assertEqual(len(seen), 23)
+
+    def test_legacy_year_counts_match_visible_list_entries(self):
+        checked = 0
+        for folder in ('archives', 'tags'):
+            for path in (ROOT / folder).rglob('*.html'):
+                for section in re.findall(r'<section class="archive-item">[\s\S]*?</section>', path.read_text()):
+                    count = re.search(r'<span class="archive-year-post-count">\[(\d+)\]</span>', section)
+                    self.assertIsNotNone(count, str(path))
+                    self.assertEqual(int(count.group(1)), section.count('<li class="article-item"'), str(path))
+                    checked += 1
+        self.assertGreater(checked, 0)
