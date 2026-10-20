@@ -6,7 +6,7 @@
 .breadcrumb { margin-bottom: 20px; }
 .article-contents { margin: 30px 0 42px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 20px 0; }
 .article-contents h2 { font-size: 20px; }
-.article-contents ol { padding-left: 25px; margin: 0; }
+.article-contents ol { list-style: none; padding-left: 0; margin: 0; }
 .article-contents li { margin: 4px 0; }
 .lesson-section { margin-top: 42px; }
 .lesson-section h2 { font-size: 25px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
