@@ -1,0 +1,4744 @@
+{
+  "schemaVersion": 1,
+  "editorialPolicy": {
+    "difficulty": "整理者估计的学习难度：1 基础概念；2 实现与权衡；3 系统设计与故障分析，不代表面试原作者评级。",
+    "audience": "校招、社招为建议学习范围，不代表原面经招聘批次。",
+    "answers": "本版本仅整理问题、知识点和扩展，不提供完整答案。",
+    "sourceAudience": "原面经招聘类别仅依据来源明确表述；未注明者不根据题目难度、作者身份或建议学习范围推断。",
+    "tags": "标签仅表示具体知识主题；难度、岗位和建议学习人群为独立字段，不混入标签。"
+  },
+  "questions": [
+    {
+      "id": "harness-001",
+      "title": "如何比较 DeepSeek harness 与 pi 的设计？",
+      "category": "Agent架构与Harness",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Harness",
+        "Agent运行时"
+      ],
+      "knowledge": [
+        "模型与运行时职责边界",
+        "Agent 执行循环、状态、工具协议",
+        "可扩展性与最小内核"
+      ],
+      "extensions": [
+        "先确认两者的项目链接、版本与具体指代，再建立比较矩阵",
+        "用同一任务比较可观测性、恢复能力与扩展成本"
+      ],
+      "followups": [
+        "名称可能指不同项目，不预设 pi 或 DeepSeek harness 的实现。"
+      ],
+      "sources": [
+        "user-notes",
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-notes",
+          "questionNumbers": [
+            "1"
+          ]
+        },
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "context-001",
+      "title": "如何核实并解释 Claude Code 的上下文压缩机制？",
+      "category": "上下文与记忆",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Claude Code",
+        "上下文压缩"
+      ],
+      "knowledge": [
+        "上下文窗口与预算",
+        "摘要压缩、工具输出裁剪、会话状态",
+        "产品可观察行为与内部实现的证据边界"
+      ],
+      "extensions": [
+        "按明确版本阅读官方文档与公开实现说明",
+        "设计长任务实验，记录压缩前后保留信息和任务表现"
+      ],
+      "followups": [
+        "哪些结论有官方依据，哪些只是实验推断？"
+      ],
+      "sources": [
+        "user-notes",
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-notes",
+          "questionNumbers": [
+            "2"
+          ]
+        },
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "17"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "computer-001",
+      "title": "Computer Use 在云电脑中如何完成从观察到执行的闭环？",
+      "category": "AI Coding与Computer Use",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Computer Use",
+        "云电脑",
+        "多模态"
+      ],
+      "knowledge": [
+        "截图或结构化界面观察",
+        "动作生成、坐标映射与执行器",
+        "环境隔离、权限与操作结果验证"
+      ],
+      "extensions": [
+        "用页面变化或遮挡场景检验观察是否过期",
+        "比较浏览器结构化操作与桌面视觉操作的适用边界"
+      ],
+      "followups": [
+        "模型、界面信息、鼠标键盘执行器如何协作？",
+        "云电脑的延迟、分辨率变化和会话隔离如何影响可靠性？"
+      ],
+      "sources": [
+        "user-notes",
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-notes",
+          "questionNumbers": [
+            "3"
+          ]
+        },
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "18"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coding-001",
+      "title": "以真实开发任务说明 AI Coding 工作流，以及如何进一步围绕 Agent 能力改造？",
+      "category": "AI Coding与Computer Use",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "AI Coding",
+        "Agent Native",
+        "代码验证闭环"
+      ],
+      "knowledge": [
+        "需求澄清、设计、实现、测试与交付",
+        "人机分工与验证门槛",
+        "仓库上下文、任务拆分与反馈循环"
+      ],
+      "extensions": [
+        "记录一个任务从需求到回归测试的完整轨迹",
+        "比较人工驱动提示与可重复执行的任务规范"
+      ],
+      "followups": [
+        "目前在哪些阶段使用 AI？",
+        "哪些环节可由 Agent 自动执行，哪些必须保留人工判断？"
+      ],
+      "sources": [
+        "user-notes",
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-notes",
+          "questionNumbers": [
+            "4"
+          ]
+        },
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "19",
+            "20"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "llm-001",
+      "title": "解释大模型的自注意力机制及其关键组成。",
+      "category": "LLM原理与训练",
+      "difficulty": 1,
+      "roles": [
+        "大模型算法",
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Transformer",
+        "自注意力机制",
+        "QKV"
+      ],
+      "knowledge": [
+        "Query、Key、Value 与注意力权重",
+        "缩放点积、Softmax、掩码",
+        "多头注意力与位置信息"
+      ],
+      "extensions": [
+        "手算一个小序列的注意力矩阵并检查维度",
+        "比较因果注意力、双向注意力及 KV Cache 的使用场景"
+      ],
+      "followups": [],
+      "sources": [
+        "user-notes"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-notes",
+          "questionNumbers": [
+            "5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "llm-002",
+      "title": "LLM 与传统 NLP 有哪些区别，LLM 训练通常包含哪些阶段？",
+      "category": "LLM原理与训练",
+      "difficulty": 1,
+      "roles": [
+        "大模型算法",
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "NLP",
+        "预训练",
+        "后训练"
+      ],
+      "knowledge": [
+        "任务专用模型与通用预训练模型",
+        "分词、训练目标与数据分布",
+        "预训练、指令微调、偏好对齐及评估"
+      ],
+      "extensions": [
+        "沿数据、目标函数、算力和评估四个维度画训练流程",
+        "比较训练阶段变化对推理能力和使用方式的影响"
+      ],
+      "followups": [
+        "避免把传统 NLP 简化为单一技术路线。"
+      ],
+      "sources": [
+        "user-notes"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-notes",
+          "questionNumbers": [
+            "6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "llm-003",
+      "title": "如何降低并识别大模型生成的幻觉？",
+      "category": "评测与工程化",
+      "difficulty": 2,
+      "roles": [
+        "大模型算法",
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "幻觉",
+        "事实性",
+        "可信生成"
+      ],
+      "knowledge": [
+        "知识缺口与推理错误",
+        "检索依据、引用和工具验证",
+        "拒答、置信度与事实性评测"
+      ],
+      "extensions": [
+        "构建可回答、证据不足、证据冲突三类测试集",
+        "区分降低幻觉风险与保证答案绝对正确"
+      ],
+      "followups": [
+        "如何发现措施对正确性、覆盖率和成本的影响？"
+      ],
+      "sources": [
+        "user-notes"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-notes",
+          "questionNumbers": [
+            "7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "system-001",
+      "title": "线程池有哪些核心参数，应如何根据负载设置并验证？",
+      "category": "并发与系统基础",
+      "difficulty": 2,
+      "roles": [
+        "通用工程",
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "线程池",
+        "并发",
+        "容量规划"
+      ],
+      "knowledge": [
+        "工作线程数量、队列容量与拒绝策略",
+        "CPU 密集与 I/O 密集任务",
+        "排队延迟、吞吐、资源占用及背压"
+      ],
+      "extensions": [
+        "用负载实验观察队列增长、延迟分位数与饱和点",
+        "结合具体语言或框架区分参数名称和生命周期"
+      ],
+      "followups": [
+        "先说明使用 Java、C++ 或其他实现，不能把某框架参数当作通用标准。"
+      ],
+      "sources": [
+        "user-notes"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-notes",
+          "questionNumbers": [
+            "8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "harness-002",
+      "title": "如何比较 Claude Code 与 Codex 的能力边界和工程特点？",
+      "category": "Agent架构与Harness",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Claude Code",
+        "Codex",
+        "Coding Agent"
+      ],
+      "knowledge": [
+        "CLI、IDE 与云端形态",
+        "上下文、工具、权限和执行环境",
+        "任务恢复、代码验证及协作方式"
+      ],
+      "extensions": [
+        "固定版本与同一代码任务做对照测试",
+        "区分模型能力、Agent 运行时能力与产品集成能力"
+      ],
+      "followups": [
+        "哪些差异来自公开文档，哪些来自你的实际使用？"
+      ],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "context-002",
+      "title": "输入模型的 Prompt 应由哪些部分构成，哪些内容需要注入？",
+      "category": "上下文与记忆",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Prompt",
+        "上下文预算",
+        "动态注入"
+      ],
+      "knowledge": [
+        "系统约束、用户目标与对话状态",
+        "工具定义、知识、记忆和环境信息",
+        "静态内容与动态检索内容"
+      ],
+      "extensions": [
+        "制定信息来源、优先级、更新频率和预算表",
+        "测试缺失信息与冗余信息对任务效果的影响"
+      ],
+      "followups": [
+        "哪些内容每轮必需，哪些按任务召回？",
+        "静态 Prompt 与动态 Prompt 分别如何维护？"
+      ],
+      "sources": [
+        "user-round1",
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "3"
+          ]
+        },
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "harness-003",
+      "title": "你的 Coding Agent 与现成产品的区别是什么？",
+      "category": "Agent架构与Harness",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Coding Agent",
+        "Agent能力边界",
+        "构建与采购决策"
+      ],
+      "knowledge": [
+        "目标用户与任务边界",
+        "执行环境、工具集和集成成本",
+        "可验证优势与限制"
+      ],
+      "extensions": [
+        "用同一任务和统一指标对比自研系统与现成产品",
+        "明确哪些能力由模型提供、哪些由系统实现"
+      ],
+      "followups": [
+        "不要仅罗列功能，说明差异解决了什么问题。"
+      ],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "context-003",
+      "title": "项目中的上下文压缩如何实现，触发条件和阈值如何确定？",
+      "category": "上下文与记忆",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "上下文压缩",
+        "Token预算",
+        "压缩触发策略"
+      ],
+      "knowledge": [
+        "上下文组成与 Token 计量",
+        "历史摘要、输出裁剪与状态外置",
+        "质量、成本、延迟和窗口余量"
+      ],
+      "extensions": [
+        "构造长工具轨迹验证压缩触发和窗口溢出处理",
+        "比较不同阈值下任务成功率及关键事实保留率"
+      ],
+      "followups": [
+        "上下文总窗口多大？为何选择当前触发上限？",
+        "压缩具体针对哪些内容，发生在执行循环的什么位置？"
+      ],
+      "sources": [
+        "user-round1",
+        "user-round2",
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "5"
+          ]
+        },
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.9"
+          ]
+        },
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "15"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "context-004",
+      "title": "多层上下文压缩为何这样分层，各层对象和触发条件是什么？",
+      "category": "上下文与记忆",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "分层压缩",
+        "状态管理",
+        "压缩策略"
+      ],
+      "knowledge": [
+        "短期裁剪与语义摘要",
+        "任务状态与原始轨迹分离",
+        "分层触发、依赖关系与恢复"
+      ],
+      "extensions": [
+        "为每层记录输入、输出、触发器和可逆性",
+        "设计消融实验判断三层是否确实优于更简单方案"
+      ],
+      "followups": [
+        "三层压缩的内容是否相同？",
+        "题中三层是具体项目设计，不是所有 Agent 的标准结构。"
+      ],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "6"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "context-005",
+      "title": "如何发现上下文压缩过度，并恢复受损的任务表现？",
+      "category": "上下文与记忆",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "压缩质量",
+        "异常恢复",
+        "可观测性"
+      ],
+      "knowledge": [
+        "关键事实与任务约束保留",
+        "行为回退、重复工作和目标偏移",
+        "原始记录回放、摘要校验与重新检索"
+      ],
+      "extensions": [
+        "建立压缩前后约束一致性与任务回归测试",
+        "设计摘要失败时的回滚、降级和人工确认路径"
+      ],
+      "followups": [
+        "如何区分模型自身错误和压缩引起的信息丢失？"
+      ],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "context-006",
+      "title": "用户在原任务上追加功能时，系统如何恢复会话和任务状态？",
+      "category": "上下文与记忆",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "会话恢复",
+        "增量需求",
+        "任务状态"
+      ],
+      "knowledge": [
+        "对话历史与执行状态的区别",
+        "代码版本、工作区变化和未完成事项",
+        "目标变更、决策记录与相关上下文召回"
+      ],
+      "extensions": [
+        "设计跨会话继续任务的最小状态包",
+        "测试代码已被外部修改时如何重新核对上下文"
+      ],
+      "followups": [
+        "哪些信息必须重新注入？",
+        "恢复会话并不等于重新塞入全部历史。"
+      ],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tools-001",
+      "title": "工具调用如何运转，Skill 能否替代工具？",
+      "category": "工具与Skills",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "工具调用",
+        "Skills",
+        "工具协议",
+        "Function Calling",
+        "JSON Schema",
+        "MCP"
+      ],
+      "knowledge": [
+        "工具 Schema、模型调用请求、执行器和返回结果",
+        "可执行能力与程序性指导的区别",
+        "多轮推理、错误处理和权限检查",
+        "调用协议与执行器",
+        "知识与执行边界"
+      ],
+      "extensions": [
+        "画出一次含工具执行的完整时序并统计调用次数",
+        "比较直接工具调用与 Skill 指导下的工具组合",
+        "记录一次调用轨迹",
+        "拆解一个小任务"
+      ],
+      "followups": [
+        "工具调用阶段模型可能调用几次？",
+        "Skill 被加载几次与模型调用几次为什么不是同一指标？",
+        "工具调用中，模型与宿主各承担什么职责？",
+        "Skill、工具协议和函数调用如何配合？"
+      ],
+      "sources": [
+        "user-round1",
+        "zhihu-2028511483969937686"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "9",
+            "10b"
+          ]
+        },
+        {
+          "sourceId": "zhihu-2028511483969937686",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        },
+        {
+          "sourceId": "zhihu-2028511483969937686",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ]
+    },
+    {
+      "id": "tools-002",
+      "title": "Skill 应如何设计和分层，为什么采用这种组织方式？",
+      "category": "工具与Skills",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Skill设计",
+        "Skill分层",
+        "渐进披露"
+      ],
+      "knowledge": [
+        "描述与适用范围",
+        "指令、资源和可执行脚本的边界",
+        "复用粒度、依赖与冲突管理"
+      ],
+      "extensions": [
+        "为一个真实任务编写最小 Skill 并设置输入输出契约",
+        "测试多 Skill 同时适用时的选择与优先级"
+      ],
+      "followups": [
+        "你的 Skill 清单是什么，各自负责什么？",
+        "层级设计如何减少无关上下文和重复维护？"
+      ],
+      "sources": [
+        "user-round1",
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "10a"
+          ]
+        },
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "planning-001",
+      "title": "复杂任务的 Plan 如何生成、执行和调整？",
+      "category": "规划与多Agent",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "规划",
+        "任务分解",
+        "Replan"
+      ],
+      "knowledge": [
+        "目标、依赖与验收标准",
+        "执行结果反馈和重规划",
+        "可执行步骤与开放式探索"
+      ],
+      "extensions": [
+        "为多文件开发任务建立可验证的子目标",
+        "测试工具失败、需求变化与计划过期时的更新路径"
+      ],
+      "followups": [
+        "怎样避免计划只是文字清单而不能指导执行？"
+      ],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "planning-002",
+      "title": "多 Agent 如何编排，子 Agent 的职责与工具权限如何划分？",
+      "category": "规划与多Agent",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "多Agent",
+        "编排",
+        "权限隔离"
+      ],
+      "knowledge": [
+        "协调者与执行者职责",
+        "上下文交接、结果契约和共享状态",
+        "并行依赖、冲突控制与最小权限"
+      ],
+      "extensions": [
+        "对比单 Agent、角色分工和并行子任务的效果与成本",
+        "测试子 Agent 失败、重复执行及同文件冲突"
+      ],
+      "followups": [
+        "每个子 Agent 有何区别，为什么这样划分？",
+        "能否共享全部工具，在哪些情形应限制？"
+      ],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "12",
+            "13",
+            "14"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "project-001",
+      "title": "如何介绍一个 RAG 项目的目标、流程与自己的贡献？",
+      "category": "项目表达与职业判断",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "RAG项目",
+        "项目表达",
+        "个人贡献"
+      ],
+      "knowledge": [
+        "用户问题与知识边界",
+        "数据到检索再到生成的端到端流程",
+        "本人负责的模块与可验证结果"
+      ],
+      "extensions": [
+        "用问题、约束、方案、验证、复盘构建项目叙述",
+        "准备一条可追踪的查询案例作为演示"
+      ],
+      "followups": [],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "15"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-001",
+      "title": "RAG 的数据来自哪里，如何判断来源适合入库？",
+      "category": "RAG与知识工程",
+      "difficulty": 1,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "数据来源",
+        "知识库",
+        "数据治理"
+      ],
+      "knowledge": [
+        "来源权限、格式与更新频率",
+        "覆盖范围、可信度与适用时间",
+        "文档标识和来源追踪"
+      ],
+      "extensions": [
+        "为每类来源建立元数据与更新责任记录",
+        "区分公开资料、内部文档与用户提供资料的授权边界"
+      ],
+      "followups": [],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "16"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-002",
+      "title": "外部文档格式杂乱或冗余较多时，如何清洗并组织成可检索知识？",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "ETL",
+        "文档清洗",
+        "去重"
+      ],
+      "knowledge": [
+        "解析、标准化与结构恢复",
+        "重复、噪声和无关内容处理",
+        "质量检测、来源元数据与处理可追踪性"
+      ],
+      "extensions": [
+        "抽样定义入库质量规则并人工核验",
+        "比较清洗前后的检索命中率和有效信息密度"
+      ],
+      "followups": [
+        "如何避免清洗过程中误删有价值的上下文？"
+      ],
+      "sources": [
+        "user-round1",
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "17"
+          ]
+        },
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "11"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-003",
+      "title": "PDF 中的文本、表格、图片和复杂版式应如何处理？",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "PDF",
+        "OCR",
+        "多模态解析"
+      ],
+      "knowledge": [
+        "文本型与扫描型 PDF",
+        "阅读顺序、标题层级、表格结构",
+        "页码定位、图文关联与解析置信度"
+      ],
+      "extensions": [
+        "构建扫描件、双栏、跨页表格和图表的解析测试集",
+        "保留原页引用用于检索结果验证"
+      ],
+      "followups": [],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "18"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-004",
+      "title": "是否需要从文档中抽取知识，如何设计抽取过程？",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "知识抽取",
+        "实体关系",
+        "Schema"
+      ],
+      "knowledge": [
+        "实体、关系、事件与属性",
+        "抽取 Schema 和实体消歧",
+        "证据片段、置信度及质量评估"
+      ],
+      "extensions": [
+        "从小样本建立抽取标注集和错误分类",
+        "比较规则、模型抽取和人工审核的成本"
+      ],
+      "followups": [
+        "抽取结果如何回溯到原始文档？"
+      ],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "19"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-005",
+      "title": "知识库如何进行增量更新？",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "增量更新",
+        "索引一致性",
+        "幂等"
+      ],
+      "knowledge": [
+        "变更检测、内容哈希和稳定标识",
+        "新增、修改、删除与依赖传播",
+        "索引版本、事务边界和失败重试"
+      ],
+      "extensions": [
+        "测试文档部分修改、删除和任务重跑",
+        "比较全文重建与局部更新的正确性和成本"
+      ],
+      "followups": [],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "20"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-006",
+      "title": "知识库中不同文档存在冲突时，应如何处理？",
+      "category": "RAG与知识工程",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "知识冲突",
+        "来源可信度",
+        "时效性"
+      ],
+      "knowledge": [
+        "适用范围、版本与生效时间",
+        "来源权威性和证据并列",
+        "冲突识别与回答中的不确定性"
+      ],
+      "extensions": [
+        "用新旧制度、不同业务范围的文档构造冲突案例",
+        "制定保留冲突、人工裁决与过期内容处理机制"
+      ],
+      "followups": [
+        "如何避免仅按相似度或发布日期错误覆盖有效知识？"
+      ],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "21"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-007",
+      "title": "错误文档入库后如何定位影响、回滚并进行版本控制？",
+      "category": "RAG与知识工程",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "版本控制",
+        "回滚",
+        "数据血缘"
+      ],
+      "knowledge": [
+        "文档、Chunk、向量和知识图谱的版本关联",
+        "审核与发布流程",
+        "数据血缘、撤回和索引一致性"
+      ],
+      "extensions": [
+        "设计一次错误文档发布与恢复演练",
+        "验证回滚后所有检索路径不再返回错误内容"
+      ],
+      "followups": [
+        "如何定位新同事误入库文档影响了哪些索引和回答？"
+      ],
+      "sources": [
+        "user-round1"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round1",
+          "questionNumbers": [
+            "22"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "harness-004",
+      "title": "从用户输入开始，完整说明 Coding Agent 的执行链路。",
+      "category": "Agent架构与Harness",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Agent循环",
+        "任务执行链路",
+        "执行状态"
+      ],
+      "knowledge": [
+        "输入解析、上下文组装和模型推理",
+        "工具执行、结果验证与循环终止",
+        "会话持久化、异常处理和权限"
+      ],
+      "extensions": [
+        "绘制一次从需求到代码修改再到测试的时序图",
+        "把失败和取消路径也纳入链路说明"
+      ],
+      "followups": [],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tools-003",
+      "title": "用户输入如何匹配到合适的 Skill？",
+      "category": "工具与Skills",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Skill路由",
+        "检索",
+        "Skill触发规则"
+      ],
+      "knowledge": [
+        "描述匹配、规则和语义检索",
+        "候选筛选、冲突与无匹配场景",
+        "误触发、漏触发和路由评估"
+      ],
+      "extensions": [
+        "构建包含近义任务、无关任务和多技能任务的路由测试集",
+        "比较全量注入与按需加载的 Token 和准确性"
+      ],
+      "followups": [],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tools-004",
+      "title": "Skill 如何从实践中沉淀，是否支持自动形成和维护？",
+      "category": "工具与Skills",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Skill沉淀",
+        "经验复用",
+        "质量审核"
+      ],
+      "knowledge": [
+        "任务轨迹抽象与复用边界",
+        "候选 Skill 生成、评审和测试",
+        "版本更新、去重与过期管理"
+      ],
+      "extensions": [
+        "为重复任务设计从候选经验到已验证 Skill 的流程",
+        "防止把一次性成功或错误轨迹固化为通用做法"
+      ],
+      "followups": [
+        "哪些步骤由用户编写，哪些可辅助自动生成？"
+      ],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "memory-001",
+      "title": "Agent 的短期与长期记忆应如何分层，各层存什么和如何使用？",
+      "category": "上下文与记忆",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "记忆分层",
+        "短期记忆",
+        "长期记忆"
+      ],
+      "knowledge": [
+        "工作状态、情景记录与长期知识",
+        "写入、检索、更新和遗忘策略",
+        "用户边界、权限及冲突处理"
+      ],
+      "extensions": [
+        "针对跨会话任务定义各层的生命周期和数据契约",
+        "比较静态背景与动态积累信息的维护方式"
+      ],
+      "followups": [
+        "为什么分静态长期记忆和动态长期记忆？",
+        "不同层之间有哪些读取和传播约束？"
+      ],
+      "sources": [
+        "user-round2",
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.5",
+            "项目一.6"
+          ]
+        },
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "14"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "memory-002",
+      "title": "频繁写入长期记忆时，如何避免无用信息快速积累？",
+      "category": "上下文与记忆",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "记忆写入",
+        "去重",
+        "遗忘"
+      ],
+      "knowledge": [
+        "重要性、稳定性与相关性判定",
+        "重复合并、冲突更新和过期清理",
+        "容量预算和写入质量评估"
+      ],
+      "extensions": [
+        "统计记忆增长速度、有效召回比例与错误记忆比例",
+        "对比每轮写入和事件驱动写入策略"
+      ],
+      "followups": [
+        "每轮对话都存储是否有必要？"
+      ],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "memory-003",
+      "title": "模型或系统如何决定是否召回长期记忆？",
+      "category": "上下文与记忆",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "记忆召回",
+        "记忆路由",
+        "记忆相关性"
+      ],
+      "knowledge": [
+        "查询意图、实体与任务状态",
+        "检索触发、候选排序和上下文注入",
+        "无结果、旧信息与敏感信息处理"
+      ],
+      "extensions": [
+        "构建需要记忆与不需要记忆的对照任务集",
+        "测量召回收益、错误注入和延迟开销"
+      ],
+      "followups": [
+        "召回决策是模型负责、规则负责，还是组合策略？"
+      ],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cost-001",
+      "title": "如何估算 Coding Agent 完成开发任务的 Token 用量和成本？",
+      "category": "评测与工程化",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Token",
+        "Token计费",
+        "模型选型"
+      ],
+      "knowledge": [
+        "输入、输出、缓存 Token 与计费项",
+        "多轮交互、工具输出和上下文重复",
+        "任务级成功率与成本归因"
+      ],
+      "extensions": [
+        "记录真实任务调用日志并按当时价格复算",
+        "对比不同模型、重试次数和上下文策略的成本效果"
+      ],
+      "followups": [
+        "使用什么模型及版本、当时的百万 Token 价格是多少？",
+        "写一千行代码为什么不能仅按代码行数准确估价？",
+        "高成本主要来自哪些环节？"
+      ],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.11",
+            "项目一.12"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "project-002",
+      "title": "你是否持续使用自己的 Coding Agent，实际使用暴露了哪些问题？",
+      "category": "项目表达与职业判断",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "自用验证",
+        "用户反馈",
+        "项目复盘"
+      ],
+      "knowledge": [
+        "真实任务覆盖与使用频率",
+        "人工介入和失败记录",
+        "产品取舍与持续迭代"
+      ],
+      "extensions": [
+        "整理一段时间的成功、失败和弃用案例",
+        "区分演示效果与日常可用性"
+      ],
+      "followups": [],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目一.13"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-008",
+      "title": "何时选择 GraphRAG 而不是纯向量检索，它解决了什么问题？",
+      "category": "RAG与知识工程",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "GraphRAG",
+        "知识图谱",
+        "多跳检索"
+      ],
+      "knowledge": [
+        "实体关系结构与向量相似度",
+        "局部事实检索、多跳关联与全局汇总",
+        "图构建成本、更新和检索评估"
+      ],
+      "extensions": [
+        "为需要跨文档关联的查询构建向量与图检索对照实验",
+        "区分检索到关联证据与模型完成可靠推理"
+      ],
+      "followups": [
+        "什么才算推理型问题？请给出依赖哪些证据的具体例子。",
+        "技术选型是否有评测依据，而不只是功能描述？"
+      ],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目二.1",
+            "项目二.2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "project-003",
+      "title": "为什么选择做这个项目，需求和技术选择的出发点是什么？",
+      "category": "项目表达与职业判断",
+      "difficulty": 1,
+      "roles": [
+        "Agent开发",
+        "大模型算法"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "项目动机",
+        "需求分析",
+        "技术选型"
+      ],
+      "knowledge": [
+        "目标用户、痛点和边界",
+        "可选方案与资源约束",
+        "成功标准和个人学习目标"
+      ],
+      "extensions": [
+        "用问题证据而非技术名词解释项目必要性",
+        "准备不采用当前方案的备选设计"
+      ],
+      "followups": [
+        "分别说明 RAG 项目和模型项目的动机，不能用同一套空泛理由。"
+      ],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目二.3",
+            "项目三.1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "llm-004",
+      "title": "模型项目为什么选择 Llama 3 架构？",
+      "category": "LLM原理与训练",
+      "difficulty": 2,
+      "roles": [
+        "大模型算法"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Llama",
+        "模型架构",
+        "技术选型"
+      ],
+      "knowledge": [
+        "模型结构、规模和训练资源",
+        "Tokenizer、位置编码和注意力配置",
+        "许可证、生态及基线可比性"
+      ],
+      "extensions": [
+        "明确所用具体版本和配置后与备选架构比较",
+        "用资源预算和目标任务解释选择"
+      ],
+      "followups": [
+        "不要把模型系列名称当作完整架构说明。"
+      ],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目三.2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "llm-005",
+      "title": "SFT、DPO 和 GRPO 的目标、数据与训练方式有什么不同？",
+      "category": "LLM原理与训练",
+      "difficulty": 2,
+      "roles": [
+        "大模型算法",
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "校招（补充来源）；其他来源未注明",
+      "tags": [
+        "SFT",
+        "DPO",
+        "GRPO",
+        "PPO"
+      ],
+      "knowledge": [
+        "监督微调、偏好学习和强化学习",
+        "示范数据、偏好对与奖励信号",
+        "优化目标、采样、稳定性及评估",
+        "对齐目标"
+      ],
+      "extensions": [
+        "按数据形态、目标函数、训练成本建立比较表",
+        "阅读原始论文并在小规模实验中记录训练现象",
+        "列出所需数据类型"
+      ],
+      "followups": [
+        "怎样区分PPO、DPO与GRPO的训练设定？"
+      ],
+      "sources": [
+        "user-round2",
+        "nowcoder-911218249889480704"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目三.3"
+          ]
+        },
+        {
+          "sourceId": "nowcoder-911218249889480704",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ]
+    },
+    {
+      "id": "llm-006",
+      "title": "训练数据集规模如何确定，如何说明质量与划分策略？",
+      "category": "LLM原理与训练",
+      "difficulty": 2,
+      "roles": [
+        "大模型算法"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "数据集",
+        "数据质量",
+        "数据划分"
+      ],
+      "knowledge": [
+        "样本数、Token 数和分布覆盖",
+        "去重、质量过滤及训练验证测试划分",
+        "数据泄漏、污染与授权"
+      ],
+      "extensions": [
+        "用学习曲线观察数据增量带来的收益",
+        "分别报告原始、过滤后与实际训练数据规模"
+      ],
+      "followups": [],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目三.4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eval-001",
+      "title": "模型项目是否做过评测，指标如何对应目标能力？",
+      "category": "评测与工程化",
+      "difficulty": 2,
+      "roles": [
+        "大模型算法",
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "模型评测",
+        "评测基准",
+        "评测指标"
+      ],
+      "knowledge": [
+        "任务指标、通用能力和安全性",
+        "基线、样本代表性和统计波动",
+        "离线评估、人工评估与数据污染"
+      ],
+      "extensions": [
+        "为项目目标建立指标、测试集和失败类型对应表",
+        "在相同条件下比较训练前后的模型"
+      ],
+      "followups": [],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "项目三.5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "career-001",
+      "title": "如何说明自己的相对优势，以及希望从岗位中获得什么？",
+      "category": "项目表达与职业判断",
+      "difficulty": 1,
+      "roles": [
+        "Agent开发",
+        "大模型算法",
+        "通用工程"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "能力证据链",
+        "能力差距分析",
+        "STAR模型"
+      ],
+      "knowledge": [
+        "能力与岗位需求匹配",
+        "具体项目证据和可迁移经验",
+        "学习目标与成长反馈"
+      ],
+      "extensions": [
+        "用真实案例替代自我评价标签",
+        "把希望学习的内容与团队业务场景关联"
+      ],
+      "followups": [],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "其他.1",
+            "其他.2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "career-002",
+      "title": "如何讨论 AI 对业务的价值，以及基模迭代后 Agent 的必要性？",
+      "category": "项目表达与职业判断",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发",
+        "大模型算法"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "业务收益评估",
+        "Agent边界",
+        "技术战略评估"
+      ],
+      "knowledge": [
+        "业务流程、效果指标和采用成本",
+        "模型能力与系统执行能力的边界",
+        "可靠性、集成、权限与组织协作"
+      ],
+      "extensions": [
+        "围绕具体业务拆解可落地价值与限制",
+        "讨论哪些 Agent 复杂度可能被模型进步替代，哪些仍属系统职责"
+      ],
+      "followups": [
+        "把反问写成开放讨论，而非预设 Agent 必然必要或必然消失。"
+      ],
+      "sources": [
+        "user-round2"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "user-round2",
+          "questionNumbers": [
+            "反问.1",
+            "反问.2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "project-004",
+      "title": "如何讲清参与最深的 Agent 项目的用途与个人工作？",
+      "category": "项目表达与职业判断",
+      "difficulty": 1,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "项目叙事",
+        "职责边界",
+        "效果归因"
+      ],
+      "knowledge": [
+        "业务目标和用户",
+        "系统边界、关键模块和个人责任",
+        "可验证成果及团队贡献区分"
+      ],
+      "extensions": [
+        "准备简短概述与可下钻的技术细节",
+        "以一条完整任务轨迹解释贡献"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "project-005",
+      "title": "项目最困难的问题是什么，你具体修改了什么？",
+      "category": "项目表达与职业判断",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "问题定位",
+        "工程改进",
+        "故障复盘"
+      ],
+      "knowledge": [
+        "故障现象、证据与根因",
+        "方案取舍和具体修改",
+        "改动前后验证与残余风险"
+      ],
+      "extensions": [
+        "准备日志、指标或最小复现支撑叙述",
+        "区分解决根因与临时规避"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "project-006",
+      "title": "如果重新设计 Agent，优先重构哪部分，为什么？",
+      "category": "项目表达与职业判断",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "架构复盘",
+        "重构",
+        "技术债"
+      ],
+      "knowledge": [
+        "痛点优先级与依赖关系",
+        "模块边界和演进成本",
+        "迁移、兼容性与回归验证"
+      ],
+      "extensions": [
+        "制定分阶段重构方案及停止条件",
+        "用收益、风险和实施成本解释优先级"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "3"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eval-002",
+      "title": "用什么标准判断 Agent 达到企业可用水平？",
+      "category": "评测与工程化",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "生产就绪",
+        "可靠性",
+        "安全"
+      ],
+      "knowledge": [
+        "任务成功率、延迟、成本与服务目标",
+        "权限隔离、审计和敏感数据保护",
+        "恢复能力、可观测性与人工接管"
+      ],
+      "extensions": [
+        "按业务风险建立上线门槛和故障演练集",
+        "区分演示成功、试点可用和生产可用"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "4"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "planning-003",
+      "title": "ReAct 与 Plan-Execute-Replan 的执行方式有什么区别？",
+      "category": "规划与多Agent",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "ReAct",
+        "Plan-Execute",
+        "Replan"
+      ],
+      "knowledge": [
+        "推理与行动交替",
+        "显式计划、执行反馈和计划更新",
+        "任务粒度、动态环境与失败路径"
+      ],
+      "extensions": [
+        "用同一多步骤任务画两种运行轨迹",
+        "比较无效工具调用、计划漂移和恢复成本"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tools-005",
+      "title": "哪些需求适合接入 RAG，哪些知识更适合整理为 Skill？",
+      "category": "工具与Skills",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "RAG",
+        "Skills",
+        "知识组织"
+      ],
+      "knowledge": [
+        "事实性知识与程序性知识",
+        "检索证据和可复用操作流程",
+        "时效性、版本和可信度"
+      ],
+      "extensions": [
+        "为一组业务需求标记事实检索与操作指导的边界",
+        "设计 RAG 与 Skill 联合使用的工作流"
+      ],
+      "followups": [
+        "不要把二者理解成严格互斥的选项。"
+      ],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "7"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-009",
+      "title": "从用户问题开始，完整说明检索链路如何运行。",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "查询理解",
+        "检索链路",
+        "可追踪性"
+      ],
+      "knowledge": [
+        "意图识别、查询改写及过滤",
+        "召回、排序和上下文组装",
+        "证据引用、生成与失败处理"
+      ],
+      "extensions": [
+        "跟踪同一问题在各阶段的输入输出",
+        "检查原问题与改写问题之间的信息损失"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "8"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-010",
+      "title": "文档切块大小和边界如何确定？",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "文本切块",
+        "语义边界"
+      ],
+      "knowledge": [
+        "文档结构、主题连续性和 Token 长度",
+        "重叠、父子块与元数据",
+        "嵌入模型限制和查询粒度"
+      ],
+      "extensions": [
+        "对固定评测集比较不同切块策略",
+        "同时评估召回覆盖、噪声、成本及引用完整性"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "9"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-011",
+      "title": "一个 Chunk 混有相关和无关内容时，如何提高有效信息比例？",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "检索噪声",
+        "上下文精炼",
+        "文本切块"
+      ],
+      "knowledge": [
+        "切块粒度与语义混杂",
+        "相关片段定位和上下文保留",
+        "过滤、重排与压缩的区别"
+      ],
+      "extensions": [
+        "用长文档查询检查相关内容是否被噪声淹没",
+        "比较重新切块、父子检索和证据片段提取"
+      ],
+      "followups": [
+        "如何避免精炼过程中丢失条件或限定语？"
+      ],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "10"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rag-012",
+      "title": "多种检索方式并用时，如何融合并选出最终结果？",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "社招（补充来源）；其他来源未注明",
+      "tags": [
+        "混合检索",
+        "检索融合",
+        "Reranking",
+        "BM25",
+        "向量检索",
+        "RRF"
+      ],
+      "knowledge": [
+        "关键词召回、向量召回与结构化检索",
+        "分数尺度、排名融合和去重",
+        "重排、预算和多样性",
+        "排序融合"
+      ],
+      "extensions": [
+        "比较单路召回、融合召回与重排后的效果",
+        "通过消融实验识别每条检索路径的增益",
+        "按查询类型做对照"
+      ],
+      "followups": [
+        "混合检索的融合权重怎样验证？"
+      ],
+      "sources": [
+        "nowcoder-941992971027636224",
+        "nowcoder-926232883432296448"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "12"
+          ]
+        },
+        {
+          "sourceId": "nowcoder-926232883432296448",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ]
+    },
+    {
+      "id": "rag-013",
+      "title": "如何验证检索效果达到项目要求？",
+      "category": "评测与工程化",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "检索评测",
+        "Recall",
+        "端到端评测"
+      ],
+      "knowledge": [
+        "标注查询集、相关性和证据覆盖",
+        "Recall@K、MRR、nDCG 等检索指标",
+        "回答正确性、引用质量、延迟和成本"
+      ],
+      "extensions": [
+        "建立覆盖常见与困难查询的评测集",
+        "分别定位召回失败、排序失败与生成失败"
+      ],
+      "followups": [
+        "单一检索指标提升是否真的改善最终答案？"
+      ],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "13"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "context-007",
+      "title": "压缩后必须保留哪些信息，如何在实现中保证不丢失？",
+      "category": "上下文与记忆",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "信息不变量",
+        "压缩约束",
+        "记忆一致性"
+      ],
+      "knowledge": [
+        "任务目标、用户约束与重要决策",
+        "结构化状态与原始证据指针",
+        "不可压缩字段、校验及恢复"
+      ],
+      "extensions": [
+        "建立任务关键字段清单和压缩一致性测试",
+        "测试记忆层更新与摘要更新不同步的情况"
+      ],
+      "followups": [
+        "结合记忆分层说明各类信息的保留、召回与过期规则。"
+      ],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "16"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coding-002",
+      "title": "如何理解 SDD，实际采用过哪些相关流程或工具？",
+      "category": "AI Coding与Computer Use",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "SDD",
+        "规格驱动",
+        "需求验证"
+      ],
+      "knowledge": [
+        "规格、设计、任务与实现之间的关系",
+        "需求可测试性及验收条件",
+        "规范漂移与迭代维护"
+      ],
+      "extensions": [
+        "先明确 SDD 在讨论中的具体含义，再对照真实项目",
+        "追踪一次需求变更如何同步到设计、代码与测试"
+      ],
+      "followups": [
+        "工具名称不是核心，说明它在流程中解决的问题。"
+      ],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "21"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coding-003",
+      "title": "团队自建 AI Coding 或 SDD 框架的边界和收益是什么？",
+      "category": "AI Coding与Computer Use",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "研发平台",
+        "团队工作流",
+        "构建与采购决策"
+      ],
+      "knowledge": [
+        "团队规范、代码库与工具集成",
+        "复用、治理和维护成本",
+        "平台能力与模型能力的分工"
+      ],
+      "extensions": [
+        "对比现有工具配置与自建框架的总成本",
+        "明确哪些能力值得自建，哪些适合复用"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "22"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eval-003",
+      "title": "让 AI 参与性能测试时，如何设计 Prompt 和验证方案？",
+      "category": "评测与工程化",
+      "difficulty": 3,
+      "roles": [
+        "Agent开发",
+        "通用工程"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "性能测试",
+        "Prompt Engineering",
+        "实验控制"
+      ],
+      "knowledge": [
+        "测试目标、硬件环境和负载模型",
+        "基线、预热、重复采样与统计波动",
+        "正确性先决条件、资源监控与结果审计"
+      ],
+      "extensions": [
+        "设计包含输入约束、执行命令和验收条件的测试任务",
+        "防止只优化单个样例、错误读取指标或遗漏失败结果"
+      ],
+      "followups": [
+        "如何独立验证 AI 给出的性能结论？"
+      ],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "23"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coding-004",
+      "title": "AI Coding 最难做好的是哪个环节，如何用真实案例说明改进？",
+      "category": "AI Coding与Computer Use",
+      "difficulty": 2,
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "AI Coding",
+        "失败分析",
+        "质量保障"
+      ],
+      "knowledge": [
+        "需求理解、上下文、实现与验证误差",
+        "错误定位及反馈有效性",
+        "人为干预、成本和可重复性"
+      ],
+      "extensions": [
+        "选择一个失败案例整理现象、原因、措施和结果",
+        "说明哪些改进有效，哪些仍未解决"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-941992971027636224"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-941992971027636224",
+          "questionNumbers": [
+            "24"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ext-001",
+      "title": "何时选择固定工作流，何时让模型控制执行？",
+      "category": "Agent架构与Harness",
+      "difficulty": 1,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Workflow",
+        "Agent循环"
+      ],
+      "knowledge": [
+        "流程控制权"
+      ],
+      "extensions": [
+        "画两条执行路径"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2028511483969937686"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2028511483969937686",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-003",
+      "title": "MCP怎样减少工具接入的重复工作？",
+      "category": "工具与Skills",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "MCP",
+        "工具发现"
+      ],
+      "knowledge": [
+        "协议与适配层"
+      ],
+      "extensions": [
+        "比较两种接入方式"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2028511483969937686"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2028511483969937686",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-005",
+      "title": "A2A与MCP分别连接哪些参与者？",
+      "category": "规划与多Agent",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "A2A",
+        "MCP"
+      ],
+      "knowledge": [
+        "通信契约"
+      ],
+      "extensions": [
+        "对照官方协议版本"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2028511483969937686"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2028511483969937686",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-006",
+      "title": "如何限制Agent的权限和失控循环？",
+      "category": "评测与工程化",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "最小权限",
+        "循环检测"
+      ],
+      "knowledge": [
+        "运行时约束"
+      ],
+      "extensions": [
+        "构造一次恶意输入"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2028511483969937686"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2028511483969937686",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-007",
+      "title": "LangGraph的复杂度在哪些业务中值得承担？",
+      "category": "Agent架构与Harness",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "LangGraph",
+        "状态机"
+      ],
+      "knowledge": [
+        "抽象成本"
+      ],
+      "extensions": [
+        "画出真实业务分支"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2034667289245636223"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2034667289245636223",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-008",
+      "title": "中断恢复后，怎样避免外部操作重复执行？",
+      "category": "评测与工程化",
+      "difficulty": 3,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Checkpoint",
+        "幂等"
+      ],
+      "knowledge": [
+        "状态与副作用"
+      ],
+      "extensions": [
+        "模拟恢复时断网"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2034667289245636223"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2034667289245636223",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-009",
+      "title": "多个节点同时写状态，怎样定义合并规则？",
+      "category": "规划与多Agent",
+      "difficulty": 3,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Reducer",
+        "并发状态"
+      ],
+      "knowledge": [
+        "状态更新语义"
+      ],
+      "extensions": [
+        "测试写入顺序变化"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2034667289245636223"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2034667289245636223",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-010",
+      "title": "如何管理持续膨胀的Checkpoint？",
+      "category": "上下文与记忆",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Checkpoint",
+        "TTL"
+      ],
+      "knowledge": [
+        "状态生命周期"
+      ],
+      "extensions": [
+        "检查大对象存储位置"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2034667289245636223"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2034667289245636223",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-011",
+      "title": "如何定位检索不到正确材料的原因？",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Query Rewriting",
+        "文本切块"
+      ],
+      "knowledge": [
+        "检索链路诊断"
+      ],
+      "extensions": [
+        "按阶段建立失败样本"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2034667289245636223"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2034667289245636223",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-012",
+      "title": "流式上传与响应如何避免资源耗尽？",
+      "category": "并发与系统基础",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "背压",
+        "SSE"
+      ],
+      "knowledge": [
+        "流式资源管理"
+      ],
+      "extensions": [
+        "观察慢客户端影响"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2034667289245636223"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2034667289245636223",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-013",
+      "title": "位置编码如何表达词元顺序？",
+      "category": "LLM原理与训练",
+      "difficulty": 1,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "大模型算法"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "RoPE",
+        "位置编码"
+      ],
+      "knowledge": [
+        "位置表示"
+      ],
+      "extensions": [
+        "比较位置外推表现"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2013066841401099455"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2013066841401099455",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-014",
+      "title": "KV缓存为什么改变生成成本？",
+      "category": "LLM原理与训练",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "大模型算法",
+        "AI Infra"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "KV Cache",
+        "自回归生成"
+      ],
+      "knowledge": [
+        "计算与显存"
+      ],
+      "extensions": [
+        "估算不同长度缓存"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2013066841401099455"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2013066841401099455",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-015",
+      "title": "GQA和MQA要解决哪些开销？",
+      "category": "LLM原理与训练",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "大模型算法",
+        "AI Infra"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "GQA",
+        "MQA"
+      ],
+      "knowledge": [
+        "注意力头布局"
+      ],
+      "extensions": [
+        "绘制张量形状"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2013066841401099455"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2013066841401099455",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-016",
+      "title": "如何在全参微调与低秩适配间取舍？",
+      "category": "LLM原理与训练",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "大模型算法"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "LoRA",
+        "参数高效微调"
+      ],
+      "knowledge": [
+        "参数与资源预算"
+      ],
+      "extensions": [
+        "做一组小规模对照"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2013066841401099455"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2013066841401099455",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-017",
+      "title": "量化精度与推理收益怎样一起评估？",
+      "category": "LLM原理与训练",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "大模型算法",
+        "AI Infra"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "量化",
+        "INT4",
+        "INT8"
+      ],
+      "knowledge": [
+        "误差与资源"
+      ],
+      "extensions": [
+        "区分权重和激活量化"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2013066841401099455"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2013066841401099455",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-018",
+      "title": "推测解码在什么条件下值得采用？",
+      "category": "LLM原理与训练",
+      "difficulty": 3,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "大模型算法",
+        "AI Infra"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Speculative Decoding"
+      ],
+      "knowledge": [
+        "推理加速"
+      ],
+      "extensions": [
+        "比较不同任务延迟"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2013066841401099455"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2013066841401099455",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-019",
+      "title": "Text-to-SQL中的Prompt改动如何验证有效？",
+      "category": "评测与工程化",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Text-to-SQL",
+        "消融实验"
+      ],
+      "knowledge": [
+        "实验设计"
+      ],
+      "extensions": [
+        "建立失败SQL集合"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2000549015511667060"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2000549015511667060",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-020",
+      "title": "查询改写是否应在每轮对话执行？",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "Query Rewriting"
+      ],
+      "knowledge": [
+        "触发策略"
+      ],
+      "extensions": [
+        "比较改写前后召回"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2000549015511667060"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2000549015511667060",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-021",
+      "title": "怎样说明实体识别准确率的可信度？",
+      "category": "评测与工程化",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "NER",
+        "评测集"
+      ],
+      "knowledge": [
+        "指标口径"
+      ],
+      "extensions": [
+        "检查类别不均衡"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2000549015511667060"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2000549015511667060",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-022",
+      "title": "BM25与TF-IDF如何决定关键词相关性？",
+      "category": "RAG与知识工程",
+      "difficulty": 1,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "BM25",
+        "TF-IDF"
+      ],
+      "knowledge": [
+        "稀疏检索"
+      ],
+      "extensions": [
+        "手算一个小语料"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2000549015511667060"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2000549015511667060",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-023",
+      "title": "如何判断引用确实支持生成的结论？",
+      "category": "RAG与知识工程",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "引用溯源",
+        "事实一致性"
+      ],
+      "knowledge": [
+        "证据与主张"
+      ],
+      "extensions": [
+        "检查部分支持案例"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2000549015511667060"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2000549015511667060",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-024",
+      "title": "离线效果最优方案怎样迁移到在线服务？",
+      "category": "评测与工程化",
+      "difficulty": 3,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "未注明",
+      "tags": [
+        "延迟预算",
+        "成本评估"
+      ],
+      "knowledge": [
+        "多目标权衡"
+      ],
+      "extensions": [
+        "设定可测验收线"
+      ],
+      "followups": [],
+      "sources": [
+        "zhihu-2000549015511667060"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "zhihu-2000549015511667060",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-025",
+      "title": "多轮Agent任务对Attention提出哪些困难？",
+      "category": "LLM原理与训练",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "大模型算法",
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "校招",
+      "tags": [
+        "注意力机制",
+        "长上下文"
+      ],
+      "knowledge": [
+        "跨轮依赖"
+      ],
+      "extensions": [
+        "设计早期约束测试"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-911218249889480704"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-911218249889480704",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-026",
+      "title": "SFT的数据策略如何与训练目标对应？",
+      "category": "LLM原理与训练",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "大模型算法"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "校招",
+      "tags": [
+        "SFT",
+        "数据构建"
+      ],
+      "knowledge": [
+        "监督信号"
+      ],
+      "extensions": [
+        "检查训练评测泄漏"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-911218249889480704"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-911218249889480704",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-028",
+      "title": "如何单独衡量规划质量和幻觉问题？",
+      "category": "评测与工程化",
+      "difficulty": 3,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "校招",
+      "tags": [
+        "Agent评测",
+        "规划评测"
+      ],
+      "knowledge": [
+        "过程与结果指标"
+      ],
+      "extensions": [
+        "构造能区分二者的任务"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-911218249889480704"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-911218249889480704",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-029",
+      "title": "运维Agent如何从告警走到可验证的处理闭环？",
+      "category": "Agent架构与Harness",
+      "difficulty": 3,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "社招",
+      "tags": [
+        "事件驱动",
+        "HITL"
+      ],
+      "knowledge": [
+        "诊断与执行边界"
+      ],
+      "extensions": [
+        "设计错误归因案例"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-926232883432296448"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-926232883432296448",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-030",
+      "title": "大批日志怎样进入有限上下文？",
+      "category": "上下文与记忆",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "社招",
+      "tags": [
+        "日志检索",
+        "上下文压缩"
+      ],
+      "knowledge": [
+        "信息预算"
+      ],
+      "extensions": [
+        "保留可回查原始证据"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-926232883432296448"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-926232883432296448",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-032",
+      "title": "如何阻止错误运维经验污染知识库？",
+      "category": "RAG与知识工程",
+      "difficulty": 3,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "社招",
+      "tags": [
+        "知识审核",
+        "因果证据"
+      ],
+      "knowledge": [
+        "知识质量"
+      ],
+      "extensions": [
+        "区分根因与临时缓解"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-926232883432296448"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-926232883432296448",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-033",
+      "title": "从Prompt到Context再到Harness，治理边界如何扩大？",
+      "category": "Agent架构与Harness",
+      "difficulty": 2,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "社招",
+      "tags": [
+        "Prompt Engineering",
+        "Context Engineering",
+        "Harness"
+      ],
+      "knowledge": [
+        "系统责任划分"
+      ],
+      "extensions": [
+        "给每层列失败示例"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-926970454294659072"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-926970454294659072",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    },
+    {
+      "id": "ext-034",
+      "title": "面向用户的Agent应用应如何划分架构模块？",
+      "category": "Agent架构与Harness",
+      "difficulty": 3,
+      "difficultyBasis": "整理者按概念、实现、系统权衡分级",
+      "roles": [
+        "Agent开发"
+      ],
+      "audience": [
+        "校招",
+        "社招"
+      ],
+      "sourceAudience": "社招",
+      "tags": [
+        "Agent运行时",
+        "系统分层"
+      ],
+      "knowledge": [
+        "模块边界"
+      ],
+      "extensions": [
+        "标出状态与验证位置"
+      ],
+      "followups": [],
+      "sources": [
+        "nowcoder-926970454294659072"
+      ],
+      "sourceRefs": [
+        {
+          "sourceId": "nowcoder-926970454294659072",
+          "questionNumbers": [],
+          "note": "公开正文的精选概念重述，非逐题转载"
+        }
+      ],
+      "origin": "外部来源概念重述",
+      "learningNotesOrigin": "整理者补充学习方向，并非原文答案"
+    }
+  ],
+  "coverage": [
+    {
+      "sourceId": "user-notes",
+      "questionNumber": "1",
+      "questionIds": [
+        "harness-001"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "6",
+      "questionIds": [
+        "harness-001"
+      ]
+    },
+    {
+      "sourceId": "user-notes",
+      "questionNumber": "2",
+      "questionIds": [
+        "context-001"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "17",
+      "questionIds": [
+        "context-001"
+      ]
+    },
+    {
+      "sourceId": "user-notes",
+      "questionNumber": "3",
+      "questionIds": [
+        "computer-001"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "18",
+      "questionIds": [
+        "computer-001"
+      ]
+    },
+    {
+      "sourceId": "user-notes",
+      "questionNumber": "4",
+      "questionIds": [
+        "coding-001"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "19",
+      "questionIds": [
+        "coding-001"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "20",
+      "questionIds": [
+        "coding-001"
+      ]
+    },
+    {
+      "sourceId": "user-notes",
+      "questionNumber": "5",
+      "questionIds": [
+        "llm-001"
+      ]
+    },
+    {
+      "sourceId": "user-notes",
+      "questionNumber": "6",
+      "questionIds": [
+        "llm-002"
+      ]
+    },
+    {
+      "sourceId": "user-notes",
+      "questionNumber": "7",
+      "questionIds": [
+        "llm-003"
+      ]
+    },
+    {
+      "sourceId": "user-notes",
+      "questionNumber": "8",
+      "questionIds": [
+        "system-001"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "2",
+      "questionIds": [
+        "harness-002"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "3",
+      "questionIds": [
+        "context-002"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.10",
+      "questionIds": [
+        "context-002"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "4",
+      "questionIds": [
+        "harness-003"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "5",
+      "questionIds": [
+        "context-003"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.9",
+      "questionIds": [
+        "context-003"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "15",
+      "questionIds": [
+        "context-003"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "6",
+      "questionIds": [
+        "context-004"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "7",
+      "questionIds": [
+        "context-005"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "8",
+      "questionIds": [
+        "context-006"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "9",
+      "questionIds": [
+        "tools-001"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "10b",
+      "questionIds": [
+        "tools-001"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "10a",
+      "questionIds": [
+        "tools-002"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.2",
+      "questionIds": [
+        "tools-002"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "11",
+      "questionIds": [
+        "planning-001"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "12",
+      "questionIds": [
+        "planning-002"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "13",
+      "questionIds": [
+        "planning-002"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "14",
+      "questionIds": [
+        "planning-002"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "15",
+      "questionIds": [
+        "project-001"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "16",
+      "questionIds": [
+        "rag-001"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "17",
+      "questionIds": [
+        "rag-002"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "11",
+      "note": "原粘贴题末尾有未完成的“从”，保留可理解的完整提问，不补写缺失内容。",
+      "questionIds": [
+        "rag-002"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "18",
+      "questionIds": [
+        "rag-003"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "19",
+      "questionIds": [
+        "rag-004"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "20",
+      "questionIds": [
+        "rag-005"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "21",
+      "questionIds": [
+        "rag-006"
+      ]
+    },
+    {
+      "sourceId": "user-round1",
+      "questionNumber": "22",
+      "questionIds": [
+        "rag-007"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.1",
+      "questionIds": [
+        "harness-004"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.3",
+      "questionIds": [
+        "tools-003"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.4",
+      "questionIds": [
+        "tools-004"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.5",
+      "questionIds": [
+        "memory-001"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.6",
+      "questionIds": [
+        "memory-001"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "14",
+      "questionIds": [
+        "memory-001"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.7",
+      "questionIds": [
+        "memory-002"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.8",
+      "questionIds": [
+        "memory-003"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.11",
+      "questionIds": [
+        "cost-001"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.12",
+      "questionIds": [
+        "cost-001"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目一.13",
+      "questionIds": [
+        "project-002"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目二.1",
+      "questionIds": [
+        "rag-008"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目二.2",
+      "questionIds": [
+        "rag-008"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目二.3",
+      "questionIds": [
+        "project-003"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目三.1",
+      "questionIds": [
+        "project-003"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目三.2",
+      "questionIds": [
+        "llm-004"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目三.3",
+      "questionIds": [
+        "llm-005"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目三.4",
+      "questionIds": [
+        "llm-006"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "项目三.5",
+      "questionIds": [
+        "eval-001"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "其他.1",
+      "questionIds": [
+        "career-001"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "其他.2",
+      "questionIds": [
+        "career-001"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "反问.1",
+      "questionIds": [
+        "career-002"
+      ]
+    },
+    {
+      "sourceId": "user-round2",
+      "questionNumber": "反问.2",
+      "questionIds": [
+        "career-002"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "1",
+      "questionIds": [
+        "project-004"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "2",
+      "questionIds": [
+        "project-005"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "3",
+      "questionIds": [
+        "project-006"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "4",
+      "questionIds": [
+        "eval-002"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "5",
+      "questionIds": [
+        "planning-003"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "7",
+      "questionIds": [
+        "tools-005"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "8",
+      "questionIds": [
+        "rag-009"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "9",
+      "questionIds": [
+        "rag-010"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "10",
+      "questionIds": [
+        "rag-011"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "12",
+      "questionIds": [
+        "rag-012"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "13",
+      "note": "原粘贴题末尾有未完成的“如”，不补写缺失内容。",
+      "questionIds": [
+        "rag-013"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "16",
+      "questionIds": [
+        "context-007"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "21",
+      "questionIds": [
+        "coding-002"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "22",
+      "questionIds": [
+        "coding-003"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "23",
+      "questionIds": [
+        "eval-003"
+      ]
+    },
+    {
+      "sourceId": "nowcoder-941992971027636224",
+      "questionNumber": "24",
+      "questionIds": [
+        "coding-004"
+      ]
+    },
+    {
+      "sourceId": "zhihu-2028511483969937686",
+      "questionNumber": "ext-001",
+      "questionIds": [
+        "ext-001"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2028511483969937686",
+      "questionNumber": "ext-002",
+      "questionIds": [
+        "tools-001"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2028511483969937686",
+      "questionNumber": "ext-003",
+      "questionIds": [
+        "ext-003"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2028511483969937686",
+      "questionNumber": "ext-004",
+      "questionIds": [
+        "tools-001"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2028511483969937686",
+      "questionNumber": "ext-005",
+      "questionIds": [
+        "ext-005"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2028511483969937686",
+      "questionNumber": "ext-006",
+      "questionIds": [
+        "ext-006"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2034667289245636223",
+      "questionNumber": "ext-007",
+      "questionIds": [
+        "ext-007"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2034667289245636223",
+      "questionNumber": "ext-008",
+      "questionIds": [
+        "ext-008"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2034667289245636223",
+      "questionNumber": "ext-009",
+      "questionIds": [
+        "ext-009"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2034667289245636223",
+      "questionNumber": "ext-010",
+      "questionIds": [
+        "ext-010"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2034667289245636223",
+      "questionNumber": "ext-011",
+      "questionIds": [
+        "ext-011"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2034667289245636223",
+      "questionNumber": "ext-012",
+      "questionIds": [
+        "ext-012"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2013066841401099455",
+      "questionNumber": "ext-013",
+      "questionIds": [
+        "ext-013"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2013066841401099455",
+      "questionNumber": "ext-014",
+      "questionIds": [
+        "ext-014"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2013066841401099455",
+      "questionNumber": "ext-015",
+      "questionIds": [
+        "ext-015"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2013066841401099455",
+      "questionNumber": "ext-016",
+      "questionIds": [
+        "ext-016"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2013066841401099455",
+      "questionNumber": "ext-017",
+      "questionIds": [
+        "ext-017"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2013066841401099455",
+      "questionNumber": "ext-018",
+      "questionIds": [
+        "ext-018"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2000549015511667060",
+      "questionNumber": "ext-019",
+      "questionIds": [
+        "ext-019"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2000549015511667060",
+      "questionNumber": "ext-020",
+      "questionIds": [
+        "ext-020"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2000549015511667060",
+      "questionNumber": "ext-021",
+      "questionIds": [
+        "ext-021"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2000549015511667060",
+      "questionNumber": "ext-022",
+      "questionIds": [
+        "ext-022"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2000549015511667060",
+      "questionNumber": "ext-023",
+      "questionIds": [
+        "ext-023"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "zhihu-2000549015511667060",
+      "questionNumber": "ext-024",
+      "questionIds": [
+        "ext-024"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "nowcoder-911218249889480704",
+      "questionNumber": "ext-025",
+      "questionIds": [
+        "ext-025"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "nowcoder-911218249889480704",
+      "questionNumber": "ext-026",
+      "questionIds": [
+        "ext-026"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "nowcoder-911218249889480704",
+      "questionNumber": "ext-027",
+      "questionIds": [
+        "llm-005"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "nowcoder-911218249889480704",
+      "questionNumber": "ext-028",
+      "questionIds": [
+        "ext-028"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "nowcoder-926232883432296448",
+      "questionNumber": "ext-029",
+      "questionIds": [
+        "ext-029"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "nowcoder-926232883432296448",
+      "questionNumber": "ext-030",
+      "questionIds": [
+        "ext-030"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "nowcoder-926232883432296448",
+      "questionNumber": "ext-031",
+      "questionIds": [
+        "rag-012"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "nowcoder-926232883432296448",
+      "questionNumber": "ext-032",
+      "questionIds": [
+        "ext-032"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "nowcoder-926970454294659072",
+      "questionNumber": "ext-033",
+      "questionIds": [
+        "ext-033"
+      ],
+      "note": "外部精选概念，非原文编号"
+    },
+    {
+      "sourceId": "nowcoder-926970454294659072",
+      "questionNumber": "ext-034",
+      "questionIds": [
+        "ext-034"
+      ],
+      "note": "外部精选概念，非原文编号"
+    }
+  ],
+  "sourceNumbering": {
+    "user-notes": "按开头两组题的出现顺序编号 1–8。",
+    "user-round1": "沿用原编号 2–22；两个 10 分别记为 10a（Skills 设计）、10b（调用次数），原文无第 1 题。",
+    "user-round2": "以项目一、项目二、项目三、其他、反问分组编号。",
+    "nowcoder-941992971027636224": "沿用用户粘贴的 1–24 题；来源作者阿星不是程序员，链接由用户提供，来源正文已核对。"
+  },
+  "updated": "2026-10-20",
+  "sources": [
+    {
+      "id": "user-notes",
+      "label": "个人提供 · 初始问题清单",
+      "note": "用户提供的 8 条学习问题；原始招聘类别未注明。"
+    },
+    {
+      "id": "user-round1",
+      "label": "个人提供 · 一面记录",
+      "note": "用户提供的面经题目文本，未提供原始链接；不代表本站作者面试经历。"
+    },
+    {
+      "id": "user-round2",
+      "label": "个人提供 · 二面记录",
+      "note": "用户提供的面经题目文本，含项目追问与反问；原始招聘类别未注明。"
+    },
+    {
+      "id": "nowcoder-941992971027636224",
+      "url": "https://www.nowcoder.com/discuss/941992971027636224",
+      "title": "字节一面和二面汇总面经",
+      "author": "阿星不是程序员",
+      "date": null,
+      "dateLabel": "页面显示“今天 09:43”（访问于2026-10-20）",
+      "kind": "面经分享",
+      "sourceAudience": "未注明",
+      "status": "已读取公开正文并与用户粘贴24题核对",
+      "note": "含两处原文残句（“从”“如”）；用户提供题目可保留并规范标点。",
+      "label": "阿星不是程序员 · 字节一面和二面汇总面经"
+    },
+    {
+      "id": "zhihu-2028511483969937686",
+      "url": "https://zhuanlan.zhihu.com/p/2028511483969937686",
+      "title": "2026年Agent大厂面试题汇总：ReAct、Function Calling、MCP、RAG高频问题",
+      "author": "代码随想录",
+      "date": "2026-04-17",
+      "dateType": "编辑日期",
+      "kind": "题库讲解",
+      "sourceAudience": "未注明",
+      "status": "已读取公开正文",
+      "note": "精选问题概念；不转载答案，不将作者的通用汇总当作已核实的招聘实录。",
+      "label": "代码随想录 · 2026年Agent大厂面试题汇总：ReAct、Function Calling、MCP、RAG高频问题"
+    },
+    {
+      "id": "zhihu-2034667289245636223",
+      "url": "https://zhuanlan.zhihu.com/p/2034667289245636223",
+      "title": "Ai Agent面试记录",
+      "author": "TrustZone",
+      "date": "2026-05-07",
+      "dateType": "编辑日期",
+      "kind": "个人面试复盘",
+      "sourceAudience": "未注明",
+      "status": "已读取公开正文",
+      "note": "作者自述多场面谈合集；作者职业身份不能用来推定招聘类型。",
+      "label": "TrustZone · Ai Agent面试记录"
+    },
+    {
+      "id": "zhihu-2001762598350247368",
+      "url": "https://zhuanlan.zhihu.com/p/2001762598350247368",
+      "title": "Agent 面经",
+      "author": "Mr.robot",
+      "date": "2026-02-02",
+      "dateType": "编辑日期",
+      "kind": "资源导航",
+      "sourceAudience": "混合资源",
+      "status": "已读取公开正文",
+      "note": "正文主要是外部题库和面经链接，归为延伸资源，不虚构本篇题目。",
+      "label": "Mr.robot · Agent 面经"
+    },
+    {
+      "id": "zhihu-2013066841401099455",
+      "url": "https://zhuanlan.zhihu.com/p/2013066841401099455",
+      "title": "agent算法工程师面经（300题版）",
+      "author": "Finalchemist",
+      "date": "2026-03-06",
+      "dateType": "编辑日期",
+      "kind": "题库汇编",
+      "sourceAudience": "未注明",
+      "status": "已读取公开正文",
+      "note": "仅精选概念补充；未复制300题全文。历史产品/API名称需学习时重新核验。",
+      "label": "Finalchemist · agent算法工程师面经（300题版）"
+    },
+    {
+      "id": "zhihu-2000549015511667060",
+      "url": "https://zhuanlan.zhihu.com/p/2000549015511667060",
+      "title": "外某企A - agent- 一面",
+      "author": "momo",
+      "date": "2026-01-30",
+      "dateType": "发布日期",
+      "kind": "个人面试复盘",
+      "sourceAudience": "未注明",
+      "status": "已读取公开正文",
+      "note": "公司未具名；仅整理题目，不推断公司与招聘类别。",
+      "label": "momo · 外某企A - agent- 一面"
+    },
+    {
+      "id": "nowcoder-911218249889480704",
+      "url": "https://www.nowcoder.com/discuss/911218249889480704",
+      "title": "阿里淘天大模型Agent校招面经",
+      "author": "雾中列车",
+      "date": null,
+      "dateLabel": "07-27 11:36（页面未显示年份）",
+      "kind": "面经分享",
+      "sourceAudience": "校招",
+      "status": "已读取公开正文",
+      "note": "校招来自标题，非难度推断；内容为作者自述，未独立核实实际面试。",
+      "label": "雾中列车 · 阿里淘天大模型Agent校招面经"
+    },
+    {
+      "id": "nowcoder-926232883432296448",
+      "url": "https://www.nowcoder.com/discuss/926232883432296448",
+      "title": "【社招】【面经】9月初XX科技(中厂) AI全栈工程师（Agent应用）一面 挂",
+      "author": "讨个offer咯",
+      "date": null,
+      "dateLabel": "09-06 22:02 已编辑（页面未显示年份）",
+      "kind": "个人面试复盘",
+      "sourceAudience": "社招",
+      "status": "已读取公开正文",
+      "note": "社招来自标题；公司匿名。只提炼问题，不采纳作者参考答案为事实。",
+      "label": "讨个offer咯 · 【社招】【面经】9月初XX科技(中厂) AI全栈工程师（Agent应用）一面 挂"
+    },
+    {
+      "id": "nowcoder-926970454294659072",
+      "url": "https://www.nowcoder.com/discuss/926970454294659072",
+      "title": "百度——大模型研发工程师（Agent方向）社招一面",
+      "author": "AIGC小白入门记",
+      "date": null,
+      "dateLabel": "09-08 22:49（页面未显示年份）",
+      "kind": "面经分享",
+      "sourceAudience": "社招",
+      "status": "仅读取免费预览",
+      "note": "页面提示剩余60%需订阅或购买；未读取付费部分，以下仅提炼完整可见题。",
+      "label": "AIGC小白入门记 · 百度——大模型研发工程师（Agent方向）社招一面"
+    }
+  ],
+  "resources": [
+    {
+      "title": "Function Call训练数据构建",
+      "url": "https://zhuanlan.zhihu.com/p/1976263313731125415",
+      "discoveredIn": "zhihu-2001762598350247368",
+      "status": "链接已从导航页核对，目标正文未读取"
+    },
+    {
+      "title": "大模型应用算法社招经历分享",
+      "url": "https://zhuanlan.zhihu.com/p/1916537835437143109",
+      "discoveredIn": "zhihu-2001762598350247368",
+      "status": "链接已从导航页核对，目标正文未读取"
+    },
+    {
+      "title": "LLM+RL 50问",
+      "url": "https://zhuanlan.zhihu.com/p/1974870853121508975",
+      "discoveredIn": "zhihu-2001762598350247368",
+      "status": "链接已从导航页核对，目标正文未读取"
+    },
+    {
+      "title": "2026届秋招字节大模型算法岗面经",
+      "url": "https://zhuanlan.zhihu.com/p/1982215470401729122",
+      "discoveredIn": "zhihu-2001762598350247368",
+      "status": "链接已从导航页核对，目标正文未读取"
+    }
+  ],
+  "externalScope": "指定6篇来源全部核对，外部题目为精选概念重述而非全文搬运；新增3篇牛客来源，其中1篇只读免费预览。",
+  "tagAliases": {
+    "Agent Loop": "Agent循环",
+    "Agent Runtime": "Agent运行时",
+    "Chunk": "文本切块",
+    "Chunking": "文本切块",
+    "切块": "文本切块",
+    "幂等性": "幂等",
+    "Prompt设计": "Prompt Engineering",
+    "Attention": "注意力机制",
+    "自注意力": "自注意力机制"
+  }
+}
