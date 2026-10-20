@@ -1,0 +1,52 @@
+/* Script-free academic articles, no question-bank controls. */
+.learning-series { line-height: 1.85; }
+.article-header { margin-bottom: 32px; }
+.article-header h1 { font-size: clamp(27px, 4vw, 34px); line-height: 1.45; margin-bottom: 14px; }
+.article-date, .knowledge-tags, .breadcrumb, .series-label { font-size: 12px; color: var(--muted); }
+.breadcrumb { margin-bottom: 20px; }
+.article-contents { margin: 30px 0 42px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 20px 0; }
+.article-contents h2 { font-size: 20px; }
+.article-contents ol { padding-left: 25px; margin: 0; }
+.article-contents li { margin: 4px 0; }
+.lesson-section { margin-top: 42px; }
+.lesson-section h2 { font-size: 25px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.lesson-section h3 { font-size: 19px; margin: 25px 0 12px; font-weight: 600; }
+.lesson-section h4 { font-size: 16px; margin: 20px 0 10px; }
+.lesson-section li { margin: 7px 0; }
+.lesson-section pre { max-width: 100%; overflow-x: auto; white-space: pre; padding: 18px; border: 1px solid var(--rule); background: #f7f8fa; border-radius: 4px; line-height: 1.6; font-size: 13px; tab-size: 4; }
+.lesson-section code { font-family: Consolas, "Liberation Mono", monospace; }
+.lesson-section p code, .lesson-section li code { padding: 1px 4px; background: #f4f5f7; overflow-wrap: anywhere; }
+.lesson-section table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+.lesson-section th, .lesson-section td { padding: 9px 13px; border: 1px solid var(--rule); min-width: 100px; text-align: left; vertical-align: top; }
+.lesson-section blockquote { margin: 20px 0; padding: 3px 0 3px 18px; border-left: 3px solid var(--rule); color: #505050; }
+.lesson-section, .learning-questions, .references, [id] { scroll-margin-top: 24px; }
+.learning-questions { margin-top: 46px; padding-top: 22px; border-top: 1px solid var(--rule); }
+.learning-questions h2, .references h2 { font-size: 22px; }
+.learning-questions li { margin-bottom: 12px; }
+.question-origin { font-size: 12px; color: var(--muted); }
+.references { margin-top: 36px; font-size: 13px; }
+.references li { margin: 9px 0; }
+.article-pagination { display: flex; justify-content: space-between; gap: 25px; margin-top: 42px; padding-top: 20px; border-top: 1px solid var(--rule); font-size: 14px; }
+.article-pagination > * { max-width: 48%; }
+.article-pagination > :last-child { text-align: right; }
+.back-to-series { margin-top: 18px; font-size: 13px; }
+.study-route { margin: 30px 0; }
+.series-list { list-style: none; padding: 0; }
+.series-list > li { padding: 25px 0 15px; border-top: 1px solid var(--rule); }
+.series-list h2 { font-size: 23px; }
+.series-list p { color: #555; }
+.legacy-target { display: none; }
+.legacy-target:target { display: block; margin: 20px 0; padding: 15px; background: #f7f8fa; }
+@media (max-width: 620px) {
+  .learning-series { width: calc(100% - 36px); }
+  .lesson-section h2 { font-size: 23px; }
+  .lesson-section pre { padding: 13px; font-size: 12px; }
+  .article-pagination { flex-direction: column; gap: 15px; }
+  .article-pagination > * { max-width: 100%; }
+  .article-pagination > :last-child { text-align: left; }
+}
+@media print {
+  .article-pagination, .back-to-series { display: none; }
+  h2, h3, h4 { break-after: avoid; }
+  pre { white-space: pre-wrap !important; overflow-wrap: anywhere; }
+}

@@ -46,7 +46,7 @@ class ReadingTests(unittest.TestCase):
         # The new data-backed archive is not a legacy Hexo article and has
         # its own progressive-enhancement checks in test_interviews.py.
         posts = [p for p in (ROOT / 'post').glob('*.html')
-                 if p.name not in {'ai-interview-learning-archive.html', 'agent-llm-learning-notes.html'}]
+                 if p.name not in {'ai-interview-learning-archive.html', 'agent-llm-learning-notes.html'} and not p.name.startswith('learning-')]
         self.assertTrue(posts, 'Run these tests on a complete repository checkout')
         for file in posts:
             with self.subTest(file=file.name):

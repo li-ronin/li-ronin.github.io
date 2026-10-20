@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>规划与多 Agent：把复杂任务拆成可检查的依赖关系 · Khan Li</title><meta name="description" content="从单 Agent 的观察循环走向计划图、并行分工与结果合并，理解多 Agent 何时真正有用。">
+<link rel="canonical" href="https://li-ronin.github.io/post/learning-planning-multi-agent.html"><link rel="icon" href="/images/alpaca.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/academic.css"><link rel="stylesheet" href="/assets/learning-series.css"></head>
+<body><a class="skip-link" href="#main">跳到正文</a><div class="page learning-series">
+<nav class="site-nav" aria-label="站点导航"><a class="site-name" href="/">李可涵 Khan Li</a><div class="site-nav-links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="/notes/">Notes</a></div></nav>
+<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">Agent 与大模型：从原理到实现</a> / 04</p>
+<header class="article-header"><h1>规划与多 Agent：把复杂任务拆成可检查的依赖关系</h1><p class="article-date"><time datetime="2026-10-20">2026-10-20</time> · 技术资料核对日期；具体产品行为以对应版本为准</p><p>从单 Agent 的观察循环走向计划图、并行分工与结果合并，理解多 Agent 何时真正有用。</p><p class="knowledge-tags">知识标签：规划 · 任务分解 · Replan · 多Agent · 编排 · 权限隔离 · ReAct · Plan-Execute · A2A · MCP</p><p><strong>阅读前准备</strong>：理解函数依赖与并发任务；了解不可变数据、集合和版本号</p></header>
+<nav class="article-contents" aria-label="文章目录"><h2>目录</h2><ol><li><a href="#why-plan">1. 计划不是一段更长的思维描述</a></li><li><a href="#react-plan">2. ReAct 与 Plan-Execute-Replan 不是二选一</a></li><li><a href="#dag">3. 用依赖图决定哪些工作可以并行</a></li><li><a href="#replan">4. 重规划必须有触发依据和停止预算</a></li><li><a href="#roles">5. 子 Agent 的区别应体现在输入、输出和权限</a></li><li><a href="#merge">6. 并行最大的坑是状态合并，不是同时启动</a></li><li><a href="#protocol-cost">7. 协作协议不能替代分工设计</a></li><li><a href="#measure">8. 先证明分工有效，再增加 Agent 数量</a></li><li><a href="#learning-questions">带着这些问题回看</a></li><li><a href="#references">参考资料</a></li></ol></nav>
+<section class="lesson-section" id="why-plan"><h2>1. 计划不是一段更长的思维描述</h2><p>一个任务如果只有“读文件，回答问题”两步，未必值得引入显式计划。复杂任务的困难是：中间结果会改变下一步，部分工作可并行，部分工作必须等待，还有一些动作一旦做错就难以撤销。计划的价值是把这些依赖与验收条件显式化，让系统知道何时能开始、何时该停止。</p><p>以“修复序列化器的空数组崩溃，同时保证兼容性”为例，可以拆成复现、定位、修改、定向验证、回归验证和交付。每个步骤都应有输出，而不是只有动词。例如“定位”输出候选根因、证据引用和仍未排除的解释；“修改”输出相对基线的差异；“验证”输出绑定代码版本的测试结果。</p><p>如果计划写的是“分析问题、深入思考、努力解决”，它无法被执行器检查，也无法在失败时决定回到哪里。好的计划不是保证未来不会变化，而是让变化可以被识别和处理。</p></section><section class="lesson-section" id="react-plan"><h2>2. ReAct 与 Plan-Execute-Replan 不是二选一</h2><p>ReAct 论文研究将推理与行动交织，使模型在行动后利用观察更新判断。工程上可以把这种思路理解为短循环：观察现状，选一个动作，检查结果，再决定下一步；不要把论文方法直接等同于某个产品完整运行时。<a href="https://arxiv.org/abs/2210.03629">参考：ReAct</a>。</p><p>Plan-Execute-Replan 则把相对高层的任务结构外显出来：先形成计划，执行当前可开始的步骤，遇到新证据后更新计划。它不是必须对应三次模型请求；规划可能由规则完成，执行步骤也可能是确定性的测试命令。关键是有没有明确的计划状态与修改条件。</p><p>二者可以嵌套：外层计划要求“先复现，再修复，再验证”；内层定位阶段用多个读文件与搜索动作逐步缩小范围。若每遇到一条新日志都重做全局计划，会浪费推理并造成抖动；若执行到底不允许调整，又会把错误假设一路传播。</p></section><section class="lesson-section" id="dag"><h2>3. 用依赖图决定哪些工作可以并行</h2><p>设 R 是复现故障，A 是检查公开接口契约，F 是修复实现，T 是运行测试，V 是最终复核。R 与 A 可以并行；F 依赖两者，T 依赖 F，V 依赖 T 与差异记录。节点的关系不是“谁看起来独立”，而是它读取的数据是否已经稳定，是否会与其他节点写同一资源。</p><p>假设 R 需要 6 分钟，A 需要 4 分钟，F、T、V 分别需要 8、3、2 分钟。全串行是 23 分钟；R 与 A 并行后的理想下界是 max(6,4)+8+3+2=19 分钟。即使加入十个 Agent，也无法突破这条关键路径，协调开销还可能抵消 4 分钟收益。这些是假设数值，用来说明分析方法，不是性能基准。</p><p>一个调度器可以先检查依赖是否完成，再派发 ready 节点，收到结果后更新状态。下列伪代码省略线程池实现，但保留了版本检查与状态机。运行中的任务不能因为收到新计划就当作从未执行过，取消也要核实是否已经产生副作用。调度器还必须检测无可运行节点的阻塞状态；否则某个前置节点需要复核时，下游可能永远等待不会到来的结果。等待也必须有截止时间，超时后先核实在途任务，而非假定它们已停止。</p><pre><code>while not all_finished(plan):
+    ready = [n for n in plan.nodes
+             if n.status == &quot;pending&quot;
+             and all(plan[d].status == &quot;accepted&quot; for d in n.dependencies)]
+    for node in ready:
+        node.status = &quot;running&quot;
+        dispatch(node, input_snapshot=state.revision)
+
+    if not any(n.status == &quot;running&quot; for n in plan.nodes):
+        return needs_review(&quot;没有可运行节点：检查阻塞、冲突或环形依赖&quot;)
+    result = await_one_result(deadline=task_deadline)
+    if result is TIMEOUT:
+        return reconcile_running_tasks_before_resume(plan)
+    if result.input_revision != expected_revision(result.node):
+        mark_stale(result)
+        continue
+    verdict = check_output_contract(result)
+    record(result, verdict)
+    if verdict.requires_replan:
+        plan = revise_unstarted_work(plan, result.evidence)
+    elif verdict.accepted:
+        mark_accepted(result.node)
+    else:
+        mark_needs_review(result.node)</code></pre></section><section class="lesson-section" id="replan"><h2>4. 重规划必须有触发依据和停止预算</h2><p>最初怀疑是空指针，复现后发现只在特定编译选项下失败，这就是假设被证伪；测试环境缺依赖，则是执行前提不成立；用户追加“保持旧格式兼容”，则是目标约束变化。三者都可能触发重规划，但处理方式不同：改变定位路径、修复环境、补上兼容性步骤。</p><p>不要因为某次工具失败就立即重写全部计划。先区分可重试的暂时错误、无效输入、权限不允许以及根因假设错误。给每个节点设置重试上限，给整体设置时间、成本和无进展上限。连续三次重复读取同一证据却没有新假设，通常需要停止或升级，而不是让 Agent 自动多思考几轮。</p><p>计划本身也应版本化，保留修改理由和被替代步骤的状态。历史结果不是全部作废，但必须检查其前提是否仍然成立。基于旧工作区运行的测试，不能在代码改变后继续作为最新验收证据。</p></section><section class="lesson-section" id="roles"><h2>5. 子 Agent 的区别应体现在输入、输出和权限</h2><p>一种教学分工是：侦察者只读代码并提出定位证据；实现者在隔离工作区改代码；验证者独立运行测试并检查差异；协调者维护任务状态和交付。区别不在角色名字有多像公司组织，而在每个角色的职责、工具集合、上下文和结果契约是否不同。</p><p>侦察者的输出可以是文件位置、可复现条件、候选根因、置信依据和反证。它不应该修改实现；实现者也不能只交付“已完成”，而要交付 patch、版本、变更解释和未验证项。验证者若看到实现者的自信结论后照抄，便没有提供独立验证价值。</p><p>所有子 Agent 共享所有工具，确实配置简单，却扩大误操作影响，增加工具选择噪声，也让职责边界失去作用。工具代码可以共享，授权范围不必共享。反过来，限制过严又会导致每一步都等待协调者，应根据任务所需最小权限设计，而非追求形式上的绝对隔离。</p></section><section class="lesson-section" id="merge"><h2>6. 并行最大的坑是状态合并，不是同时启动</h2><p>如果两个节点同时写 summary 字符串，“后写覆盖前写”可能丢掉另一份发现；简单拼接又可能制造重复和矛盾。应先决定每个字段的语义：事实证据是以稳定标识合并的集合，日志是有事件标识的序列，当前版本由单一协调者更新，互斥结论进入待裁决列表，而不是自动覆盖。</p><p>LangGraph 的状态字段可以定义 reducer 来处理更新；未定义特殊 reducer 的字段通常采用替换语义。框架提供合并机制，不会替你决定业务上什么才算正确合并。<a href="https://docs.langchain.com/oss/python/langgraph/graph-api">参考：State 与 reducer</a>。</p><p>下面的集合合并在元素具有稳定标识且不可变时满足交换、结合和幂等，适合重放或乱序到达。若同一个 id 对应不同内容，必须作为冲突处理，不能静默选择一个。两份 patch 修改同一行，也不能靠字典合并解决，需要版本控制或重新分工。</p><pre><code>def merge_evidence(left, right):
+    merged = dict(left)
+    for key, value in right.items():
+        if key in merged and merged[key] != value:
+            raise ValueError(&quot;conflicting immutable evidence&quot;)
+        merged[key] = value
+    return merged
+
+A = {&quot;test-1&quot;: (&quot;revision-A&quot;, &quot;failed&quot;)}
+B = {&quot;trace-1&quot;: (&quot;revision-A&quot;, &quot;null access&quot;)}
+assert merge_evidence(A, B) == merge_evidence(B, A)
+assert merge_evidence(A, A) == A
+assert merge_evidence(merge_evidence(A, B), A) == merge_evidence(A, B)</code></pre></section><section class="lesson-section" id="protocol-cost"><h2>7. 协作协议不能替代分工设计</h2><p>MCP 面向应用接入工具和资源等能力；A2A 面向 Agent 之间的任务交互与能力描述。它们能降低部分互操作成本，但不能自动回答“谁负责最终正确性”“失败时谁恢复”“结果冲突谁裁决”。这些仍是应用设计问题。<a href="https://a2a-protocol.org/latest/specification/">参考：A2A 规范</a>。</p><p>同一进程中的多角色函数不一定需要 A2A；多个独立部署、需要协商任务生命周期的 Agent 才更可能受益于跨 Agent 协议。先决定部署边界和互信关系，再决定协议。用协议名称代替架构理由，会掩盖额外网络故障和身份管理成本。</p><p>多 Agent 还会增加重复上下文、协调消息和合并验证成本。总成本应计入所有模型请求、工具资源、失败重试和人工复核；延迟看关键路径，而不是各 Agent 时间的平均值。并行缩短等待不意味着减少总算力，也不意味着结论更正确。</p></section><section class="lesson-section" id="measure"><h2>8. 先证明分工有效，再增加 Agent 数量</h2><p>用相同任务集比较单 Agent、固定工作流和多 Agent。固定模型、工具、上下文额度与停止条件，再分别记录任务成功率、修改冲突数、重复调查量、总 token、端到端耗时和人工介入次数。复杂方案若只在最容易的任务上变快，却在失败恢复上更脆弱，就不能称为整体改进。</p><ol><li>手工画一个任务依赖图，给每个节点写出输入、输出、前提、完成条件和失败去向；找出关键路径。</li><li>让两个只读节点乱序返回并重复提交同一证据，运行上面的 reducer 断言；再故意制造相同 id 不同内容，确认系统报告冲突。</li><li>在实现者运行途中改变目标约束，检查哪些节点结果仍有效，哪些需要取消或重做。不要仅在 UI 上改计划文字。</li><li>删除一个子 Agent，比较成功率与成本。如果没有损失，说明这个角色也许只是增加了组织形式，而非增加能力。</li></ol></section><section id="learning-questions" class="learning-questions"><h2>带着这些问题回看</h2><p>下面保留最初的学习问题，用来检查理解是否能迁移到自己的任务。项目经历与实测指标需由真实工作补足，不代表本文已经给出个人经历的答案。</p><ul><li id="planning-001">复杂任务的 Plan 如何生成、执行和调整？<span class="question-origin"></span></li><li id="planning-002">多 Agent 如何编排，子 Agent 的职责与工具权限如何划分？<span class="question-origin"></span></li><li id="planning-003">ReAct 与 Plan-Execute-Replan 的执行方式有什么区别？<span class="question-origin"> · 资料线索：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></span></li><li id="ext-005">A2A与MCP分别连接哪些参与者？<span class="question-origin"> · 资料线索：<a href="https://zhuanlan.zhihu.com/p/2028511483969937686">代码随想录</a></span></li><li id="ext-009">多个节点同时写状态，怎样定义合并规则？<span class="question-origin"> · 资料线索：<a href="https://zhuanlan.zhihu.com/p/2034667289245636223">TrustZone</a></span></li></ul></section>
+<section id="references" class="references"><h2>参考资料</h2><p>机制说明以原始论文、官方文档为依据；文中自建示例与设计建议不等同于任何产品的内部实现。</p><ol><li><a href="https://arxiv.org/abs/2210.03629">ReAct 论文</a></li><li><a href="https://docs.langchain.com/oss/python/langgraph/graph-api">LangGraph：状态与合并</a></li><li><a href="https://a2a-protocol.org/latest/specification/">A2A：协议规范</a></li></ol></section>
+<nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-tools-skills.html">上一篇：工具、Skill 与 MCP：能力怎样接入，流程怎样复用</a><a rel="next" href="/post/learning-llm-attention-inference.html">下一篇：从一个注意力矩阵到逐词生成：理解 LLM 的计算过程</a></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回系列目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>

@@ -1,8 +1,68 @@
 [
   {
     "date": "2026-10-20",
-    "title": "Agent 与大模型学习笔记",
+    "title": "Agent 与大模型：从原理到实现 · 系列导读",
     "url": "/post/agent-llm-learning-notes.html",
+    "kind": "blog"
+  },
+  {
+    "date": "2026-10-20",
+    "title": "Agent 运行时：把模型决策变成可靠的执行系统",
+    "url": "/post/learning-agent-runtime.html",
+    "kind": "blog"
+  },
+  {
+    "date": "2026-10-20",
+    "title": "上下文、压缩与记忆：让 Agent 在长任务中保持正确状态",
+    "url": "/post/learning-context-memory.html",
+    "kind": "blog"
+  },
+  {
+    "date": "2026-10-20",
+    "title": "工具、Skill 与 MCP：能力怎样接入，流程怎样复用",
+    "url": "/post/learning-tools-skills.html",
+    "kind": "blog"
+  },
+  {
+    "date": "2026-10-20",
+    "title": "规划与多 Agent：把复杂任务拆成可检查的依赖关系",
+    "url": "/post/learning-planning-multi-agent.html",
+    "kind": "blog"
+  },
+  {
+    "date": "2026-10-20",
+    "title": "从一个注意力矩阵到逐词生成：理解 LLM 的计算过程",
+    "url": "/post/learning-llm-attention-inference.html",
+    "kind": "blog"
+  },
+  {
+    "date": "2026-10-20",
+    "title": "从示范到偏好再到奖励：把 SFT、DPO、GRPO 放回训练过程",
+    "url": "/post/learning-llm-training-alignment.html",
+    "kind": "blog"
+  },
+  {
+    "date": "2026-10-20",
+    "title": "把文档变成可靠证据：从解析、检索到引用与版本回滚",
+    "url": "/post/learning-rag-knowledge-engineering.html",
+    "kind": "blog"
+  },
+  {
+    "date": "2026-10-20",
+    "title": "AI Coding：从可验证的规格到云电脑执行闭环",
+    "url": "/post/learning-ai-coding-computer-use.html",
+    "kind": "blog"
+  },
+  {
+    "date": "2026-10-20",
+    "title": "Agent怎样算可靠：评测、证据、成本与失败恢复",
+    "url": "/post/learning-agent-evaluation-reliability.html",
+    "kind": "blog"
+  },
+  {
+    "date": "2026-10-20",
+    "title": "线程池与背压：从吞吐推导到有界队列实现",
+    "url": "/post/learning-concurrency-backpressure.html",
     "kind": "blog"
   },
   {
