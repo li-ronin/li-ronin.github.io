@@ -87,19 +87,20 @@ python3 -m unittest discover -s tests -v
 
 修改通过独立分支和 Pull Request 提供。需要回退时，撤销该 PR 的合并提交即可恢复旧首页；不要删除 `post/`、图片或旧资源目录。
 
-## 面试学习题库
+## Agent 与大模型学习笔记
 
-`/post/ai-interview-learning-archive.html` 是面向 Agent 开发、大模型算法与工程基础的学习题库。保留现有 Blog 入口，不修改旧文章或使用 Hexo 重生成。
+`/post/agent-llm-learning-notes.html` 是普通博客文章：按知识主题组织问题、答案、知识点和延伸思考，不提供搜索框、下拉筛选或折叠卡片。历史地址 `/post/ai-interview-learning-archive.html` 保留同一内容与稳定锚点，canonical 指向新地址。
 
-- `data/interviews.json`：唯一内容源，含规范化问题、具体知识标签、难度、岗位方向、建议学习范围、原面经招聘类别、来源和题目覆盖映射。
-- `scripts/build_interviews.py`：标准库静态生成器；`--check` 检查产物是否过期。
-- `assets/interviews.css` / `assets/interviews.js`：独立样式与渐进增强筛选。JavaScript 关闭时所有题目、来源与学习线索仍在 HTML 中。
-- 标签只用于具体知识，不用于难度、校招 / 社招或岗位；这些分别保存在独立字段。`audience` 表示建议学习范围，不证明原面经招聘类别；`sourceAudience` 仅按已核实来源填写。
-- 保留稳定题目 ID，作为 `#题目ID` 永久链接。合并重复题时保留 `sourceRefs` 和 `coverage`，不要删除独立追问。
-- 来源状态需区分：用户提供文本、已读取公开正文、资源导航、无法读取。没有正文证据的链接不得补造题目。第三方内容应归纳改写并署名链接，不全文转载。
-- `knowledge`、`extensions` 是编排的学习线索，不是标准答案或原面经引文。厂商实现细节需要固定版本和官方来源后另行补充。
+- `data/interviews.json` 是内容源。文件名沿用已有路径；来源、覆盖映射和原始分类继续保留用于维护，不显示为文章标签或招聘信息。
+- 每条问题的 `answer` 是纯文本字符串。未填写时设为空字符串，页面不显示空白答案区或占位文字；填写后以空行分段，单换行保留。HTML 会转义，不执行脚本，也不自动解析 Markdown。
+- `answerSources` 为答案使用的公开技术资料列表，每项含 `title` 和 HTTPS `url`。基础概念优先引用官方文档或原始论文，不把外部问题来源当作技术答案依据。
+- 页面本身不可在线编辑。修改数据中的 `answer` 后重新生成并发布，才会更新博客。
+- `tags` 仅使用具体知识；问题 ID 和参考资料 ID 保持稳定，合并问题时保留 `coverage` 和 `sourceRefs`。
+- `scripts/build_interviews.py` 生成新旧两个地址；`assets/learning-notes.css` 提供普通文章排版，不依赖 JavaScript。
+- 外部资料只提炼问题主题，不全文转载；保留作者、链接及公开预览限制。`knowledge`、`extensions`、`followups` 是学习线索，不冒充答案。
+- 不使用旧 Hexo 生成流程覆盖现有站点。
 
-修改题库后执行：
+填写答案或调整内容后执行：
 
 ```bash
 python3 scripts/build_interviews.py
@@ -107,8 +108,6 @@ python3 scripts/build_indexes.py
 python3 scripts/build_interviews.py --check
 python3 scripts/build_indexes.py --check
 python3 -m unittest discover -s tests -v
-node --check assets/interviews.js
-node tests/test_interviews_js.cjs
 ```
 
-本地 HTTP 预览方式同上。筛选条件保存在 URL 查询参数中；题目锚点可直接定位并展开学习线索。静态页面无需后端、外部脚本、远程字体或额外 npm 依赖。
+浏览器检查应覆盖新旧地址、目录锚点、参考资料链接、Blog 往返和窄屏阅读。

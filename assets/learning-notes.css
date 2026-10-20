@@ -1,0 +1,36 @@
+/* Ordinary, script-free article layout; existing articles keep their styles. */
+.learning-notes { max-width: 800px; }
+.article-header { margin-bottom: 34px; }
+.article-header h1 { font-size: clamp(27px, 4vw, 34px); margin-bottom: 10px; }
+.article-date { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+.article-contents { margin: 28px 0 46px; padding: 20px 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.article-contents h2 { font-size: 19px; }
+.article-contents ol { margin: 0; padding-left: 24px; }
+.article-contents li { margin: 3px 0; }
+.learning-topic { margin: 48px 0; }
+.learning-topic > h2 { font-size: 25px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+.learning-question { margin: 32px 0 40px; scroll-margin-top: 24px; }
+.learning-question h3 { font-size: 19px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+.question-heading { color: var(--ink); }
+.knowledge-tags { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+.answer { margin: 0 0 18px; }
+.answer h4 { font-size: 15px; font-weight: 600; margin: 0 0 5px; }
+.answer-sources { color: var(--muted); font-size: 12px; }
+.learning-question p { margin-bottom: 10px; }
+.learning-question ul { margin: 0 0 15px; padding-left: 24px; }
+.question-reference { font-size: 12px; color: var(--muted); }
+.references { margin-top: 50px; padding-top: 22px; border-top: 1px solid var(--rule); font-size: 13px; }
+.references h3 { font-size: 16px; font-weight: 500; }
+.references li { margin-bottom: 10px; scroll-margin-top: 24px; }
+.reference-note { color: var(--muted); }
+.learning-topic, .references { scroll-margin-top: 24px; }
+@media (max-width: 620px) {
+  .learning-notes { width: calc(100% - 36px); }
+  .learning-topic > h2 { font-size: 23px; }
+  .learning-question h3 { font-size: 18px; }
+  .learning-question { margin: 28px 0 34px; }
+}
+@media print {
+  .article-contents { break-after: page; }
+  h2, h3, h4 { break-after: avoid; }
+}
