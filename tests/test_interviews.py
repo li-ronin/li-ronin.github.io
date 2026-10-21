@@ -78,9 +78,15 @@ class LearningSeriesTests(unittest.TestCase):
             html=self.pages[builder.route(a['slug'])]
             for qid in a['questionIds']:
                 for r in self.qdata['answers'][qid]['sources']:self.assertIn(builder.e(r['url']),html)
-                for sid in next(q for q in self.qdata['questions'] if q['id']==qid)['sources']:
+                originals=builder.original_questions(qid,self.qdata)
+                source_ids=[o['sourceId'] for o in originals] if originals else next(q for q in self.qdata['questions'] if q['id']==qid)['sources']
+                for sid in source_ids:
                     s=next(s for s in self.qdata['sources'] if s['id']==sid)
                     if s.get('url'):self.assertIn(builder.e(s['url']),html)
+    def test_original_question_not_attributed_to_similar_external_concept(self):
+        self.assertEqual(builder.source_links('tools-001',self.qdata),'')
+        self.assertNotIn('zhuanlan.zhihu.com',builder.source_links('tools-001',self.qdata))
+        self.assertIn('nowcoder.com',builder.source_links('computer-001',self.qdata))
     def test_all_articles_in_blog(self):
         entries=json.loads((ROOT/'data/writing.json').read_text())
         for a in self.lessons:

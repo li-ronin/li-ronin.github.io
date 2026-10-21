@@ -115,8 +115,11 @@ def question_label(qid,qdata):
     return originals[0]['title'] if originals else next(q['title'] for q in qdata['questions'] if q['id']==qid)
 def source_links(qid,qdata):
     q=next(q for q in qdata['questions'] if q['id']==qid);sources={s['id']:s for s in qdata['sources']}
+    originals=original_questions(qid,qdata)
+    # A similar externally collected concept is not the source of a verbatim user question.
+    source_ids=list(dict.fromkeys(o['sourceId'] for o in originals)) if originals else q['sources']
     seen=set();out=[]
-    for sid in q['sources']:
+    for sid in source_ids:
         s=sources[sid];url=s.get('url')
         if url and url not in seen:
             seen.add(url);out.append('<a href="'+e(url)+'">'+e(s.get('author') or s.get('title') or '原文')+'</a>')
