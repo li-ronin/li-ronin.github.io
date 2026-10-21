@@ -50,3 +50,14 @@
   h2, h3, h4 { break-after: avoid; }
   pre { white-space: pre-wrap !important; overflow-wrap: anywhere; }
 }
+/* Each original question is a real heading, immediately followed by its answer. */
+.question-section > h2 { overflow-wrap: anywhere; }
+.question-section > h2 + .variant-label { margin-top: 20px; }
+.variant-label, .editor-note { font-size: 13px; color: var(--muted); }
+.variant-label + h2 { font-size: 19px; border-bottom: 0; margin-top: 6px; padding-bottom: 0; }
+.question-answer { margin-top: 24px; }
+.question-origin, .answer-references { font-size: 12px; color: var(--muted); line-height: 1.7; }
+.answer-references { margin-top: 24px; }
+.extension-intro { border-top: 1px solid var(--rule); padding-top: 28px; margin-top: 52px; }
+.question-preview { padding-left: 22px; font-size: 15px; }
+.question-preview li { margin: 6px 0; }

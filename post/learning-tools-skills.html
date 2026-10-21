@@ -1,29 +1,75 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>工具、Skill 与 MCP：能力怎样接入，流程怎样复用 · Khan Li</title><meta name="description" content="沿着一次读代码、修复、测试的轨迹，理解工具契约、技能发现、协议连接和权限检查各自解决的问题。">
+<title>工具调用与 Skill · Khan Li</title><meta name="description" content="围绕原问题解释工具调用与 Skill，包含具体例子与参考资料。">
 <link rel="canonical" href="https://li-ronin.github.io/post/learning-tools-skills.html"><link rel="icon" href="/images/alpaca.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/academic.css"><link rel="stylesheet" href="/assets/learning-series.css"></head>
 <body><a class="skip-link" href="#main">跳到正文</a><div class="page learning-series">
 <nav class="site-nav" aria-label="站点导航"><a class="site-name" href="/">李可涵 Khan Li</a><div class="site-nav-links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="/notes/">Notes</a></div></nav>
-<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">Agent 与大模型：从原理到实现</a> / 03</p>
-<header class="article-header"><h1>工具、Skill 与 MCP：能力怎样接入，流程怎样复用</h1><p class="article-date"><time datetime="2026-10-20">2026-10-20</time> · 技术资料核对日期；具体产品行为以对应版本为准</p><p>沿着一次读代码、修复、测试的轨迹，理解工具契约、技能发现、协议连接和权限检查各自解决的问题。</p><p class="knowledge-tags">知识标签：工具调用 · Skills · 工具协议 · Function Calling · JSON Schema · MCP · Skill设计 · Skill分层 · 渐进披露 · Skill路由</p><p><strong>阅读前准备</strong>：理解函数签名、JSON 和错误码；了解进程与文件访问的基本概念</p></header>
-<nav class="article-contents" aria-label="文章目录"><h2>目录</h2><ol><li><a href="#three-levels">1. 不要把三种不同层次的东西互相替代</a></li><li><a href="#call-trace">2. 一次工具调用到底发生了什么</a></li><li><a href="#contract">3. 好工具首先是好接口，不是漂亮描述</a></li><li><a href="#results">4. 工具结果要帮助决策，而不是倾倒输出</a></li><li><a href="#skill-design">5. Skill 的核心是可发现、可执行、可验证</a></li><li><a href="#matching">6. 匹配技能是一项检索与决策任务</a></li><li><a href="#mcp-rag">7. MCP 与 RAG 分别补上哪里</a></li><li><a href="#practice">8. 用一个小实验检验分层是否有价值</a></li><li><a href="#learning-questions">带着这些问题回看</a></li><li><a href="#references">参考资料</a></li></ol></nav>
-<section class="lesson-section" id="three-levels"><h2>1. 不要把三种不同层次的东西互相替代</h2><p>工具回答“宿主程序能做什么”，例如读取文件、执行测试、查询订单；Skill 回答“面对某类任务，怎样组织这些能力更可靠”；MCP 回答“应用与外部能力提供者怎样用共同协议连接”。三者有交集，但不是同一种抽象。</p><p>以 C++ 类比：工具像有明确接口的函数，Skill 更像可按需加载的操作规程和示例集合，协议像让不同组件交换请求与结果的约定。这个类比不是精确类型关系，只是帮助建立直觉。一个 Skill 可以指导模型调用工具，却不能凭一份说明文件获得操作系统执行权限。一个 MCP server 也不会因为实现协议就天然可信。</p><p>本文案例是“为序列化器的空数组行为补回归测试”。先找到实现与测试框架，再复现故障、修改代码、运行测试、检查差异。工具提供读写与执行能力，Skill 规定回归测试优先的步骤，运行时保管目标、预算和权限。</p></section><section class="lesson-section" id="call-trace"><h2>2. 一次工具调用到底发生了什么</h2><p>运行时先把工具描述和参数 schema 提供给模型。模型返回结构化请求，比如 read_file(path="src/serializer.cpp")。宿主程序解析请求，校验参数与权限，真正读取文件，再把带有调用关联标识的结果送回模型。模型随后依据结果决定继续调用或生成回答。服务端托管工具可能由提供方执行，不能将这种客户端模式套到所有产品。<a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview">参考：Tool use</a>。</p><p>在教学轨迹里，第一次模型调用提出 read_file；宿主执行一次工具；第二次模型调用提出 run_tests；执行一次工具；第三次模型调用解释结果并结束。因此是三次模型请求、两次工具执行。若第二次模型响应提出两个可并行的工具请求，工具执行次数增加，但这轮模型请求仍只有一次。流式返回被分成多个网络片段，也不等于多次推理请求。</p><p>“Skill 用了几次”则必须先定义指标：被发现、被载入、步骤被执行，是不同事件。技能文本放进上下文不必然触发额外模型调用，读取技能文件可以由宿主直接完成；某些实现选择让模型调用读取工具，才会增加相应调用。不能把工具次数、技能次数和模型次数写成固定等式。</p></section><section class="lesson-section" id="contract"><h2>3. 好工具首先是好接口，不是漂亮描述</h2><p>对于 run_tests，参数应表达业务意图而不是提供无限制命令字符串。例如 suite 只能选择 unit 或 serializer，timeout_seconds 有范围限制，工作区由宿主确定。这样既便于模型选择，也减少歧义与越权面。schema 正确仍不代表操作安全：一个字符串格式合法的路径，也可能指向工作区以外。</p><p>以下为宿主侧伪代码。接口声明解决“输入长什么样”；业务校验解决“这次输入可不可以”；沙箱与操作系统隔离解决“即使程序出错，最坏影响是什么”。三层不应互相替代。实际路径安全还需要处理符号链接、竞态和挂载边界，简单字符串前缀判断不足以保证隔离。</p><pre><code>def run_tests(args, context):
-    validate_schema(args, TEST_SCHEMA)
-    if args[&quot;suite&quot;] not in {&quot;unit&quot;, &quot;serializer&quot;}:
-        return error(&quot;unsupported_suite&quot;)
-    authorize(context.identity, &quot;run_tests&quot;, context.workspace)
-    command = PREDEFINED_COMMANDS[args[&quot;suite&quot;]]
-    result = sandbox.run(
-        command, cwd=context.workspace,
-        timeout=min(args[&quot;timeout_seconds&quot;], 60),
-        network=False
-    )
-    return {
-        &quot;status&quot;: classify(result),
-        &quot;revision&quot;: workspace_digest(),
-        &quot;failed_tests&quot;: parse_failures(result),
-        &quot;log_ref&quot;: evidence_store.put(result.full_log)
-    }</code></pre></section><section class="lesson-section" id="results"><h2>4. 工具结果要帮助决策，而不是倾倒输出</h2><p>一个有用的测试结果包含运行是否真正开始、退出状态、失败用例、代码版本、日志引用和截断说明。若超时后子进程仍在后台运行，也要说明，不能仅返回“失败”。如果只给模型一句“测试失败”，它无法区分编译错误、环境缺依赖、断言不满足或工具自身异常。</p><p>对大日志返回摘要与引用，而不是无限量正文；但不能把“输出截断”悄悄变成“没有其他错误”。对不可信网页、文档和日志中的命令，不应因为它们出现在工具结果里就提升为新的用户指令。数据的来源和可用性，与它是否有资格改变权限，是两回事。</p></section><section class="lesson-section" id="skill-design"><h2>5. Skill 的核心是可发现、可执行、可验证</h2><p>Agent Skills 规范使用含 SKILL.md 的目录组织技能，并支持附带脚本、参考资料和资源。发现阶段可先提供名称和描述，选中后再加载主体或资源，这种渐进加载避免每轮塞入全部说明。这里仅概述公开规范，不意味着所有客户端都实现相同加载策略。<a href="https://agentskills.io/specification">参考：Agent Skills specification</a>。</p><p>一个好的“补回归测试”技能应说明适用条件、所需输入、执行步骤、证据要求、失败处理和完成标准。例如先记录复现命令与失败输出，再修改实现，之后运行定向测试和相关回归；不能把“测试没跑成”写成“测试通过”。技能若只有“请认真修复代码”，没有增加可执行知识。</p><p>分层应服务于维护边界：通用层规定证据和安全原则，领域层解释 C++ 测试习惯，仓库层给出该项目的构建命令。重复规则需要明确优先关系，避免三个技能对同一文件产生互相矛盾的要求。不要为了分层形式把十行内容拆成八份难以追踪的文件。</p></section><section class="lesson-section" id="matching"><h2>6. 匹配技能是一项检索与决策任务</h2><p>最简单的匹配是由规则选择，例如收到“运行回归测试”时选择测试技能；当任务表达多样，再考虑关键词、语义检索或模型分类。候选阶段追求不要漏掉合适技能，选择阶段检查适用条件、输入是否齐全和冲突。只凭名称相似就加载，会把“性能测试”与“单元测试”混在一起。</p><p>可以构造一个小评测集：真正需要该技能的任务、不需要它的相似任务，以及需要两个技能协作的任务。统计正确选择率、误触发率、加载 token 和最终任务成功率。高召回却总把十个技能一起塞入上下文，可能只是把选择负担转嫁给模型。</p><p>技能沉淀也不应等于自动把每次成功轨迹变成通用规则。先提取候选流程，删除凭据和一次性路径，标明适用范围，在不同输入上回放验证，再版本化发布。一次偶然成功不足以证明可复用；失败案例和停止条件往往比“最佳实践”口号更有价值。</p></section><section class="lesson-section" id="mcp-rag"><h2>7. MCP 与 RAG 分别补上哪里</h2><p>MCP 的架构包括宿主应用、客户端与服务器；宿主管理连接与应用行为，客户端与服务器进行协议交互。协议减少的是每个应用重复设计工具发现和消息格式的成本，不会消除工具自身的业务实现、认证、权限和错误语义。<a href="https://modelcontextprotocol.io/docs/learn/architecture">参考：MCP 架构</a>。</p><p>RAG 则主要解决“当前需要哪些外部知识”。若知识量大、经常更新、必须引用来源，检索通常比把全文写进 Skill 更合理；若内容是稳定步骤、判断规则或质量标准，Skill 更适合。二者常常组合：技能告诉 Agent 如何回答某类问题，工具执行检索，检索返回最新事实，回答附证据。</p><p>例如诊断接口超时：Skill 描述先看时间范围、再检查依赖、禁止未经授权重启；RAG 取回当前服务文档和历史事故；监控工具提供实时指标。文档不是实时状态，技能不是执行权限，MCP 也不是推理算法。把这些边界讲清楚，系统才不容易把过期知识当成事实。</p></section><section class="lesson-section" id="practice"><h2>8. 用一个小实验检验分层是否有价值</h2><p>为同一个修复任务做三套配置：只有工具；工具加清晰的测试 Skill；工具加冗长但无操作细节的 Skill。保持模型和预算一致，记录能否复现、是否验证、是否错误声明成功，以及工具和模型调用次数。不要预设“加了技能一定更好”。</p><ol><li>故意让工具返回无效参数、超时、截断日志和不可信指令，检查宿主是否能保留正确边界。</li><li>为技能路由准备至少十个正例、十个相似负例；记录误匹配原因，改描述后重新评估旧用例，防止修一个任务破坏另一个。</li><li>画出工具提供者改变时哪些代码需要改。若替换 MCP server 后业务规则全部重写，可能是适配层与业务层耦合过深。</li><li>总结你自己的 Skill 时，给出一个实际失败前后对比和版本差异。没有这份证据，就把结论写成待验证的设计假设，而不是虚构经验。</li></ol></section><section id="learning-questions" class="learning-questions"><h2>带着这些问题回看</h2><p>下面保留最初的学习问题，用来检查理解是否能迁移到自己的任务。项目经历与实测指标需由真实工作补足，不代表本文已经给出个人经历的答案。</p><ul><li id="tools-001">工具调用如何运转，Skill 能否替代工具？<span class="question-origin"> · 资料线索：<a href="https://zhuanlan.zhihu.com/p/2028511483969937686">代码随想录</a></span></li><li id="tools-002">Skill 应如何设计和分层，为什么采用这种组织方式？<span class="question-origin"></span></li><li id="tools-003">用户输入如何匹配到合适的 Skill？<span class="question-origin"></span></li><li id="tools-004">Skill 如何从实践中沉淀，是否支持自动形成和维护？<span class="question-origin"></span></li><li id="tools-005">哪些需求适合接入 RAG，哪些知识更适合整理为 Skill？<span class="question-origin"> · 资料线索：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></span></li><li id="ext-003">MCP怎样减少工具接入的重复工作？<span class="question-origin"> · 资料线索：<a href="https://zhuanlan.zhihu.com/p/2028511483969937686">代码随想录</a></span></li></ul></section>
-<section id="references" class="references"><h2>参考资料</h2><p>机制说明以原始论文、官方文档为依据；文中自建示例与设计建议不等同于任何产品的内部实现。</p><ol><li><a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview">Anthropic：工具调用流程</a></li><li><a href="https://agentskills.io/specification">Agent Skills：规范</a></li><li><a href="https://modelcontextprotocol.io/docs/learn/architecture">MCP：架构</a></li></ol></section>
-<nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-context-memory.html">上一篇：上下文、压缩与记忆：让 Agent 在长任务中保持正确状态</a><a rel="next" href="/post/learning-planning-multi-agent.html">下一篇：规划与多 Agent：把复杂任务拆成可检查的依赖关系</a></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回系列目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>
+<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">问题与解答</a> / 工具调用与 Skill</p><header class="article-header"><h1>工具调用与 Skill</h1><p class="article-date">更新于 <time datetime="2026-10-21">2026-10-21</time></p><p class="knowledge-tags">知识标签：工具调用 · Skills · 工具协议 · Function Calling · JSON Schema · MCP · Skill设计 · Skill分层 · 渐进披露 · Skill路由</p></header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol><li><a href="#original-016">工具调用的流程是怎么样的？能不能用skill来替代工具？为什么？</a></li><li><a href="#original-018">追问工具调用时，模型用了几次？skill用了几次？</a></li><li><a href="#original-017">讲讲你的skills有哪些，为什么这么设计？设计的要点是什么？</a></li><li><a href="#original-032">skill分层体系是怎么做，为什么这么设计？</a></li><li><a href="#original-033">用户输入怎么和相关skill匹配？</a></li><li><a href="#original-034">有skill沉淀机制么？还是只能用户自己构造？</a></li><li><a href="#original-062">什么情况下会给 Agent 接入 RAG，什么情况下适合把知识整理成 Skill？</a></li><li><a href="#ext-003">MCP怎样减少工具接入的重复工作？</a></li></ol></nav><section class="lesson-section question-section" id="tools-001"><h2 id="original-016">工具调用的流程是怎么样的？能不能用skill来替代工具？为什么？</h2><p class="variant-label">相关原问题：</p><h2 id="original-018">追问工具调用时，模型用了几次？skill用了几次？</h2><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2028511483969937686">代码随想录</a></p><div class="question-answer"><p>工具调用的基本流程是：程序把工具说明发给模型，模型输出工具名和参数，程序执行对应函数，再把结果提供给模型。Skill 通常是任务说明和配套材料，它可以指导工具怎么用，但不能凭一段文字替代读文件、运行命令这些实际执行能力。</p>
+<h3>用“读取文件并解释错误”数清每一步</h3>
+<p>假设程序只提供一个工具 <code>read_file(path)</code>，并且没有预先读取文件：</p>
+<ol><li>第一次调用模型：输入用户问题和工具说明。模型返回 <code>read_file(&quot;sum.cpp&quot;)</code> 的调用请求。</li><li>程序执行 <code>read_file</code>。这一步可能只是普通文件 I/O，不需要调用模型。</li><li>第二次调用模型：程序把源码作为工具结果送入。模型根据源码回答问题。</li></ol>
+<p>这个特定例子是 <strong>2 次模型调用，1 次工具执行，0 次 Skill 加载</strong>。如果模型直接知道答案、不需要读文件，可能只有 1 次模型调用；如果还要运行测试、修改文件、重试，次数会增加。一次模型响应也可能包含多个并行工具请求，所以模型调用次数不等于工具次数。不要背一个固定数字。</p>
+<h3>加入 Skill 后发生什么</h3>
+<p>假设有一个“排查 C++ 测试失败”的 Skill，其正文写着：先复现失败，再定位代码，修改后运行原测试和相关回归测试。程序把这份说明放进模型输入，模型据此安排工具调用。Skill 目录还可以包含一个收集测试日志的脚本，但脚本仍然需要通过某个执行工具运行。</p>
+<p>例如系统先按用户明确指定的 Skill 直接读取说明文件，随后调用模型要求读源码，最后调用模型给出解释。这个流程仍可能是 2 次模型调用，只多了 1 次 Skill 内容加载。若系统让模型先决定选哪个 Skill，再调用加载工具，通常会多出一次模型请求。具体数字由日志确定，不由“用了 Skill”这件事确定。</p>
+<p>因此“Skill 用了几次”也要先约定含义：加载了几次正文？应用了几次流程？运行了几次脚本？这三项不是同一个计数。已经在上下文里的说明可以指导多次操作，并不需要每一步重新读一遍。</p>
+<h3>为什么不能把执行安全交给 Skill</h3>
+<p>即使 Skill 写着“只修改项目内文件”，程序仍要检查真实路径，包括 <code>..</code> 和符号链接等情况。模型可能选错工具或生成错误参数，外部文档也可能混入恶意指令。文字说明帮助模型选择做法，程序里的参数检查、权限限制和超时才负责限制实际执行。</p>
+<p>验证这个理解最简单的方法，是给程序分别加三个计数器：模型 API 请求数、工具执行数、Skill 加载数。跑“纯问答”“读文件”“加载 Skill 后读文件”三个任务，打印各自记录，就能看出它们为什么不能混为一谈。</p></div><p class="answer-references">本题参考：<a href="https://developers.openai.com/api/docs/guides/function-calling">Function calling</a>；<a href="https://agentskills.io/specification">Agent Skills 格式</a></p></section><section class="lesson-section question-section" id="tools-002"><h2 id="original-017">讲讲你的skills有哪些，为什么这么设计？设计的要点是什么？</h2><p class="variant-label">相关原问题：</p><h2 id="original-032">skill分层体系是怎么做，为什么这么设计？</h2><div class="question-answer"><p>Skill 可以理解为“专门针对一类任务写好的操作说明，加上需要的脚本和参考材料”。例如“排查 C++ 单元测试失败”可以是一份 Skill；“读取某个文件”则通常是一个工具。前者说明怎么组织多步工作，后者提供实际操作。</p>
+<p>原问题问“你的 skills 有哪些”，这里不能替真实项目编造清单。下面是一组可以自己实现、再用实际结果说明的例子。</p>
+<h3>一个容易理解的 Skill 清单</h3>
+<ul><li>测试失败排查：输入失败用例和项目位置；先复现，再定位，再修改，最后回归。</li><li>性能测量：输入待比较版本和测量条件；固定环境、预热、重复测量、保存原始数据。</li><li>代码审查：输入代码差异；检查正确性、边界条件、测试缺口，不默认直接改代码。</li></ul>
+<p>它们不是按“聪明程度”分层，而是按任务边界分开。每份说明应写清何时使用、需要什么输入、产出是什么、什么情况要停止或询问。名称不能过宽，例如“万能开发 Skill”很难判断何时该加载。</p>
+<h3>分层可以分两种，不要混在一起</h3>
+<p>一种是加载层次：先让模型看到短名称和描述，确定相关后再加载正文，只有实际需要时才读取长参考资料或执行脚本。这样一个只需要解释报错的任务，不必一开始就读几万字性能测试说明。</p>
+<p>另一种是知识职责：通用开发要求、某语言的处理办法、某项目的具体命令。不要把同一条规则复制到十份 Skill 里，否则修改时容易漏改。但也不能把正文拆成过多跳转文件，让完成一件小事需要连续读十层材料。分层的目的应是减少重复和无关信息，而不是层数越多越专业。</p>
+<h3>一份正文可以怎么写</h3>
+<p>以测试排查为例，正文可以明确：先运行用户给的用例，保存原始失败输出；没有复现时不要直接声称修复；修改前确认目标文件；修改后运行同一用例及相关测试；最终列出实际修改和实际运行的测试。可重复的日志收集命令放进脚本，易变的项目命令放在项目配置，不把私密凭据写进说明。</p>
+<p>脚本不是写了就安全。执行它仍应经过程序的权限检查，失败时要返回退出码和错误，不允许把失败包装成成功。</p>
+<h3>怎么证明设计有用</h3>
+<p>准备一组没写 Skill 时容易出错的任务，再对比使用后的表现：有没有跳过复现、有没有遗漏回归、有没有加载不相关材料、总耗时是否增加很多。要区分“说明写得详细”和“真的改善结果”。如果只是换了名字、把同样内容复制几遍，不能算有意义的分层。</p>
+<p>最终介绍真实项目时，应给实际目录、实际输入输出和至少一个失败后改进的案例。这里的清单是教学设计，不是对任何个人经历的陈述。</p></div><p class="answer-references">本题参考：<a href="https://agentskills.io/specification">Agent Skills 规范</a>；<a href="https://code.claude.com/docs/en/skills">Claude Code Skills</a></p></section><section class="lesson-section question-section" id="tools-003"><h2 id="original-033">用户输入怎么和相关skill匹配？</h2><div class="question-answer"><p>用户输入与 Skill 的匹配，本质上是判断“这项任务需要哪份说明”。不一定每次都需要再调用一个大模型，也不应该一看到某个关键词就强行加载。</p>
+<h3>从一个具体请求看流程</h3>
+<p>用户输入：“这个 C++ 用例偶尔失败，帮我定位，不要先改代码。”系统有三份 Skill：测试排查、性能测量、代码审查。它应优先选择测试排查，并把“先定位、不修改”的当前要求一起交给模型。不能因为描述里出现 C++，就加载所有 C++ 相关材料。</p>
+<p>常见做法分四步：</p>
+<ol><li>准备候选目录。每个 Skill 有名称、简短说明、适用条件、所需环境。例如“处理可复现或偶发测试失败；不用于性能基准对比”。</li><li>筛选候选。用户显式指定的先处理；明确规则可以直接匹配；数量很多时用关键词或向量相似度找少量候选。向量相似度只是“语义上像”，不是证明适用。</li><li>决定是否加载。程序规则或模型根据任务、候选描述、环境条件做选择。没有合适候选可以不用 Skill，多个都适用时也可以按步骤组合。</li><li>加载正文后再执行。正文里的输入条件可能仍不满足，例如需要失败日志但用户没有提供。此时先获取材料，而不是假定匹配完成就能直接工作。</li></ol>
+<h3>为什么描述比名称重要</h3>
+<p>只有名字 <code>debug</code>，模型不知道它针对网页、C++ 还是数据库。比较清楚的描述应包含对象、触发场景和排除场景。比如“当 C++ 单元测试失败或偶发崩溃，需要复现、检查堆栈和定位源码时使用；不负责上线部署”。这比“强大的问题解决专家”更容易匹配。</p>
+<p>这里的例子是设计建议，不是所有产品的固定匹配算法。不同工具对用户显式调用、自动选择、描述加载都有不同实现，不能凭看到某次自动加载就推断其后台一定用了向量数据库。</p>
+<h3>怎么处理误匹配</h3>
+<p>至少记录任务、候选 Skill、最终选择和结果。然后准备三类测试：应当触发、明确不该触发、同时涉及多个任务。若“解释什么是性能测试”也启动了实际压测，说明描述或执行条件太宽，应增加“只有用户要求实际测量时才运行”的限制，并由执行程序落实权限。</p>
+<p>匹配准确率之外，还要观察漏选率和无关加载成本。对高风险任务，Skill 选择结果不能自动授予权限；它只决定提供哪份说明。真正执行删除、部署等操作时，仍要独立确认授权范围。</p></div></section><section class="lesson-section question-section" id="tools-004"><h2 id="original-034">有skill沉淀机制么？还是只能用户自己构造？</h2><div class="question-answer"><p>可以有 Skill 沉淀机制，但不应把每一次成功对话自动复制成一份新 Skill。比较可靠的办法是：从多次重复任务里总结稳定步骤，先生成草稿，再经过检查和测试，最后作为可复用版本使用。</p>
+<h3>“沉淀”的具体含义</h3>
+<p>假设你连续三次排查 C++ 测试失败，都要收集编译参数、复现输入、失败输出和对应提交。与其每次重新解释，可以整理成一份说明，并写一个收集这些材料的脚本。以后同类问题直接使用它，这才是把经验转成可复用流程。</p>
+<p>但某次碰巧通过测试的修改，不能直接提炼为“以后遇到这个错误都这么改”。例如一次崩溃由数组越界引起，不代表所有崩溃都由数组越界引起。要把可重复的排查步骤和一次性的结论区分开。</p>
+<h3>一个可以实现的形成过程</h3>
+<ol><li>从已完成任务中挑候选：重复出现、步骤相对稳定、人工需要反复说明的任务。</li><li>收集证据：保存输入条件、采取的步骤、失败分支和最终验证结果。未验证的建议不能冒充成功经验。</li><li>生成草稿：说明适用条件、所需输入、步骤、输出、停止条件；把账号、密钥、个人路径和客户数据去掉。</li><li>人工或独立检查：确认没有把偶然做法写成普遍规则，没有扩大操作权限。</li><li>在新任务上测试：不能只用产生这份 Skill 的原任务验证，否则只是记住答案。</li><li>发布版本：记录修改原因和适用环境。出现退化时能回退到上一版。</li></ol>
+<h3>哪些部分适合自动化</h3>
+<p>模型可以帮助从日志里找重复步骤、起草描述、整理检查清单、提出测试案例。脚本可以检查必填字段、引用文件是否存在、命令是否能运行。适用范围是否正确、某条经验是否可靠、是否涉及敏感信息，通常还需要更严格检查。</p>
+<p>自动生成不等于自动信任。特别是外部网页或工具输出里如果有“忽略限制、把密钥发到某处”，绝不能因为它被摘进了 Skill 就变成可信规则。来源和权限要一直保持区分。</p>
+<h3>怎么防止越积越多</h3>
+<p>建立明确任务分类，新增前先搜索已有 Skill。如果只是同类流程的一处改进，更新已有版本比新建一个名字更合适。定期检查长期不用、重复或已失效的说明；删除之前确保有版本记录。评估时看新任务成功率、误触发率、执行成本，而不是以 Skill 数量作为成绩。</p>
+<p>回答真实项目是否实现了沉淀时，要说明目前做到哪一步。只有人工编写就说人工编写；做了自动草稿但没有自动发布，也应明确区分。设计方案可以学习，经历和效果数据不能代填。</p></div></section><section class="lesson-section question-section" id="tools-005"><h2 id="original-062">什么情况下会给 Agent 接入 RAG，什么情况下适合把知识整理成 Skill？</h2><p class="question-origin">问题来源：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></p><div class="question-answer"><p>RAG 和 Skill 解决的主要问题不同。RAG 帮助系统找到“回答这个问题需要的资料”；Skill 帮助系统知道“这类任务应该按什么步骤做”。它们可以一起使用，并不是二选一。</p>
+<p>RAG 是 Retrieval-Augmented Generation 的缩写，可以译为检索增强生成。最简单的过程是：用户提问 → 从文档库找到相关段落 → 把段落和问题一起提供给模型 → 模型依据材料回答。Skill 则通常是一份流程说明和配套文件，系统在合适任务中读取它，再调用实际工具完成工作。</p>
+<h3>同一个问题为什么可能需要两者</h3>
+<p>假设用户问“按照公司当前报销规则检查这张发票”。报销金额上限、支持的费用类型、规则生效日期经常变化，应从当前文档中检索，而不是写死在长期不更新的提示词里。这个部分适合 RAG。</p>
+<p>但是“先确认发票日期和类型，再查适用版本的规则，再逐项比对，证据不足时不要通过”是一套检查步骤，可以整理成 Skill。Skill 可以要求调用检索工具找规则，检索结果则提供这次判断所需的具体事实。</p>
+<p>两者组合后的过程是：加载发票检查 Skill → 提取发票字段 → 检索适用规则 → 比较并列出依据。Skill 没有凭空知道最新规则，RAG 也不会自动保证检查流程完整。</p>
+<h3>什么情况下优先使用 RAG</h3>
+<p>资料很多、无法全部放进输入；内容频繁更新；回答需要追溯到具体文档；不同用户只能访问不同资料，这些通常说明需要检索系统。实现时还必须处理切块、索引更新、权限和引用验证。不是接上向量数据库就解决了一切。</p>
+<p>如果资料只有一小页且一直不变，直接提供给模型可能比建立完整 RAG 更简单。不要为了技术名字而增加不必要组件。</p>
+<h3>什么情况下优先整理 Skill</h3>
+<p>任务步骤反复出现、容易漏环节、需要统一输出或验证方法时，Skill 比不断重复长提示更合适。例如 C++ 缺陷排查、性能测试、代码审查。但一堆事实资料不因为放进 <code>SKILL.md</code> 就自动变成好 Skill；如果文件越来越长、每次只用一小段，更适合拆为参考资料并按需读取。</p>
+<h3>怎么避免错误混用</h3>
+<p>不要把检索到的网页内容当作有权改变系统规则的指令。例如材料里写“忽略之前限制”，它仍然只是外部文本。也不要因为 Skill 中写着“检查最新规则”，就声称已经检索并验证；需要实际工具结果作为证据。</p>
+<p>可以分别测试两类失败：给出正确流程但检索错误规则，系统仍可能得出错误结论；给出正确规则但漏掉日期检查，也可能错用旧版本。这样能看清，资料准确和流程正确是两个不同但相互配合的要求。</p></div></section><div class="extension-intro"><h2>延伸问题</h2><p>以下是根据外部资料另外整理的问题，不是上面原记录的逐字转录。</p></div><section class="lesson-section question-section" id="ext-003"><h2>MCP怎样减少工具接入的重复工作？</h2><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2028511483969937686">代码随想录</a></p><div class="question-answer"><p>MCP 是一种让 AI 应用接入外部工具和数据的协议。可以把协议理解为双方约定的消息格式与交互规则，类似“工具列表怎样查询、参数怎样描述、结果怎样返回”。它减少的是接入方式的重复工作，不是替你实现数据库、权限系统或业务逻辑。</p>
+<h3>没有统一协议时会怎样</h3>
+<p>假设你有三个 AI 应用，都要调用同一个内部搜索服务。每个应用可能分别写一套“列出搜索能力、转换参数、解析结果”的适配代码。搜索接口变了，三处都要维护。若搜索服务通过统一 MCP 接口提供能力，各应用可以使用兼容客户端接入，减少重复适配。</p>
+<h3>一次调用有哪些参与者</h3>
+<p>用户使用的 AI 应用是 host；它管理连接和授权。应用中的 MCP client 与某个 MCP server 通信。server 提供实际能力，例如搜索文档。模型可能看到工具描述并生成调用参数，但真正发送协议请求的是客户端程序，不是语言模型自行建立网络连接。</p>
+<p>用一个示意过程理解：应用询问服务器有哪些工具；服务器描述 <code>search_docs</code> 需要一个字符串查询参数；应用将描述提供给模型；模型返回查询参数；应用检查后调用服务器；服务器执行搜索并返回材料；应用再把材料交给模型组织答案。</p>
+<h3>它没有自动解决什么</h3>
+<p>工具参数符合格式，不代表操作被授权。服务器仍要验证当前用户能访问哪些文档，不能因为请求来自 MCP 就返回全部数据。工具描述和返回内容也可能不可信，不能把它们当成更高优先级指令。</p>
+<p>协议还能涉及资源、提示模板等能力，但具体支持项和版本要核对双方实现。两个产品都写着支持 MCP，并不意味着它们支持完全相同的传输方式、认证和扩展。</p>
+<p>因此它最适合解决“同一能力需要被多个应用复用”的接入问题。若只有一个非常简单的固定接口，直接调用 API 也可能足够；使用 MCP 的理由应是减少维护和提高互操作性，而不是认为它会自动让模型更聪明。</p></div><p class="answer-references">本题参考：<a href="https://modelcontextprotocol.io/specification/2025-06-18/architecture">MCP 2025-06-18 架构规范</a></p></section><section id="references" class="references"><h2>参考资料</h2><p>产品实现可能随版本变化；示例中的假设与实测结论应当区分。</p><ol><li><a href="https://developers.openai.com/api/docs/guides/function-calling">Function calling</a></li><li><a href="https://agentskills.io/specification">Agent Skills 格式</a></li><li><a href="https://code.claude.com/docs/en/skills">Claude Code Skills</a></li><li><a href="https://modelcontextprotocol.io/specification/2025-06-18/architecture">MCP 2025-06-18 架构规范</a></li></ol></section><nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-agent-memory.html">上一篇：长短期记忆</a><a rel="next" href="/post/learning-planning-multi-agent.html">下一篇：任务规划与多 Agent</a></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回问题目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>

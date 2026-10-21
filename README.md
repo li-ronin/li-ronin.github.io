@@ -87,21 +87,21 @@ python3 -m unittest discover -s tests -v
 
 修改通过独立分支和 Pull Request 提供。需要回退时，撤销该 PR 的合并提交即可恢复旧首页；不要删除 `post/`、图片或旧资源目录。
 
-## Agent 与大模型深度学习系列
+## Agent 与大模型问题与解答
 
-`/post/agent-llm-learning-notes.html` 是简短的系列目录。十个主题分别放在 `/post/learning-*.html`，各有目录、原理讲解、具体示例、代码或实验与延伸练习，不再把所有问题堆在单页。Blog 目录中每篇独立列出。
+`/post/agent-llm-learning-notes.html` 是问题目录，13 个主题分别放在 `/post/learning-*.html`，Blog 中各自列出。每篇以原问题为小节标题，答案紧接其后，不再使用专题正文加末尾问题清单的形式。
 
-- `data/learning-series.json` 为深度文章内容源：`slug`、`title`、`summary`、`prerequisites`、`sections`、`references` 与 `questionIds`。
-- `sections[].html` 使用受限语义 HTML；生成器拒绝脚本、事件属性、表单和不安全 URL。代码中的 `<`、`>`、`&` 必须转义。标题与摘要由生成器转义。
-- `data/interviews.json` 保留最初的 89 个问题、知识标签、来源和覆盖记录，用于关联学习问题与追溯；历史文件名不决定页面展示风格。旧的简短 `answer` 不再渲染成正文。
-- `questionIds` 把原始问题关联到章节。个人项目、经历和实测数据只作为需要读者真实证据的思考题，不代写经历或补造指标。
-- `scripts/build_learning_series.py` 生成十篇文章和两个系列入口；原 `scripts/build_interviews.py` 仅转调新生成器，避免旧命令覆盖回单页。
-- `assets/learning-series.css` 提供普通文章样式、代码/表格横向滚动和移动端布局，无脚本依赖。
-- 历史 `/post/ai-interview-learning-archive.html` 是相同导读的兼容地址，canonical 指向当前系列目录。历史问题锚点显示通往对应文章的提示，不恢复单页问答。
-- 技术参考尽量引用原始论文和官方文档；外部问题来源保留作者和链接，但不作为答案正确性的依据。
-- 不运行旧 Hexo 生成流程覆盖现有静态站点。
+- `data/original-questions.json` 保留用户提供的 79 个原始问题位置、原文和来源映射。相近问法可以共享解答，但原文仍显示，不悄悄改写或丢弃。残缺句子保留原样，并显示编者注。
+- `data/interviews.json` 保留 89 个知识问题的知识标签和来源索引。其中 59 个对应上述原始问题，另 30 个是外部资料的概念整理，页面单独标为延伸问题，不宣称逐字摘录。
+- `data/learning-series.json` 仅维护文章标题、地址 slug 和问题分组。
+- `data/question-answers.json` 的 `questions` 数组包含 `id`、`answerMarkdown`、`sources`。没有可信个人经历时，解释问题含义与分析方法，不编造项目或数据。
+- `scripts/markdown_subset.py` 是标准库实现的有限 Markdown 渲染器，支持段落、标题、列表、表格、代码围栏、行内代码、加粗及 HTTPS 链接；不执行原始 HTML，不加载外部脚本。数学公式请使用 Unicode 或代码块，不使用 LaTeX。
+- `scripts/build_learning_series.py` 校验问题覆盖、重复 ID、空答案和不安全链接，生成文章和两个入口地址。`scripts/build_interviews.py` 是兼容命令。
+- `assets/learning-series.css` 只影响这一组文章，不改变旧博客或 Notes。无搜索框、下拉框、题库交互或 JavaScript 依赖。
+- 原始问题来源与技术答案的参考资料分开显示。外部问题来源不是答案正确性的证明。
+- 不运行旧 Hexo 构建来覆盖静态站点。
 
-修改文章后运行：
+修改后运行：
 
 ```bash
 python3 scripts/build_learning_series.py
@@ -111,4 +111,4 @@ python3 scripts/build_indexes.py --check
 python3 -m unittest discover -s tests -v
 ```
 
-`data/writing.json` 同步维护每篇的标题和地址。浏览器检查应覆盖系列目录、文章目录、上一/下一篇、Blog 往返、代码与表格窄屏阅读。内容深度与技术准确性还需人工复核，字数和静态测试不等同于正确性保证。
+技术准确性、逐步解释与易读性需人工复核，静态测试和字数不等于质量证明。浏览器检查覆盖问题目录、原问题锚点、参考链接、上一篇/下一篇以及窄屏代码和表格。

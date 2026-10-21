@@ -1,60 +1,28 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>线程池与背压：从吞吐推导到有界队列实现 · Khan Li</title><meta name="description" content="区分线程数、排队和下游容量，用负载数字推导稳定条件，再实现一个有界C++队列，理解流式处理为什么仍然可能耗尽内存。">
+<title>线程池与并发 · Khan Li</title><meta name="description" content="围绕原问题解释线程池与并发，包含具体例子与参考资料。">
 <link rel="canonical" href="https://li-ronin.github.io/post/learning-concurrency-backpressure.html"><link rel="icon" href="/images/alpaca.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/academic.css"><link rel="stylesheet" href="/assets/learning-series.css"></head>
 <body><a class="skip-link" href="#main">跳到正文</a><div class="page learning-series">
 <nav class="site-nav" aria-label="站点导航"><a class="site-name" href="/">李可涵 Khan Li</a><div class="site-nav-links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="/notes/">Notes</a></div></nav>
-<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">Agent 与大模型：从原理到实现</a> / 10</p>
-<header class="article-header"><h1>线程池与背压：从吞吐推导到有界队列实现</h1><p class="article-date"><time datetime="2026-10-20">2026-10-20</time> · 技术资料核对日期；具体产品行为以对应版本为准</p><p>区分线程数、排队和下游容量，用负载数字推导稳定条件，再实现一个有界C++队列，理解流式处理为什么仍然可能耗尽内存。</p><p class="knowledge-tags">知识标签：线程池 · 并发 · 容量规划 · 背压 · SSE</p><p><strong>阅读前准备</strong>：C++函数、容器、互斥锁基础；了解线程会阻塞且CPU数量有限；无需先学习复杂排队论</p></header>
-<nav class="article-contents" aria-label="文章目录"><h2>目录</h2><ol><li><a href="#separate">1. 并发、并行和排队不是同一个量</a></li><li><a href="#capacity">2. 用一个算例判断队列为什么必然增长</a></li><li><a href="#parameters">3. 线程池参数只有放进调度顺序里才有意义</a></li><li><a href="#cpp-queue">4. 一个可编译的有界队列核心</a></li><li><a href="#deadline">5. 队列容量如何和延迟预算联系起来</a></li><li><a href="#streaming">6. 流式传输为什么仍会爆内存</a></li><li><a href="#deadlock">7. 两个隐藏陷阱：线程饥饿与重试风暴</a></li><li><a href="#measure">8. 实验：用证据找线程数和队列长度</a></li><li><a href="#learning-questions">带着这些问题回看</a></li><li><a href="#references">参考资料</a></li></ol></nav>
-<section class="lesson-section" id="separate"><h2>1. 并发、并行和排队不是同一个量</h2><p>并发表示多个任务处于进行中，并行表示同一时刻有多个任务真正执行。线程池复用线程，避免为每个任务无限创建线程，但它不会凭空增加 CPU、磁盘或下游服务容量。队列只是把暂时不能执行的任务保存起来；队列增长不是系统正在消化压力的证据，可能恰好说明它已经消化不过来。</p><p>把一个任务的时间拆成排队时间 Wq 和实际服务时间 S，用户感受到的是 W=Wq+S。线程池常常只让你看到活跃线程数，却不自动告诉你队列中最老任务已经等了多久。对于 Agent 服务，模型请求、文件解析、向量检索、外部API各有独立容量，不应该用一个“最大并发”概括所有瓶颈。</p></section><section class="lesson-section" id="capacity"><h2>2. 用一个算例判断队列为什么必然增长</h2><p>假设每个任务占用一个工作线程 50ms，且这段时间基本不变。单线程服务能力约 1/0.05=20 个任务每秒，4 个线程的理想上限约 80 个每秒。如果到达速率也是 80，每个小抖动都没有空闲余量吸收；实际服务时间有方差时，排队会很敏感。若持续到达 100 个每秒、处理只有 80，队列大约每秒多 20 个任务。扩容队列只能推迟溢出。</p><p>粗略利用率可写为 ρ=λE[S]/c，其中 λ 是到达速率，E[S] 是平均服务时间，c 是工作线程数。这是帮助识别容量的简化模型，不是任意系统的精确延迟公式。稳定运行通常需要留余量；把 c 从4改成8也未必翻倍，因为下游数据库可能只允许4个连接，剩余线程只是阻塞着等连接。</p><p>在稳定且统计口径一致的系统里，Little定律 L=λW 连接平均在途任务数、完成速率与平均停留时间。例如平均在途20个、每秒完成100个，则平均停留约0.2秒。它不直接给出p95，也不能拿不断堆积的过载阶段套出一个稳定结论。测量时先确认系统是否达到稳态。</p></section><section class="lesson-section" id="parameters"><h2>3. 线程池参数只有放进调度顺序里才有意义</h2><p>以 Java 21 ThreadPoolExecutor 为例：未达到核心线程数时通常先建线程；否则尝试把任务入队；队列无法接收且未达到最大线程数时再扩容；仍无法接收则触发拒绝策略。因此“核心4、最大100、无界队列”并不意味着高负载时很快产生100个线程，任务可能主要堆进队列。还需要理解空闲回收时间、线程工厂和关闭语义。<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ThreadPoolExecutor.html">参考：Java线程池调度说明</a>。</p><p>C++ 自建线程池不一定具有同样参数和顺序。设计时先回答：队列是否有界；满了是立即失败、等待还是由调用者执行；关闭后是否接受新任务；取消是否会移除尚未执行的任务；任务异常由谁接收。参数名可以不同，但这些语义不能省略。</p><p>拒绝不是系统失控的同义词。若服务不能无限承诺未来的计算，及时返回过载比让请求等待几分钟后超时更诚实。调用者执行策略也有边界：如果调用者是UI线程或事件循环，运行重任务会阻塞其他请求；它不是可以无条件套用的背压方案。</p></section><section class="lesson-section" id="cpp-queue"><h2>4. 一个可编译的有界队列核心</h2><p>下面只实现队列，不宣称是完整生产线程池。生产者使用 try_push，满或关闭时立即失败；消费者等待数据，关闭后继续取完存量，再返回空值退出。使用谓词等待防止虚假唤醒。示例任务用整数代表，便于先检查生命周期，再替换成真实任务对象。</p><pre><code>#include &lt;condition_variable&gt;
-#include &lt;cstddef&gt;
-#include &lt;mutex&gt;
-#include &lt;optional&gt;
-#include &lt;queue&gt;
-#include &lt;stdexcept&gt;
-#include &lt;utility&gt;
-
-template&lt;class T&gt;
-class BoundedQueue {
-    std::mutex m_;
-    std::condition_variable ready_;
-    std::queue&lt;T&gt; q_;
-    std::size_t cap_;
-    bool closed_ = false;
-public:
-    explicit BoundedQueue(std::size_t cap) : cap_(cap) {
-        if (cap == 0) throw std::invalid_argument(&quot;zero capacity&quot;);
-    }
-    bool try_push(T item) {
-        {
-            std::lock_guard&lt;std::mutex&gt; lock(m_);
-            if (closed_ || q_.size() &gt;= cap_) return false;
-            q_.push(std::move(item));
-        }
-        ready_.notify_one();
-        return true;
-    }
-    std::optional&lt;T&gt; pop() {
-        std::unique_lock&lt;std::mutex&gt; lock(m_);
-        ready_.wait(lock, [&amp;] { return closed_ || !q_.empty(); });
-        if (q_.empty()) return std::nullopt;
-        T item = std::move(q_.front());
-        q_.pop();
-        return item;
-    }
-    void close() {
-        {
-            std::lock_guard&lt;std::mutex&gt; lock(m_);
-            closed_ = true;
-        }
-        ready_.notify_all();
-    }
-};</code></pre><p>互斥锁保护的不是某一个 push，而是“检查状态与改变状态”的整体：若先检查容量再在锁外入队，两个生产者可能同时看到剩余一个位置。notify_one 放在解锁后，避免刚唤醒的消费者立即争用同一把锁；正确性主要由受锁保护的条件和谓词保证。close 必须 notify_all，因为多个消费者都需要醒来看到关闭状态。</p><p>这个实现选择“排空后关闭”，不是“立即丢弃”。使用者必须保证关闭并等待所有工作线程退出之后才销毁队列，否则仍在等待的线程会访问已销毁对象。若 T 的移动操作可能抛异常，还需明确异常安全策略；真实任务常可用只移动的智能指针包装，避免复杂对象在队列内部搬运。</p></section><section class="lesson-section" id="deadline"><h2>5. 队列容量如何和延迟预算联系起来</h2><p>假设8个工作线程每个任务50ms，队列允许32个等待任务。在所有任务耗时接近且线程持续繁忙的理想情况下，队尾任务约需等待32/8×50=200ms，再服务50ms。这个估算不是尾延迟保证，但说明“队列越大越好”与低延迟目标矛盾。面对长尾任务、锁竞争或下游超时，实际等待可能更长。</p><p>每个任务应带截止时间，而不只是全局超时。任务真正开始前检查是否已经过期；已经没有价值的请求继续占用资源，会让还没过期的请求也排到过期。取消信号要传到下游，否则客户端关闭连接后，后台仍可能继续生成长回答、上传文件和消耗费用。</p><p>容量还要按字节估算。32个小整数和32份百兆上传文件完全不同；按任务数限流不能限制总内存。可以把大文件落到受控临时存储，队列里只保留引用，并同时设置单任务大小、总暂存容量和清理生命周期。</p></section><section class="lesson-section" id="streaming"><h2>6. 流式传输为什么仍会爆内存</h2><p>“边读边发”只描述接口形态，不自动提供背压。假设上游每秒产生10MB，下游只能消费2MB，如果每次收到数据都追加到内存列表，缓冲区每秒增长8MB，一分钟接近480MB。即使HTTP使用分块传输，应用层仍会积压。真正的背压要把下游处理能力传回上游，让生产暂停、降速或拒绝。</p><p>Node.js 的 writable.write 返回 false 时，调用者应等待 drain 再继续生产；标准 pipeline 能协调流和错误。这是具体运行时的接口，说明了通用机制：消费者发出“暂时没有容量”，生产者遵守它。不能把 false 当作写入失败再重复写同一块。<a href="https://nodejs.org/learn/modules/backpressuring-in-streams">参考：Node.js背压机制</a>。</p><pre><code>while (chunk = read_next_chunk()):
-    if request_cancelled(): stop_upstream(); break
-    await downstream_capacity()
-    await write_chunk(chunk)
-    release_local_reference(chunk)</code></pre><p>对于模型流式响应，上游可能仍在远端生成；暂停本地读取未必能立即停止计费或计算。需要核对服务的取消语义，并给中间缓冲区明确上限。日志、追踪和重试缓存也必须有界，否则主输出有背压，旁路日志仍可能把内存耗尽。</p></section><section class="lesson-section" id="deadlock"><h2>7. 两个隐藏陷阱：线程饥饿与重试风暴</h2><p>线程池任务 A 提交任务 B 到同一个已经满载的池，然后阻塞等待 B；若所有线程都在等这样的子任务，就没有线程能执行 B。这不是互斥锁循环才会出现的死锁，而是资源耗尽形成的等待环。解决方向包括避免工作线程同步等待同池子任务、拆分执行器或用异步依赖，但要根据任务语义选择。</p><p>另一个陷阱是把过载错误当成必须立刻重试。下游容量已经不足，上游所有任务同时重试，会进一步放大负载。应限制重试次数和总时间，加入退避与抖动，并仅对可安全重试的操作重试。重复创建等副作用需要幂等机制；网络错误不是无限重放业务动作的许可。</p></section><section class="lesson-section" id="measure"><h2>8. 实验：用证据找线程数和队列长度</h2><p>先做确定性检查：容量2的队列连续推3个元素，前两个成功，第三个失败；关闭后拒绝新元素，但之前两个仍可读，之后 pop 返回空值。再用多个生产者和消费者运行唯一ID任务，检查每个被接受的ID恰好处理一次、被拒绝的ID没有执行，并确认所有线程可正常退出。</p><p>负载实验固定任务内容，逐步提高到达速率，分别记录接收量、拒绝量、完成量、在途量、排队时间、服务时间和端到端p50/p95/p99。任务包括纯CPU、固定阻塞以及混合长尾三种。预期在持续过载时，有界方案开始拒绝但内存保持受控；无界方案短时间可能“零拒绝”，却伴随越来越长的排队。</p><p>最后把下游连接数固定为4，线程数依次改为4、8、16。若吞吐不再增长而等待和上下文切换增加，说明瓶颈并不在线程数量。能解释这一曲线，比记住一个线程数公式更重要。本文数值是分析与实验设计，不是声称已在你的机器或业务中得到的测量结果。</p></section><section id="learning-questions" class="learning-questions"><h2>带着这些问题回看</h2><p>下面保留最初的学习问题，用来检查理解是否能迁移到自己的任务。项目经历与实测指标需由真实工作补足，不代表本文已经给出个人经历的答案。</p><ul><li id="system-001">线程池有哪些核心参数，应如何根据负载设置并验证？<span class="question-origin"></span></li><li id="ext-012">流式上传与响应如何避免资源耗尽？<span class="question-origin"> · 资料线索：<a href="https://zhuanlan.zhihu.com/p/2034667289245636223">TrustZone</a></span></li></ul></section>
-<section id="references" class="references"><h2>参考资料</h2><p>机制说明以原始论文、官方文档为依据；文中自建示例与设计建议不等同于任何产品的内部实现。</p><ol><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ThreadPoolExecutor.html">Java 21 ThreadPoolExecutor 官方文档</a></li><li><a href="https://nodejs.org/learn/modules/backpressuring-in-streams">Node.js 背压官方指南</a></li><li><a href="https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/">AWS：幂等API与安全重试</a></li></ol></section>
-<nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-agent-evaluation-reliability.html">上一篇：Agent怎样算可靠：评测、证据、成本与失败恢复</a><span></span></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回系列目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>
+<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">问题与解答</a> / 线程池与并发</p><header class="article-header"><h1>线程池与并发</h1><p class="article-date">更新于 <time datetime="2026-10-21">2026-10-21</time></p><p class="knowledge-tags">知识标签：线程池 · 并发 · 容量规划 · 背压 · SSE</p></header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol><li><a href="#original-008">说下线程池的核心参数，以及参数设置的经验？</a></li><li><a href="#ext-012">流式上传与响应如何避免资源耗尽？</a></li></ol></nav><section class="lesson-section question-section" id="system-001"><h2 id="original-008">说下线程池的核心参数，以及参数设置的经验？</h2><div class="question-answer"><p>线程池可以理解为“一批长期存在的工作线程，加上一个等待任务的队列”。提交任务时不必每次创建线程：空闲线程从队列取出任务并执行。它解决的不是让 CPU 凭空变快，而是减少反复创建线程的开销，并控制同时进行多少工作。</p>
+<h3>先明确这里说的是 Java 的七个构造参数</h3>
+<p><code>ThreadPoolExecutor</code> 的常见完整构造函数包含：</p>
+<ul><li><code>corePoolSize</code>：核心线程数。通常在线程数不足这个值时，为新任务创建线程；不是默认启动时就全部创建。</li><li><code>maximumPoolSize</code>：允许的最大线程数。</li><li><code>keepAliveTime</code>：空闲线程等待多久后可以退出。</li><li><code>unit</code>：上面时间值的单位。默认主要用于超过核心数的线程，核心线程超时需要额外配置。</li><li><code>workQueue</code>：暂时不能执行的任务放在哪里，以及最多能放多少。</li><li><code>threadFactory</code>：怎样创建线程，例如名称与异常处理配置。</li><li><code>handler</code>：池无法接收任务时怎样处理，即拒绝策略。</li></ul>
+<h3>用一个例子理解提交顺序</h3>
+<p>假设核心数为 2，最大数为 4，队列容量为 2。暂时假设所有已开始的任务都没有结束：前两个任务创建两个线程执行；第三、第四个任务进入队列；第五、第六个任务因为队列已满，才会创建额外线程；第七个任务无法入队，也不能再增加线程，进入拒绝处理。因此，<strong>不是先创建到最大线程数，再开始排队</strong>。真实并发过程中线程可能随时结束，例子只是隔离出来说明规则。</p>
+<p>若使用几乎不会满的无界队列，任务通常一直排队，最大线程数很难发挥扩容作用，内存和排队时间反而可能不断增长。直接丢弃也不一定合适：例如生成账单不能静默丢失；让调用者收到明确繁忙错误并稍后重试，通常更容易维护正确性。</p>
+<h3>参数怎样估算</h3>
+<p>CPU 密集任务主要在计算，可先从可用 CPU 核数附近开始测试，线程更多未必更快。I/O 密集任务经常等待网络或磁盘，可以允许更多线程，但必须同时检查数据库连接数、下游限流和内存。</p>
+<p>一个仅用于初步估算的例子：平均每个任务占用线程 0.2 秒，每秒到达 20 个任务，平均同时占用约 20×0.2=4 个线程。4 只是平均需求，没有包含突发、长尾和安全余量，不能直接作为最终配置。再以 4、8、16 个线程分别压测，观察完成吞吐、队列长度、超时率，以及 95% 请求能在多久内完成。若从 8 加到 16 后吞吐不升、延迟变差，应找下游或锁竞争，而非继续加线程。</p>
+<p>C++ 标准库没有一套与这七项一一对应的通用线程池接口。自己实现时仍要决定线程数、队列边界、停止规则、异常传播和拒绝方式，但不能把 Java 的参数名当成所有线程池必备的标准。</p></div><p class="answer-references">本题参考：<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ThreadPoolExecutor.html">Java 21 ThreadPoolExecutor</a></p></section><div class="extension-intro"><h2>延伸问题</h2><p>以下是根据外部资料另外整理的问题，不是上面原记录的逐字转录。</p></div><section class="lesson-section question-section" id="ext-012"><h2>流式上传与响应如何避免资源耗尽？</h2><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2034667289245636223">TrustZone</a></p><div class="question-answer"><p>流式处理是指数据分段到达时就逐段处理，不必等全部数据收齐。例如上传大文件时，服务器收到一块就写入文件；模型生成回复时，生成一部分就发给客户端。它可以减少等待和内存占用，但前提是程序真的逐段处理，而不是把所有分段又追加到一个无限增长的数组里。</p>
+<h3>慢消费者为什么会造成问题</h3>
+<p>假设服务器每秒产生 1 MB 数据，客户端每秒只能接收 0.2 MB，中间缓冲区每秒就增加 0.8 MB。如果没有上限，任务持续越久，占用内存越多。这和线程池任务队列不断积压是同一类问题。</p>
+<p>背压就是让下游来不及处理时，上游减慢或暂停，而不是继续无限生成。实现可能是等待可写事件、使用有界队列，或在超过限制时取消任务。并不是所有外部模型服务都能暂停生成，因此有时必须终止请求，而不能无限缓冲。</p>
+<h3>上传要检查什么</h3>
+<p>限制单文件总大小、每个用户的并发上传数和临时文件占用；边接收边计算字节数，超过上限立即停止。不要只相信请求头宣称的大小。客户端断开、解析失败或超时后，需要关闭文件并清理不完整内容。</p>
+<h3>模型流式回复要检查什么</h3>
+<p>设置最大输出量和总时间；客户端取消时，把取消传到后台任务和可取消的模型请求；关闭不再需要的连接。如果前端已经停止显示，而后台继续生成几十分钟，用户看不到结果，费用与资源却还在消耗。</p>
+<p>对于特别长的结果，可以保存成文件并提供链接，而不是必须全部保存在内存中。不过文件也要受访问权限和保留规则约束。</p>
+<h3>怎样测试</h3>
+<p>故意让客户端很慢，观察内存是否稳定；上传到一半断开，检查临时文件是否清理；同时发起多条长请求，确认达到上限后明确拒绝或排队。正常网速下能显示逐字输出，只能证明功能存在，不能证明资源受控。</p></div></section><section id="references" class="references"><h2>参考资料</h2><p>产品实现可能随版本变化；示例中的假设与实测结论应当区分。</p><ol><li><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ThreadPoolExecutor.html">Java 21 ThreadPoolExecutor</a></li></ol></section><nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-agent-evaluation-reliability.html">上一篇：幻觉、成本与效果验证</a><a rel="next" href="/post/learning-project-experience.html">下一篇：项目经历与技术选择</a></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回问题目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>

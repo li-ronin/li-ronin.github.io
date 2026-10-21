@@ -13,11 +13,16 @@ DATA = ROOT / 'data/learning-series.json'
 QUESTIONS = ROOT / 'data/interviews.json'
 HUB = '/post/agent-llm-learning-notes.html'
 LEGACY = '/post/ai-interview-learning-archive.html'
-SLUGS = ['agent-runtime', 'context-memory', 'tools-skills', 'planning-multi-agent',
-         'llm-attention-inference', 'llm-training-alignment', 'rag-knowledge-engineering',
-         'ai-coding-computer-use', 'agent-evaluation-reliability', 'concurrency-backpressure']
-TITLE = 'Agent 与大模型：从原理到实现'
-DATE = '2026-10-20'
+SLUGS = ['agent-runtime', 'context-memory', 'agent-memory', 'tools-skills', 'planning-multi-agent',
+         'llm-attention-inference', 'llm-training-alignment', 'rag-data-updates', 'rag-knowledge-engineering',
+         'ai-coding-computer-use', 'agent-evaluation-reliability', 'concurrency-backpressure', 'project-experience']
+TITLE = 'Agent 与大模型：问题与解答'
+DATE = '2026-10-21'
+ORIGINALS = ROOT / 'data/original-questions.json'
+ANSWERS = ROOT / 'data/question-answers.json'
+import sys
+sys.path.insert(0, str(ROOT / 'scripts'))
+from markdown_subset import render as render_markdown
 
 def e(value): return escape(str(value), quote=True)
 def route(slug): return '/post/learning-' + slug + '.html'
@@ -33,8 +38,9 @@ class FragmentValidator(HTMLParser):
         if tag not in {'br','hr'}: self.stack.append(tag)
         if tag not in self.allowed: raise ValueError('Disallowed content tag: ' + tag)
         for key, value in attrs:
-            if key not in {'class','href','id','colspan','rowspan','scope'}: raise ValueError('Disallowed content attribute: ' + key)
+            if key not in {'class','href','id','colspan','rowspan','scope','start'}: raise ValueError('Disallowed content attribute: ' + key)
             if key == 'href' and not (valid_url(value) or value.startswith('#')): raise ValueError('Unsafe content link')
+            if key == 'start' and (tag != 'ol' or not value.isdigit()): raise ValueError('Invalid list start')
             if key == 'id':
                 if not re.fullmatch(r'[a-z][a-z0-9-]*', value): raise ValueError('Invalid fragment ID')
                 self.ids.append(value)
@@ -56,37 +62,6 @@ class PlainText(HTMLParser):
 def plain(html):
     p=PlainText(); p.feed(html); return ''.join(p.parts)
 
-def load_data(path=DATA):
-    lessons = json.loads(Path(path).read_text(encoding='utf-8'))
-    qdata = json.loads(QUESTIONS.read_text(encoding='utf-8'))
-    qids = {q['id'] for q in qdata['questions']}
-    if len(lessons) != 10 or {a['slug'] for a in lessons} != set(SLUGS): raise ValueError('Expected ten distinct lessons')
-    seen_questions = set()
-    for a in lessons:
-        for key in ['title','category','summary']:
-            if not isinstance(a.get(key),str) or not a[key].strip(): raise ValueError('Missing article '+key)
-        if not a.get('sections') or not a.get('references'): raise ValueError('Article needs body and sources')
-        if not isinstance(a.get('prerequisites'),list) or not all(isinstance(x,str) for x in a['prerequisites']): raise ValueError('Invalid prerequisites')
-        if not isinstance(a.get('questionIds'),list) or not a['questionIds'] or not set(a['questionIds']) <= qids: raise ValueError('Unknown or missing question mapping in '+a['slug'])
-        if len(a['questionIds'])!=len(set(a['questionIds'])): raise ValueError('Repeated article question mapping')
-        seen_questions.update(a['questionIds'])
-        seen_sections=set(); content_ids=[]; content_fragments=[]
-        for s in a['sections']:
-            if not re.fullmatch(r'[a-z][a-z0-9-]*',s['id']) or s['id'] in seen_sections: raise ValueError('Invalid/repeated section ID')
-            seen_sections.add(s['id'])
-            if not s.get('title') or not s.get('html'): raise ValueError('Empty section')
-            validator=FragmentValidator();validator.feed(s['html']);validator.close()
-            content_ids.extend(validator.ids);content_fragments.extend(validator.fragments)
-        all_ids=['main','learning-questions','references',*seen_sections,*a['questionIds'],*content_ids]
-        if len(all_ids)!=len(set(all_ids)): raise ValueError('Duplicate article DOM ID in '+a['slug'])
-        if not set(content_fragments)<=set(all_ids): raise ValueError('Broken article fragment in '+a['slug'])
-        for r in a['references']:
-            if not r.get('title') or not valid_url(r.get('url','')): raise ValueError('Invalid technical reference')
-        visible=' '.join([a['title'],a['summary'],*(s['title']+' '+plain(s['html']) for s in a['sections'])])
-        if any(x in visible for x in ['面试题','题库','待补充']): raise ValueError('Unwanted question-bank framing')
-    if seen_questions != qids: raise ValueError('Unmapped original questions: '+','.join(sorted(qids-seen_questions)))
-    return sorted(lessons,key=lambda a:SLUGS.index(a['slug'])),qdata
-
 def shell(title,description,path,body):
     return f'''<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -97,58 +72,103 @@ def shell(title,description,path,body):
 <nav class="site-nav" aria-label="站点导航"><a class="site-name" href="/">李可涵 Khan Li</a><div class="site-nav-links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="/notes/">Notes</a></div></nav>
 <main id="main" tabindex="-1">{body}</main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>'''
 
+def load_data(path=DATA, answer_path=ANSWERS, original_path=ORIGINALS):
+    lessons=json.loads(Path(path).read_text(encoding='utf-8'))
+    qdata=json.loads(QUESTIONS.read_text(encoding='utf-8'))
+    corpus=json.loads(Path(original_path).read_text(encoding='utf-8'))
+    answers=json.loads(Path(answer_path).read_text(encoding='utf-8'))
+    answer_list=answers['questions'] if isinstance(answers,dict) else answers
+    by_id={a['id']:a for a in answer_list}
+    qids={q['id'] for q in qdata['questions']}
+    if len(by_id)!=len(answer_list):raise ValueError('Duplicate answer IDs')
+    if set(by_id)!=qids:raise ValueError('Missing or unknown answers: '+str(qids.symmetric_difference(by_id)))
+    if [a['slug'] for a in lessons]!=SLUGS:raise ValueError('Unexpected article routes or order')
+    mapped=[qid for a in lessons for qid in a['questionIds']]
+    if len(mapped)!=len(set(mapped)) or set(mapped)!=qids:raise ValueError('Every concept must belong to exactly one article')
+    originals=corpus['questions']
+    if len(originals)!=79 or len({o['id'] for o in originals})!=79:raise ValueError('Original occurrence loss or duplicate')
+    for o in originals:
+        if not o['title'] or o['canonicalId'] not in qids:raise ValueError('Invalid original question')
+    for a in lessons:
+        if not a.get('title'):raise ValueError('Missing article title')
+        ids={'main','references'};fragments=[]
+        for qid in a['questionIds']:
+            ans=by_id[qid]
+            if not isinstance(ans.get('answerMarkdown'),str) or len(ans['answerMarkdown'].strip())<80:raise ValueError('Missing substantive answer: '+qid)
+            html=render_markdown(ans['answerMarkdown']);v=FragmentValidator();v.feed(html);v.close()
+            own=[qid,*[o['id'] for o in originals if o['canonicalId']==qid],*v.ids]
+            if len(own)!=len(set(own)) or ids.intersection(own):raise ValueError('Duplicate DOM ID')
+            ids.update(own);fragments.extend(v.fragments)
+            ans['renderedHtml']=html
+            if not isinstance(ans.get('sources'),list):raise ValueError('Answer sources must be list')
+            for r in ans['sources']:
+                if not r.get('title') or not valid_url(r.get('url','')):raise ValueError('Unsafe technical reference')
+            for bad in ['待补充','面试题库']:
+                if bad in ans['answerMarkdown']:raise ValueError('Unwanted placeholder or framing')
+        if not set(fragments)<=ids:raise ValueError('Broken answer fragment')
+    qdata['originals']=originals;qdata['answers']=by_id
+    return lessons,qdata
+
+def original_questions(qid,qdata):return [o for o in qdata['originals'] if o['canonicalId']==qid]
+def question_label(qid,qdata):
+    originals=original_questions(qid,qdata)
+    return originals[0]['title'] if originals else next(q['title'] for q in qdata['questions'] if q['id']==qid)
+def source_links(qid,qdata):
+    q=next(q for q in qdata['questions'] if q['id']==qid);sources={s['id']:s for s in qdata['sources']}
+    seen=set();out=[]
+    for sid in q['sources']:
+        s=sources[sid];url=s.get('url')
+        if url and url not in seen:
+            seen.add(url);out.append('<a href="'+e(url)+'">'+e(s.get('author') or s.get('title') or '原文')+'</a>')
+    return '、'.join(out)
+
 def render_hub(lessons,qdata):
-    contents=[]
-    for n,a in enumerate(lessons,1):
-        contents.append(f'<li><h2><a href="{route(a["slug"])}">{n:02d} · {e(a["title"])}</a></h2><p>{e(a["summary"])}</p></li>')
-    # Historical deep links stay meaningful without keeping all full questions on the hub.
+    cards=[]
+    for a in lessons:
+        own=[qid for qid in a['questionIds'] if original_questions(qid,qdata)]
+        examples=''.join('<li><a href="'+route(a['slug'])+'#'+qid+'">'+e(question_label(qid,qdata))+'</a></li>' for qid in own[:3])
+        cards.append('<li><h2><a href="'+route(a['slug'])+'">'+e(a['title'])+'</a></h2><ul class="question-preview">'+examples+'</ul></li>')
     aliases=[]
     for q in qdata['questions']:
         a=next(a for a in lessons if q['id'] in a['questionIds'])
-        aliases.append(f'<p class="legacy-target" id="{e(q["id"])}">此主题已移入 <a href="{route(a["slug"])}#{e(q["id"])}">{e(a["title"])}</a>。</p>')
-    body=f'''<article><header class="article-header"><p class="series-label">系列导读</p><h1>{TITLE}</h1><p class="article-date"><time datetime="{DATE}">{DATE}</time></p>
-<p>把零散的问题连成一条学习路线：先理解系统为什么这样设计，再走通一个具体例子，最后用代码与实验检验理解。</p>
-<p>每个主题都是独立文章，包含原理、实现示例、失败场景与练习。可以按顺序阅读，也可以从正在遇到的问题进入。</p></header>
-<section class="study-route"><h2>怎样阅读</h2><p>工程主线：运行时 → 上下文与记忆 → 工具 → 编排 → 开发工作流 → 评测与可靠性。模型主线：注意力与推理 → 训练与对齐 → RAG。并发一篇为两条主线提供系统基础。</p><p>先不用背结论。读完一节后，尝试画出数据流、手算示例或修改示例参数，再对照练习中的验证条件。涉及个人项目的问题，需要自己的日志与实验作答，文章不会替代真实证据。</p></section>
-<ol class="series-list">{''.join(contents)}</ol>{''.join(aliases)}</article>'''
-    return shell(TITLE,'十篇独立学习文章：Agent、上下文、工具、编排、LLM、RAG、开发工作流与系统工程。',HUB,body)
+        aliases.append('<p class="legacy-target" id="'+q['id']+'">'+e(question_label(q['id'],qdata))+'：<a href="'+route(a['slug'])+'#'+q['id']+'">阅读解答</a></p>')
+    body='<article><header class="article-header"><h1>'+TITLE+'</h1><p class="article-date">更新于 '+DATE+'</p><p>按知识主题整理问题。打开一篇文章后，先看到原问题，再阅读对应的解释、例子与参考资料。相近问题放在一起，但保留不同的原始问法。</p><p>补充整理的问题单独标为“延伸问题”。涉及个人项目的内容说明如何分析和验证，不虚构项目经历或实测结果。</p></header><ol class="series-list">'+''.join(cards)+'</ol>'+''.join(aliases)+'</article>'
+    return shell(TITLE,'保留原问题，逐题解释 Agent、上下文、工具、RAG、大模型和并发知识。',HUB,body)
 
 def render_article(a,lessons,qdata):
-    index=SLUGS.index(a['slug'])
-    questions={q['id']:q for q in qdata['questions']}
-    sources={s['id']:s for s in qdata['sources']}
-    toc=''.join(f'<li><a href="#{e(s["id"])}">{e(s["title"])}</a></li>' for s in a['sections'])
-    chapters=''.join(f'<section class="lesson-section" id="{e(s["id"])}"><h2>{e(s["title"])}</h2>{s["html"]}</section>' for s in a['sections'])
-    related=[]
-    for qid in a['questionIds']:
-        q=questions[qid]
-        refs=[]
-        for sid in q['sources']:
-            s=sources[sid]
-            if s.get('url'):
-                refs.append(f'<a href="{e(s["url"])}">{e(s.get("author","原作者"))}</a>')
-        origin=' · 资料线索：'+'、'.join(refs) if refs else ''
-        practice = '【结合自己的项目证据】' if qid.startswith(('project-', 'career-')) or qid in {'harness-003','llm-004','llm-006','cost-001','eval-001','coding-001','coding-003','coding-004'} else ''
-        if qid == 'harness-001': practice = '【先确认项目指代与版本】'
-        related.append(f'<li id="{e(qid)}">{e(practice)}{e(q["title"])}<span class="question-origin">{origin}</span></li>')
-    refs=''.join(f'<li><a href="{e(r["url"])}">{e(r["title"])}</a></li>' for r in a['references'])
-    prev=f'<a rel="prev" href="{route(lessons[index-1]["slug"])}">上一篇：{e(lessons[index-1]["title"])}</a>' if index else '<span></span>'
-    nxt=f'<a rel="next" href="{route(lessons[index+1]["slug"])}">下一篇：{e(lessons[index+1]["title"])}</a>' if index+1<len(lessons) else '<span></span>'
+    index=SLUGS.index(a['slug']);questions={q['id']:q for q in qdata['questions']}
+    ordered=sorted(a['questionIds'],key=lambda qid:not bool(original_questions(qid,qdata)))
+    toc=''.join('<li><a href="#'+(o['id'] if o else qid)+'">'+e(o['title'] if o else question_label(qid,qdata))+'</a></li>' for qid in ordered for o in (original_questions(qid,qdata) or [None]))
+    parts=[];external_started=False;references=[];reference_urls=set()
+    for qid in ordered:
+        originals=original_questions(qid,qdata);ans=qdata['answers'][qid]
+        if not originals and not external_started:
+            parts.append('<div class="extension-intro"><h2>延伸问题</h2><p>以下是根据外部资料另外整理的问题，不是上面原记录的逐字转录。</p></div>');external_started=True
+        headings=[]
+        if originals:
+            for n,o in enumerate(originals):
+                if n:headings.append('<p class="variant-label">相关原问题：</p>')
+                headings.append('<h2 id="'+o['id']+'">'+e(o['title'])+'</h2>')
+                if o.get('editorNote'):headings.append('<p class="editor-note">'+e(o['editorNote'])+'</p>')
+        else:headings.append('<h2>'+e(questions[qid]['title'])+'</h2>')
+        origin=source_links(qid,qdata)
+        origin_html='<p class="question-origin">问题来源：'+origin+'</p>' if origin else ''
+        answer_refs=[]
+        for r in ans['sources']:
+            if r['url'] not in reference_urls:references.append(r);reference_urls.add(r['url'])
+            answer_refs.append('<a href="'+e(r['url'])+'">'+e(r['title'])+'</a>')
+        ref_html='<p class="answer-references">本题参考：'+'；'.join(answer_refs)+'</p>' if answer_refs else ''
+        parts.append('<section class="lesson-section question-section" id="'+qid+'">'+''.join(headings)+origin_html+'<div class="question-answer">'+ans['renderedHtml']+'</div>'+ref_html+'</section>')
+    refs=''.join('<li><a href="'+e(r['url'])+'">'+e(r['title'])+'</a></li>' for r in references)
+    prev='<a rel="prev" href="'+route(lessons[index-1]['slug'])+'">上一篇：'+e(lessons[index-1]['title'])+'</a>' if index else '<span></span>'
+    nxt='<a rel="next" href="'+route(lessons[index+1]['slug'])+'">下一篇：'+e(lessons[index+1]['title'])+'</a>' if index+1<len(lessons) else '<span></span>'
     tags=list(dict.fromkeys(t for qid in a['questionIds'] for t in questions[qid]['tags']))[:10]
-    prerequisites='；'.join(a['prerequisites'])
-    body=f'''<article class="blog-article"><p class="breadcrumb"><a href="{HUB}">{TITLE}</a> / {index+1:02d}</p>
-<header class="article-header"><h1>{e(a['title'])}</h1><p class="article-date"><time datetime="{DATE}">{DATE}</time> · 技术资料核对日期；具体产品行为以对应版本为准</p><p>{e(a['summary'])}</p><p class="knowledge-tags">知识标签：{e(' · '.join(tags))}</p><p><strong>阅读前准备</strong>：{e(prerequisites)}</p></header>
-<nav class="article-contents" aria-label="文章目录"><h2>目录</h2><ol>{toc}<li><a href="#learning-questions">带着这些问题回看</a></li><li><a href="#references">参考资料</a></li></ol></nav>
-{chapters}<section id="learning-questions" class="learning-questions"><h2>带着这些问题回看</h2><p>下面保留最初的学习问题，用来检查理解是否能迁移到自己的任务。项目经历与实测指标需由真实工作补足，不代表本文已经给出个人经历的答案。</p><ul>{''.join(related)}</ul></section>
-<section id="references" class="references"><h2>参考资料</h2><p>机制说明以原始论文、官方文档为依据；文中自建示例与设计建议不等同于任何产品的内部实现。</p><ol>{refs}</ol></section>
-<nav class="article-pagination" aria-label="系列上一篇和下一篇">{prev}{nxt}</nav><p class="back-to-series"><a href="{HUB}">返回系列目录</a></p></article>'''
-    return shell(a['title'],a['summary'],route(a['slug']),body)
+    body='<article class="blog-article"><p class="breadcrumb"><a href="'+HUB+'">问题与解答</a> / '+e(a['title'])+'</p><header class="article-header"><h1>'+e(a['title'])+'</h1><p class="article-date">更新于 <time datetime="'+DATE+'">'+DATE+'</time></p><p class="knowledge-tags">知识标签：'+e(' · '.join(tags))+'</p></header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol>'+toc+'</ol></nav>'+''.join(parts)+'<section id="references" class="references"><h2>参考资料</h2><p>产品实现可能随版本变化；示例中的假设与实测结论应当区分。</p><ol>'+refs+'</ol></section><nav class="article-pagination" aria-label="系列上一篇和下一篇">'+prev+nxt+'</nav><p class="back-to-series"><a href="'+HUB+'">返回问题目录</a></p></article>'
+    return shell(a['title'],'围绕原问题解释'+a['title']+'，包含具体例子与参考资料。',route(a['slug']),body)
 
 def outputs(lessons,qdata):
     hub=render_hub(lessons,qdata)
-    result={HUB:hub,LEGACY:hub}
-    result.update({route(a['slug']):render_article(a,lessons,qdata) for a in lessons})
-    return result
+    return {HUB:hub,LEGACY:hub,**{route(a['slug']):render_article(a,lessons,qdata) for a in lessons}}
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--check',action='store_true');args=parser.parse_args()
@@ -158,5 +178,5 @@ def main():
         if args.check:
             if not p.exists() or p.read_text(encoding='utf-8')!=html:parser.exit(1,'Out of date: '+str(p)+'\n')
         else:p.write_text(html,encoding='utf-8')
-    print(('Checked' if args.check else 'Built')+' ten lessons and two series entry addresses')
+    print(('Checked' if args.check else 'Built')+' 13 question-first articles and two entry addresses')
 if __name__=='__main__':main()

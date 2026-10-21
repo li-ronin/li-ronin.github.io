@@ -1,56 +1,125 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>上下文、压缩与记忆：让 Agent 在长任务中保持正确状态 · Khan Li</title><meta name="description" content="从一份 32K 预算算例出发，区分聊天记录、模型输入、任务状态与长期记忆，再设计可回退、可验证的压缩流程。">
+<title>Prompt 与上下文压缩 · Khan Li</title><meta name="description" content="围绕原问题解释Prompt 与上下文压缩，包含具体例子与参考资料。">
 <link rel="canonical" href="https://li-ronin.github.io/post/learning-context-memory.html"><link rel="icon" href="/images/alpaca.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/academic.css"><link rel="stylesheet" href="/assets/learning-series.css"></head>
 <body><a class="skip-link" href="#main">跳到正文</a><div class="page learning-series">
 <nav class="site-nav" aria-label="站点导航"><a class="site-name" href="/">李可涵 Khan Li</a><div class="site-nav-links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="/notes/">Notes</a></div></nav>
-<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">Agent 与大模型：从原理到实现</a> / 02</p>
-<header class="article-header"><h1>上下文、压缩与记忆：让 Agent 在长任务中保持正确状态</h1><p class="article-date"><time datetime="2026-10-20">2026-10-20</time> · 技术资料核对日期；具体产品行为以对应版本为准</p><p>从一份 32K 预算算例出发，区分聊天记录、模型输入、任务状态与长期记忆，再设计可回退、可验证的压缩流程。</p><p class="knowledge-tags">知识标签：Claude Code · 上下文压缩 · Prompt · 上下文预算 · 动态注入 · Token预算 · 压缩触发策略 · 分层压缩 · 状态管理 · 压缩策略</p><p><strong>阅读前准备</strong>：理解函数调用与输入输出；会阅读字典或结构体；不要求了解向量数据库</p></header>
-<nav class="article-contents" aria-label="文章目录"><h2>目录</h2><ol><li><a href="#four-objects">1. 先把四个容易混淆的对象分开</a></li><li><a href="#budget">2. 用一笔预算理解为什么不能等到窗口满了再压缩</a></li><li><a href="#protected-state">3. 把不能丢失的信息从自然语言摘要里拆出来</a></li><li><a href="#three-layers">4. 为什么可以分层压缩，而不是一次总结所有历史</a></li><li><a href="#transaction">5. 把压缩当作一次有校验的状态迁移</a></li><li><a href="#measure-loss">6. 如何发现压缩过度：测未来行为，不只测摘要好不好看</a></li><li><a href="#memory-lifecycle">7. 长期记忆不是把每轮对话再存一遍</a></li><li><a href="#resume">8. 恢复会话、恢复文件、恢复外部世界是三回事</a></li><li><a href="#claude-boundary">9. 怎样研究 Claude Code，而不把推断说成事实</a></li><li><a href="#budget-lab">10. 动手实验：先实现预算，再验证信息不丢</a></li><li><a href="#learning-questions">带着这些问题回看</a></li><li><a href="#references">参考资料</a></li></ol></nav>
-<section class="lesson-section" id="four-objects"><h2>1. 先把四个容易混淆的对象分开</h2><p>设想一个修复程序的任务已经进行了两小时。磁盘上有 20 MB 日志，数据库里有 200 轮聊天，而下一次模型调用最多只能接收某个有限窗口。此时问“Agent 还记得多少”，其实混合了四个不同问题：系统保存了什么、这一次送进模型什么、任务进行到哪里、哪些知识应该跨任务保留。</p><p><strong>原始记录</strong>是完整事件和证据，追求可追溯；<strong>上下文</strong>是当前一次推理的输入，追求此刻有效；<strong>任务状态</strong>是目标、限制、计划和执行结果的结构化表示，追求可恢复；<strong>长期记忆</strong>是未来任务仍有用的信息，追求正确召回。把它们全塞进一份不断增长的 messages 数组，初期简单，后期却会让压缩、恢复和纠错互相牵连。</p><p>可以类比 C++ 程序：磁盘文件不等于已加载到内存的对象，内存对象也不等于某个函数的局部变量。模型没有自动读取外部记录的能力；“存到了数据库”不代表它在下一次推理中可用。反过来，放进上下文一次，也不意味着模型参数永久学会了它。</p><p>下文的预算、状态字段与实验是一个可实现的教学设计，不是对某个商业产品内部实现的披露。LangGraph 的公开文档将线程状态 checkpoint 与跨线程 store 分开，提供了理解这两个作用范围的具体例子。<a href="https://docs.langchain.com/oss/python/langgraph/persistence">参考：Persistence</a>。</p></section><section class="lesson-section" id="budget"><h2>2. 用一笔预算理解为什么不能等到窗口满了再压缩</h2><p>先采用一个教学假设：某模型的总上下文预算 C 为 32,000 tokens，且输入与输出共同占用这一预算。真实 API 可能另设最大输出限制或保留特殊开销，应以具体模型接口为准；这里不把 32K 当作任何产品的固定配置。令 I 为当前输入，R 为预期下一批工具结果，O 为输出预留，S 为安全余量，则必须检查 I + R + O + S ≤ C。</p><p>例如当前输入中：固定约束 1,500、目标和结构化状态 1,500、工具定义 2,000、最近对话 4,000、检索到的代码 6,000、旧日志 9,000，总计 I = 24,000。若下一步测试可能返回 4,000，输出预留 3,000，安全余量 2,000，则需求为 33,000，已经需要处理，虽然眼前输入仅占 75%。</p><p>这也解释了为什么“统一到 80% 才压缩”缺少依据。若工具返回大小波动很大，同一比例对小日志任务可能保守，对大构建任务却太迟。可以先给工具设置输出上限，再用历史轨迹的高分位结果长度估计 R；不要拿平均值覆盖最危险的长尾。计数器也必须使用匹配模型的 tokenizer 或服务端计数接口，字符数只是粗略代理。</p><p>预算不仅限制总量，还要限制结构。若 90% 空间被一份无关日志占用，即使请求能成功提交，也未必能正确决策。输入选择可以看成带依赖的背包问题：每项材料有代价、相关性和保留价值，但一个函数的定义与它的调用约束可能要一起选，不能简单按相似度逐句截取。</p></section><section class="lesson-section" id="protected-state"><h2>3. 把不能丢失的信息从自然语言摘要里拆出来</h2><p>下面这个例子中，用户要求修复一个序列化错误，并明确“不要改变公开接口，不要提交远端”。如果摘要只剩“正在修复序列化问题，测试基本通过”，系统就丢掉了两条决定行为边界的约束，还把未验证的状态概括得过于乐观。压缩失败不一定表现为答非所问，也可能表现为程序继续工作，却执行了不该执行的操作。</p><p>一种更稳健的做法是维护受保护状态，压缩器只能产生叙述摘要，不能直接修改目标、授权和外部副作用结果。以下结构里的 evidence_ref 是可回查证据，base_revision 是代码版本；测试结果如果不绑定版本，代码修改后就可能被误当成仍有效。授权字段只是应用状态示意，真正执行时仍由独立权限检查作最终判断。</p><p>并不是所有事实都能由字符串相等保证。对来源证据里的语义条件，还需要人工或规则构造的测试；但把重要字段显式化，可以把“期望模型记住”变成“程序能检查是否丢失”。</p><pre><code>{
-  &quot;goal&quot;: &quot;修复序列化错误&quot;,
-  &quot;constraints&quot;: [&quot;公开接口保持不变&quot;, &quot;不推送远端&quot;],
-  &quot;base_revision&quot;: &quot;commit-A&quot;,
-  &quot;current_revision&quot;: &quot;working-tree-B&quot;,
-  &quot;checks&quot;: [{&quot;name&quot;: &quot;unit&quot;, &quot;revision&quot;: &quot;A&quot;, &quot;status&quot;: &quot;passed&quot;}],
-  &quot;open_issues&quot;: [&quot;B 版本尚未运行回归&quot;],
-  &quot;side_effects&quot;: [{&quot;operation_id&quot;: &quot;op-17&quot;, &quot;status&quot;: &quot;not_started&quot;}],
-  &quot;evidence_refs&quot;: [&quot;logs/run-17&quot;, &quot;diff/A-to-B&quot;]
-}</code></pre></section><section class="lesson-section" id="three-layers"><h2>4. 为什么可以分层压缩，而不是一次总结所有历史</h2><p>“三层压缩”不是行业固定标准，更不是模型必须有三层记忆。分层的理由是不同对象允许的损失程度不同。下面从损失较小到损失较大的顺序给出一种设计，触发条件与阈值要通过任务实验调整。</p><p><strong>第一层，整理原始输出。</strong>测试工具先保存完整日志，再只返回退出码、失败用例、关键堆栈和原文位置。移除重复编译进度不一定损失任务信息；但只保留最后 100 行就可能丢掉最早的根因。可让工具支持按错误类型、文件或行号再次查询，这样上下文不必承担日志仓库的职责。</p><p><strong>第二层，按任务阶段形成摘要。</strong>一个失败假设已被证伪后，把十轮搜索变成“假设 H 已排除，证据 E，仍未验证条件 U”，保留最近正在操作的文件和关键工具调用关系。摘要应记录决策理由，而不只列操作流水。否则之后环境变化时，无法判断旧结论是否仍适用。</p><p><strong>第三层，重建干净上下文。</strong>当历史过于碎片化或任务进入新阶段，从受保护状态、阶段摘要、必要原文和最近交互重新组装输入。旧历史仍保存在外部，不以删除记录换取窗口空间。若重新加载某个超大对象立即把窗口塞满，应该改变检索粒度，而不是不断“压缩—重载—再压缩”。</p><p>以刚才的 24,000-token 输入为例，若日志提炼后由 9,000 变为 1,500，输入降为 16,500；加上 R、O、S 为 25,500，预算就恢复了。这里节省的 7,500 并不是免费收益：我们必须验证失败用例、关键条件和证据位置仍可找回。</p></section><section class="lesson-section" id="transaction"><h2>5. 把压缩当作一次有校验的状态迁移</h2><p>一个容易忽略的细节是压缩器本身也会失败。它可能超时、返回无效 JSON、遗失约束，或者在压缩过程中原任务状态已经被新消息修改。因此不要直接执行 history = summarize(history)。更合理的顺序是：读取快照、生成候选、校验、确认快照仍是当前版本，再提交。</p><p>下面是语言无关的伪代码。版本比较体现乐观并发控制：候选摘要基于版本 12，但用户已发来改变需求的新消息，使状态来到版本 13，这时必须重新生成或做显式合并，不能把旧摘要覆盖回去。校验还应检查证据引用有效、未决问题没有被写成已解决。</p><p>对于工具调用，不能随意只保留一半协议。若历史里留下“工具返回”，却没有对应调用标识，某些 API 会拒绝输入；更隐蔽的情况是模型不知道该结果对应哪个对象。压缩必须按语义和协议的完整单元处理，不应把 token 截断器当成通用正确性机制。</p><pre><code>snapshot = load_task_state()
-candidate = summarize(snapshot.history, protected=snapshot.facts)
-
-if not schema_valid(candidate):
-    keep_old_context(&quot;invalid summary&quot;)
-elif not evidence_refs_resolve(candidate):
-    keep_old_context(&quot;broken evidence&quot;)
-elif candidate.claims_done(snapshot.open_issues):
-    require_review(&quot;unproved completion&quot;)
-elif current_state_version() != snapshot.version:
-    rebuild_from_latest_state()
-else:
-    atomic_commit(summary=candidate,
-                  expected_version=snapshot.version,
-                  preserve=snapshot.facts)</code></pre></section><section class="lesson-section" id="measure-loss"><h2>6. 如何发现压缩过度：测未来行为，不只测摘要好不好看</h2><p>摘要很流畅，不意味着它足以支持后续任务。最有用的测试是保存同一个中间状态，构造两条后续轨迹：一条保留完整可用证据，一条使用压缩结果；给它们相同的后续要求，比较行为和产物，而不是只让另一个模型评价文字质量。</p><p>至少记录四类指标：关键约束保持率、相关事实召回率、任务成功率、单位成功任务的总成本。总成本应包含总结调用、重新读取证据和重复执行，而不只是压缩后一次调用便宜了多少。还可以统计“重复已经完成的动作”“使用过期测试结果”“反复询问用户已给的信息”等症状。</p><p>可以构造一个明确的反例：初始条件写明接口不能改变，中间混入 50 轮无关日志，压缩后要求增加一个可选字段。正确行为是兼容扩展；若系统修改了已有必需参数，说明约束保持失败。再加入一次用户变更“现在允许改变接口但需迁移指南”，检查系统是否能应用较新的指令，而不是把旧约束永久钉死。</p><p>恢复策略按损失程度选择：小范围缺证据就根据引用补读原文；发现摘要误述就回滚到前一版本并重压；发现状态已失真则从可靠 checkpoint 重建。对可能产生外部副作用的步骤，先核对真实结果，不能因为上下文忘了就重做。</p></section><section class="lesson-section" id="memory-lifecycle"><h2>7. 长期记忆不是把每轮对话再存一遍</h2><p>上下文解决“这一次模型要看到什么”，长期记忆解决“什么值得在未来再次使用”。如果每轮都自动提炼五条记忆，几个月后很容易出现重复、矛盾和过时记录。写入记忆需要类似数据库更新的语义：新增、修正、失效和删除，而不只有追加。</p><p>一个记忆条目可以包含：主体、事实或偏好、来源、观测时间、适用范围、置信状态、有效期。例如“本项目使用 C++17”应绑定项目，不应传播成“用户所有项目只允许 C++17”；“这次希望简短回答”也不应该立即升级成永远简短。推断与明确陈述要分开。</p><p>写入前先判断未来效用、稳定性、可验证性和重复度。召回前先按用户与项目做隔离过滤，再按任务相关性选候选，最后检查时间和冲突。向量相似度只能表示某种语义接近，不能决定真伪与权限。对于“当前使用哪个版本”这样的信息，更新近且有直接证据的记录通常比历史总结更有用。</p><p>所谓静态长期记忆与动态长期记忆，可以理解为加载策略不同：少量稳定约定常驻，按任务需要的事实按需召回。不是必须再建两个数据库。给常驻部分设上限十分重要，因为每次请求都带上的内容会反复消耗预算。LangChain 文档讨论短期与长期记忆的作用范围；这里的准入、失效和冲突规则是面向可靠性的设计建议。<a href="https://docs.langchain.com/oss/python/concepts/memory">参考：Memory overview</a>。</p></section><section class="lesson-section" id="resume"><h2>8. 恢复会话、恢复文件、恢复外部世界是三回事</h2><p>用户隔天说“在刚才的功能上再支持一种格式”，恢复聊天记录只是第一步。昨天的工作目录可能被修改，分支可能切换，依赖版本也可能更新。正确的恢复过程先读取任务状态，再读取当前文件与版本，最后核对外部资源，形成差异后重新规划。</p><p>例如旧状态记着“测试通过”，但今天仓库 HEAD 已变化。这条结果仍是有效历史，却不能证明当前版本正确。类似地，checkpoint 中记着“准备提交订单”，既不能证明订单已经提交，也不能证明可以重新提交。持久化需要保留状态，业务恢复还需要验证状态与现实是否一致。</p><p>Checkpoint 膨胀也不要靠随意清空解决。可为运行中的任务保留恢复必需快照，为关键里程碑保留审计快照，把巨大日志拆到对象存储，旧快照采用明确保留策略。清理前确保没有正在恢复的线程依赖它，引用过期应返回明确错误而不是默默变成空内容。</p></section><section class="lesson-section" id="claude-boundary"><h2>9. 怎样研究 Claude Code，而不把推断说成事实</h2><p>截至本次资料核对，Claude Code 官方文档说明：接近窗口限制时会先清理较旧工具输出，必要时再总结对话，并提供 /context 与 /compact 等可观察入口。文档也提醒早期细节可能丢失，因此持久约定不能只依靠聊天历史。这里只陈述公开行为，不据此推断其内部一定采用本章的状态结构、打分函数或三层阈值。<a href="https://code.claude.com/docs/en/how-claude-code-works">参考：How Claude Code works</a>。</p><p>做源码级研究时，记录版本、入口函数、输入输出对象和调用链；闭源部分则记录实验条件与观察，明确标成黑盒推断。比如看见摘要保留最近文件，只能说明这次实验中出现了这一现象，不能证明所有版本都固定保留同样数量的文件。</p><p>一个可复查的实验记录应包含模型和客户端版本、原始任务、上下文统计、压缩触发时刻、压缩后要求与最终产物。不要用自己写的 Agent 伪代码替代产品证据，也不要拿营销中的“大窗口”作为无需压缩的证明。</p></section><section class="lesson-section" id="budget-lab"><h2>10. 动手实验：先实现预算，再验证信息不丢</h2><p>下面这段 Python 仅用于演示预算算术，不依赖模型、不自动调用任何外部服务。使用教学 token 计数，不冒充真实 tokenizer。保存运行后，断言会验证初始输入 24,000 对应总需求 33,000，以及日志提炼后总需求 25,500；最终打印 budget fits: True。它让触发规则可单元测试，而不是藏在一段自然语言提示里。</p><pre><code>from dataclasses import dataclass
-
-@dataclass(frozen=True)
-class Budget:
-    capacity: int
-    next_tool: int
-    output: int
-    safety: int
-
-    def need(self, parts):
-        return sum(parts.values()) + self.next_tool + self.output + self.safety
-
-b = Budget(32000, 4000, 3000, 2000)
-parts = dict(rules=1500, state=1500, tools=2000,
-             recent=4000, code=6000, logs=9000)
-assert sum(parts.values()) == 24000
-assert b.need(parts) == 33000
-assert b.need(parts) &gt; b.capacity
-parts[&quot;logs&quot;] = 1500
-assert b.need(parts) == 25500
-print(&quot;budget fits:&quot;, b.need(parts) &lt;= b.capacity)</code></pre><ol><li>将规则提取为独立函数，为零预算、超大工具返回、摘要失败和新消息到达建立测试。</li><li>构造十个带约束的短任务，手工写出必须保留的事实与证据。先用人工摘要验证状态结构，再接入模型摘要，避免把数据建模问题误当成模型能力问题。</li><li>分别测试“只截断”“只摘要”“受保护状态＋摘要＋补读”，比较成功率、证据回读次数与总 token 消耗。实验结果可能随任务变化，不预设复杂方案必然优胜。</li><li>当你能够解释一条具体约束从用户输入、持久状态、压缩到执行检查的完整路径时，才算真正理解了“保留关键信息”，而不是只会复述这个词。</li></ol></section><section id="learning-questions" class="learning-questions"><h2>带着这些问题回看</h2><p>下面保留最初的学习问题，用来检查理解是否能迁移到自己的任务。项目经历与实测指标需由真实工作补足，不代表本文已经给出个人经历的答案。</p><ul><li id="context-001">如何核实并解释 Claude Code 的上下文压缩机制？<span class="question-origin"> · 资料线索：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></span></li><li id="context-002">输入模型的 Prompt 应由哪些部分构成，哪些内容需要注入？<span class="question-origin"></span></li><li id="context-003">项目中的上下文压缩如何实现，触发条件和阈值如何确定？<span class="question-origin"> · 资料线索：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></span></li><li id="context-004">多层上下文压缩为何这样分层，各层对象和触发条件是什么？<span class="question-origin"></span></li><li id="context-005">如何发现上下文压缩过度，并恢复受损的任务表现？<span class="question-origin"></span></li><li id="context-006">用户在原任务上追加功能时，系统如何恢复会话和任务状态？<span class="question-origin"></span></li><li id="memory-001">Agent 的短期与长期记忆应如何分层，各层存什么和如何使用？<span class="question-origin"> · 资料线索：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></span></li><li id="memory-002">频繁写入长期记忆时，如何避免无用信息快速积累？<span class="question-origin"></span></li><li id="memory-003">模型或系统如何决定是否召回长期记忆？<span class="question-origin"></span></li><li id="context-007">压缩后必须保留哪些信息，如何在实现中保证不丢失？<span class="question-origin"> · 资料线索：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></span></li><li id="ext-010">如何管理持续膨胀的Checkpoint？<span class="question-origin"> · 资料线索：<a href="https://zhuanlan.zhihu.com/p/2034667289245636223">TrustZone</a></span></li><li id="ext-030">大批日志怎样进入有限上下文？<span class="question-origin"> · 资料线索：<a href="https://www.nowcoder.com/discuss/926232883432296448">讨个offer咯</a></span></li></ul></section>
-<section id="references" class="references"><h2>参考资料</h2><p>机制说明以原始论文、官方文档为依据；文中自建示例与设计建议不等同于任何产品的内部实现。</p><ol><li><a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Anthropic：上下文工程</a></li><li><a href="https://docs.langchain.com/oss/python/langgraph/persistence">LangGraph：持久化</a></li><li><a href="https://docs.langchain.com/oss/python/concepts/memory">LangChain：记忆作用范围</a></li><li><a href="https://code.claude.com/docs/en/how-claude-code-works">Claude Code：工作机制与上下文管理</a></li></ol></section>
-<nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-agent-runtime.html">上一篇：Agent 运行时：把模型决策变成可靠的执行系统</a><a rel="next" href="/post/learning-tools-skills.html">下一篇：工具、Skill 与 MCP：能力怎样接入，流程怎样复用</a></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回系列目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>
+<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">问题与解答</a> / Prompt 与上下文压缩</p><header class="article-header"><h1>Prompt 与上下文压缩</h1><p class="article-date">更新于 <time datetime="2026-10-21">2026-10-21</time></p><p class="knowledge-tags">知识标签：Claude Code · 上下文压缩 · Prompt · 上下文预算 · 动态注入 · Token预算 · 压缩触发策略 · 分层压缩 · 状态管理 · 压缩策略</p></header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol><li><a href="#original-002">Claude Code上下文是怎么压缩的</a></li><li><a href="#original-072">你对 Claude Code 的上下文压缩机制了解多少？</a></li><li><a href="#original-010">输入到模型的prompt由哪些部分组成？哪些是必须注入？哪些不是必须，为什么？</a></li><li><a href="#original-040">讲一下动态prompt和静态prompt？</a></li><li><a href="#original-012">你提到了上下文压缩，是怎么做的？</a></li><li><a href="#original-039">压缩机制是做的？上下文窗口总token多大？触发上限为什么选这个值？</a></li><li><a href="#original-070">项目里的上下文压缩是怎样实现的？在什么情况下开始压缩？压缩过程具体做什么？</a></li><li><a href="#original-013">为什么要采用三层压缩策略，每一层压缩的内容一致么？分别在什么条件在触发？</a></li><li><a href="#original-014">如果模型因为压缩过度，效果不理想，你是怎么发现的，怎么处理这种异常？</a></li><li><a href="#original-015">如果让agent需要对原来的任务上进一步修改，比如新加一个功能，你这个系统是怎么做的？需要重新注入哪些信息？（我理解是恢复会话？）</a></li><li><a href="#original-071">哪些信息必须在压缩后继续保留？结合记忆分层说明保留规则。对于不能压缩或不能丢失的信息，你怎样在实现中落实这些约束？</a></li><li><a href="#ext-010">如何管理持续膨胀的Checkpoint？</a></li><li><a href="#ext-030">大批日志怎样进入有限上下文？</a></li></ol></nav><section class="lesson-section question-section" id="context-001"><h2 id="original-002">Claude Code上下文是怎么压缩的</h2><p class="variant-label">相关原问题：</p><h2 id="original-072">你对 Claude Code 的上下文压缩机制了解多少？</h2><p class="question-origin">问题来源：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></p><div class="question-answer"><p>Claude Code 的上下文压缩，简单说就是：会话越来越长时，不再把早先所有聊天和工具输出原封不动地交给模型，而是清理部分旧材料、把较早的讨论整理成更短的内容，让任务能够继续。</p>
+<p>这里要先区分“上下文”和“模型记忆”。上下文是这一次请求中模型能够利用的输入材料，例如你的需求、源码和命令输出。模型不会因为昨天读过一个文件，就自动永久记住你的仓库。程序下一次要么继续提供相关内容，要么提供摘要，要么让模型通过工具重新读取。</p>
+<h3>官方能确认到什么程度</h3>
+<p>截至本文核对时，Claude Code 文档说明：接近限制时会先清理旧工具输出，必要时总结会话；可以使用 <code>/compact</code> 主动压缩并指定关注内容，用 <code>/context</code> 查看空间使用。长期规则可以写入项目指令文件。它没有因此承诺每句话都完整保留，也不能据此断言内部永远采用某个固定阈值、某个摘要模型或“三层压缩”。具体行为应结合所用版本核对。</p>
+<h3>用一个自己的例子理解压缩</h3>
+<p>假设之前讨论过 20 轮代码修改，读了几千行日志。真正需要继续解决的是“空数组处理已经修好，但大整数求和溢出”。压缩后可能用类似下面的简短记录表达旧阶段：</p>
+<pre><code>目标：修复 sum 的边界问题，不改变公开接口。
+已完成：空数组处理；对应测试通过。
+当前问题：大整数求和溢出，尚未修复。
+证据：保存的失败日志及当前源码路径。
+下一步：检查累加变量类型和边界测试。</code></pre>
+<p>这是解释压缩思想的示例，不是 Claude Code 内部摘要模板。它比全部对话短，但省掉了早期逐句讨论。后续如果需要某一段精确源码，就应该重新读取，而不能把摘要当成原文件。</p>
+<h3>为什么压缩后可能“忘了”要求</h3>
+<p>摘要会选择信息。若“不要改接口”只在很早的一句聊天中出现，摘要没有保留，模型后续就可能看不到。即使保留了，也不能保证模型绝不犯错。所以重要项目约定需要有稳定存放位置，并在修改和测试中验证。压缩保存的是继续工作的必要线索，不是无损备份。</p>
+<p>压缩也不等于删除项目文件、撤销修改或清空磁盘上的会话记录。这些是不同操作，不能看到上下文减少就推断文件丢失。</p>
+<h3>可以怎样亲自观察</h3>
+<p>在一个可恢复的测试项目中，先提出一个明确约束，运行几轮读文件和测试，然后主动执行 <code>/compact</code>。继续提问或修改，检查约束是否仍可用、关键文件是否重新读取、旧结论是否仍有依据。记录版本和操作过程，不以一次实验推断所有版本。尤其别只问模型“你记得吗”：应给一个会违反该约束的修改机会，观察实际结果和测试。</p></div><p class="answer-references">本题参考：<a href="https://code.claude.com/docs/en/how-claude-code-works">Claude Code：上下文填满后的处理</a>；<a href="https://code.claude.com/docs/en/memory">Claude Code：项目指令与记忆</a>；<a href="https://code.claude.com/docs/en/context-window">Claude Code：上下文窗口</a></p></section><section class="lesson-section question-section" id="context-002"><h2 id="original-010">输入到模型的prompt由哪些部分组成？哪些是必须注入？哪些不是必须，为什么？</h2><p class="variant-label">相关原问题：</p><h2 id="original-040">讲一下动态prompt和静态prompt？</h2><div class="question-answer"><p>这里的 Prompt 可以理解为“这一次调用模型时，程序提供给模型的全部指令和相关材料”。它不只包含聊天框里用户刚输入的一句话。不同 API 会把内容放在不同角色的消息、工具定义等字段中，但从理解问题的角度，可以先按作用拆开。</p>
+<h3>以修改 C++ 函数为例拆开看</h3>
+<p>用户说“给这个函数加上空数组处理”，程序可能发送这些内容：</p>
+<ul><li>系统或开发者指令：助手负责什么、如何使用工具、哪些事情不能做。</li><li>当前用户需求：增加空数组处理，并且不能改变已有接口。</li><li>项目规则：使用 C++17、测试命令是什么、哪些目录不能修改。</li><li>可用工具说明：<code>read_file</code> 要哪些参数，返回什么；<code>apply_patch</code> 如何修改文件。</li><li>本次相关材料：函数源码、调用者、失败的测试输出。</li><li>必要的历史信息：刚才已经尝试过什么，用户后来修正了哪些要求。</li></ul>
+<p>“注入”不是特殊的模型算法，只是应用程序把这些内容加入当前请求。例如从磁盘读出项目规则文件，把其文本放入消息，就是一次上下文注入。</p>
+<h3>哪些必须，哪些不必须</h3>
+<p>没有一个适合所有任务的固定必填内容清单。若只问“什么是线程池”，无需注入整个仓库；若要修改函数，却不给源码、也不给读取工具，模型便无从确认真实实现。判断原则是：缺了这部分，模型还能正确理解当前任务并遵守限制吗？</p>
+<p>当前有效需求、必要的执行限制、要使用的工具说明通常应可见；当前代码和报错按任务提供；与任务无关的旧聊天、全部项目文件、所有 Skill 正文不应默认全部加入。更多内容不等于更好：无关内容会占用长度、增加费用，还可能让模型混淆旧要求和新要求。</p>
+<p>需要特别区分“模型应该看见的规则”和“程序必须强制执行的权限”。例如禁止修改仓库外文件可以写入 Prompt，但程序仍应在工具层检查路径。不能因为 Prompt 中有一句禁止，就认为实际权限已经受限。</p>
+<h3>静态 Prompt 和动态 Prompt 是什么</h3>
+<p>静态指相对稳定、多个请求可以复用的部分，例如角色说明和通用输出格式；动态指随本轮任务改变的部分，例如本轮问题、刚读出的源码和测试结果。这是内容维护方式的区分，不是两种模型。</p>
+<p>一种容易实现的组织方式是：稳定规则放在前部，本轮需求和材料放在后部，材料带来源和时间。所谓静态也不是永久不变，项目切换或规则修改后必须更新。还应明确“用户最新要求优先于过期需求”，但外部文件中的文字不能因此升级为用户授权。</p>
+<p>可以用一个小测试检验设计：用户先说“改成返回 0”，随后纠正为“空输入抛异常”。最终输入若仍把前一句当有效需求，就是上下文整理出了问题，而不是模型需要更多历史。</p></div></section><section class="lesson-section question-section" id="context-003"><h2 id="original-012">你提到了上下文压缩，是怎么做的？</h2><p class="variant-label">相关原问题：</p><h2 id="original-039">压缩机制是做的？上下文窗口总token多大？触发上限为什么选这个值？</h2><p class="variant-label">相关原问题：</p><h2 id="original-070">项目里的上下文压缩是怎样实现的？在什么情况下开始压缩？压缩过程具体做什么？</h2><p class="question-origin">问题来源：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></p><div class="question-answer"><p>上下文压缩，是为了让下一次模型请求放得下，把不再需要逐字保留的历史内容改成更短的记录。它不是把模型参数压小，也不是把文件压成 ZIP；被压缩的主要是聊天历史、读文件结果、命令输出等输入材料。</p>
+<p>下面给出一种可以自己实现的方案，不把它说成任何人的项目实绩。</p>
+<h3>1. 先计算还剩多少空间</h3>
+<p>Token 是模型分词器使用的文本单位，一个汉字或一个英文单词不一定恰好对应一个 Token。假设某次配置的总上下文预算是 100,000 Token，预留回答空间 8,000、可能马上返回的工具输出 10,000、安全余量 2,000，那么当前可用输入目标最多约 80,000。这个数字仅用于演示，不是 Claude Code 或 Codex 的固定窗口。</p>
+<p>应核对所用 API 对输入、输出、推理 Token 的具体限制，使用对应计数方式。在下一次请求前检查预算，而不是等服务端已经拒绝“输入太长”再补救。工具若可能一次返回几十万行，也要先限制它的输出。</p>
+<h3>2. 压缩时到底改什么</h3>
+<p>假设历史包含三轮编译输出，每轮 3,000 行，而目前只有最后一次报错仍未解决。可以把完整输出保存在文件里，在上下文中留下：日志路径、执行命令、退出码、关键报错和源码位置。这样没有销毁原始证据，只是不再每轮把它全部发给模型。</p>
+<p>随后把已完成阶段整理为短记录，例如“已为 sum 函数加入空输入检查；普通输入测试通过；当前失败是边界值溢出；不得改变函数签名”。最近正在分析的源码、最新失败测试和当前用户要求继续保留。摘要生成后要检查是否遗漏禁止事项、是否把推测写成结论，再替换相应历史片段。</p>
+<h3>3. 阈值为什么不能随便定成 80%</h3>
+<p>如果工具输出长度很不稳定，接近上限才压缩会来不及；如果每轮只读几十行，过早压缩又会频繁付出摘要成本，并可能损失细节。阈值要由模型限制、输出预留、工具返回大小分布和测试表现共同决定。</p>
+<p>实际可以记录每轮输入长度、压缩耗时、摘要长度、压缩后任务是否继续成功。用同一批长任务比较不同阈值，而不是只比较节省多少 Token。若输入变短了，但模型反复重读文件或忘记约束，整体可能更贵、更慢。</p>
+<h3>4. 一个最小执行顺序</h3>
+<p>准备下一轮材料 → 计算预算 → 先裁剪可重新读取的大输出 → 必要时总结旧阶段 → 检查必留字段 → 再次计数 → 发送请求。如果仍超限，应该进一步缩小读取范围或报告材料过大，而不是不停生成摘要。项目中真实使用的窗口和阈值，应从配置和调用日志读取，不能由本文代填。</p></div></section><section class="lesson-section question-section" id="context-004"><h2 id="original-013">为什么要采用三层压缩策略，每一层压缩的内容一致么？分别在什么条件在触发？</h2><div class="question-answer"><p>采用三层压缩，通常是为了先做损失小、成本低的处理，不够时再处理更重要的历史。三层并不是 Agent 的统一标准，也不是只要分三层就一定好。下面用一个明确的设计例子解释“为什么分层、每层处理什么、什么时候触发”。</p>
+<h3>第一层：缩短过长的单次工具结果</h3>
+<p>一次编译输出 5,000 行，大部分是重复警告。如果把它原样加入每次请求，当前问题还没有分析，空间已经被日志占满。程序可以保留第一条真实错误、相关位置、退出码和完整日志文件路径，重复行只保留计数。</p>
+<p>这层处理的是单次返回材料，而不是整个会话。可以在工具返回时，发现输出超过单次限制便触发，不必等总窗口接近上限。适合明确可机械处理的内容：相同行去重、超长列表分页。不能不看结构就截取前 100 行，因为真正的失败原因可能在末尾。</p>
+<h3>第二层：移出不再需要逐字读取的旧材料</h3>
+<p>模型已经根据 <code>sum.cpp</code> 的旧版本完成修改，旧源码全文通常不需要继续每轮发送。可以替换成“旧版本见某文件或提交；本阶段修改了空输入分支；当前源码必须重新读取”。旧的成功测试日志也可以缩成测试名、版本和结果。</p>
+<p>这层处理旧工具输出、旧版本内容，触发条件可以是总预算逼近阈值，且某些材料已不再是当前分析对象。它不同于第一层：第一层处理刚返回的巨大输出，第二层判断哪些历史材料已经过时。保留可追溯路径很重要，否则后续发现结论有误时找不到原证据。</p>
+<h3>第三层：总结较早的对话阶段</h3>
+<p>前两层仍不够时，再把较早讨论总结成任务状态：用户目标、有效约束、做过的修改、已验证结果、未解决问题和下一步。最近几轮仍保留详细内容。摘要可以由模型生成，但生成结果需要检查，尤其不能漏掉否定词，例如“不要修改公开接口”。</p>
+<p>这层处理语义信息，风险最高：删日志行容易检查，漏掉一次用户纠正却可能让任务方向改变。因此只有确实需要时再做，并把最新用户要求和权限限制单独保存，不依赖摘要模型记住。</p>
+<h3>三层内容是否一致</h3>
+<p>不一致，但可能有重叠。同一段日志先经过第一层去重，后来作为旧材料被第二层移出；第三层只保留它所支持的结论。需要保存来源关系，避免第三层再次“总结摘要”后逐渐把不确定结论变成事实。</p>
+<p>比较设计是否值得使用，应至少运行两组任务：长日志任务、长时间多次修改需求的任务。检查最后需求是否满足、是否重读过多材料、总费用和耗时是多少。若一个简单任务只靠第一层就足够，就没有理由强制跑完三层。</p></div></section><section class="lesson-section question-section" id="context-005"><h2 id="original-014">如果模型因为压缩过度，效果不理想，你是怎么发现的，怎么处理这种异常？</h2><div class="question-answer"><p>发现压缩过度，不能只靠模型说“我忘了”。应该看压缩前后是否丢失了完成任务需要的信息，以及这种丢失是否造成可观察的错误。</p>
+<h3>先看一个具体故障</h3>
+<p>用户要求：“修复空数组问题，但不要改变 <code>sum</code> 的函数签名。”压缩后摘要只剩“修复 sum”。下一轮模型把函数改成接受另一种参数。修改本身可能编译通过，但违反了用户要求。这是一个可以检测的压缩失败：原始需求有“签名不变”，摘要没有，最终差异又改变了接口。</p>
+<p>可以在程序里把“签名不变”保存成独立约束，不让它仅存在于摘要中。修改后检查接口声明、编译调用方测试，就能发现问题。不应把所有验证都交给生成摘要的同一个模型自评。</p>
+<h3>哪些信号值得记录</h3>
+<p>第一类是信息保留检查：最新目标、禁止事项、未完成步骤、关键文件与版本是否仍然存在。第二类是行为异常：突然重做已完成步骤、反复询问已给出的信息、把失败测试说成成功、使用过期路径。第三类是结果检查：原来通过的测试重新失败，或需求检查项不满足。</p>
+<p>但这些信号只是线索。模型本身也可能犯错，仓库也可能被别人修改。不能看到压缩后出错就断言一定是压缩造成的。</p>
+<h3>怎么确认原因</h3>
+<p>保存压缩前的原始会话和压缩后的输入，取同一个任务节点，分别用完整材料和压缩材料继续运行。保持模型版本、代码起点、工具配置一致，并重复多次，比较约束遗漏率和任务成功率。这样是在做对照实验。单次结果不能证明因果，因为模型输出可能具有随机性。</p>
+<p>还可以检查“信息在不在”：若关键限制在摘要中消失，证据更直接；若限制仍在，则应继续调查模型理解或执行检查。调试时记录摘要生成版本、裁剪策略和相关调用编号，才能知道是哪一次处理删错了内容。</p>
+<h3>出错之后怎么恢复</h3>
+<p>先停止继续写入，避免错误扩大；从外部保存的原始记录恢复相关片段，不必把全部历史塞回去；重新读取当前文件，判断哪些错误修改需要撤销；把恢复的约束与当前事实加入新请求，重新规划和验证。</p>
+<p>对于已经执行的外部操作，恢复聊天历史不等于恢复现实。例如已经发出的通知不能靠回滚摘要撤回。文件修改也要检查之后是否有人工改动，不能直接覆盖。修复完成后增加一个回归案例：在包含那句关键限制的会话中强制触发压缩，验证限制仍被保留且结果满足。这样才算修复机制，而不是只补救一次。</p></div></section><section class="lesson-section question-section" id="context-006"><h2 id="original-015">如果让agent需要对原来的任务上进一步修改，比如新加一个功能，你这个系统是怎么做的？需要重新注入哪些信息？（我理解是恢复会话？）</h2><div class="question-answer"><p>可以恢复会话，但“恢复会话”和“继续修改现有项目”不是一回事。恢复会话让系统找回之前的讨论和任务记录；继续开发还需要重新检查磁盘上的代码、测试结果和用户的新要求，因为这些内容可能已经变化。</p>
+<h3>以先实现登录、再增加验证码为例</h3>
+<p>昨天完成登录功能，今天用户说“再加验证码”。系统不应该重新从零编写登录模块，也不应该相信昨天的摘要就是现在的代码。它需要完成四件事。</p>
+<ol><li>找回任务背景：已有登录流程是什么、当时哪些需求已完成、哪些限制仍然有效。</li><li>读取当前项目：检查分支、未提交改动、相关文件和测试。昨天的文件位置可以帮助定位，但真正修改前应读取当前版本。</li><li>理解新增需求：验证码放在哪一步、失败行为是什么、是否影响接口。缺少会明显改变方案的信息时再向用户确认，而不是假定所有细节。</li><li>基于现状修改：保留已有功能，补新逻辑和测试，同时运行原有登录测试，避免新功能破坏旧功能。</li></ol>
+<h3>需要重新注入哪些信息</h3>
+<p>下一次模型请求至少需要当前新增要求、仍有效的项目约束、已有实现的简短说明、当前相关源码、已经做过的关键设计决定。若历史里有“为了兼容客户端不能改字段名”，这个原因也要保留。无需注入曾经失败的每一版补丁、所有编译日志或与登录无关的旧讨论。</p>
+<p>可以把任务记录设计成几个明确字段：</p>
+<pre><code>原目标：实现登录
+已完成：密码校验、会话生成；对应提交 abc123
+当前新增：登录失败多次后要求验证码
+仍有效限制：不改变旧客户端的成功响应字段
+需重新检查：当前分支、接口实现、相关测试</code></pre>
+<p>这里的提交号只是示例。真实系统应记录实际版本，不能编造。</p>
+<h3>新要求和旧要求冲突怎么办</h3>
+<p>假如旧需求说“不增加验证码”，新需求明确要求增加，那么要把旧需求标记为被替代，而不是让两条要求同时作为有效规则进入模型。用户的“在原来基础上改”通常意味着其他不冲突的要求继续有效，但不能据此无限扩大修改范围。</p>
+<h3>实现时最容易漏掉的事</h3>
+<p>保存聊天不等于保存执行环境：临时容器可能已销毁，依赖版本可能不同。恢复时要验证环境；历史里记载“测试通过”，只说明某个版本在某个环境曾通过，不代表新版本也通过。</p>
+<p>检验恢复能力可以做一次中断实验：完成一半后关闭程序，另一个人修改无关文件，再恢复追加功能。合格的实现应继续原任务、识别新需求、保留人工改动，并重新验证结果，而不是把旧快照无条件覆盖到现在。</p></div></section><section class="lesson-section question-section" id="context-007"><h2 id="original-071">哪些信息必须在压缩后继续保留？结合记忆分层说明保留规则。对于不能压缩或不能丢失的信息，你怎样在实现中落实这些约束？</h2><p class="question-origin">问题来源：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></p><div class="question-answer"><p>必须保留的不是“所有看起来重要的聊天”，而是完成当前任务不可缺少、丢了就会改变行为的事实和限制。最重要的办法是把这些信息单独存成程序可检查的数据，不只让模型在摘要里自由发挥。</p>
+<h3>先区分四类材料</h3>
+<p>第一类是当前有效要求：用户要什么、明确不要什么、输出范围、成功条件。例如“只修改 sum.cpp，不改变接口”。这类内容应进入每次相关请求，并保留原文来源。</p>
+<p>第二类是执行状态：哪些步骤完成、哪些工具调用已经执行、外部操作是否成功、还有什么待处理。例如“补丁已写入；测试超时；不能把它说成通过”。状态最好由实际工具结果更新，而不是从模型的总结猜出来。</p>
+<p>第三类是支持结论的证据：具体日志、代码版本、文档页码。全文可以放在上下文外，但必须保留可重新读取的地址和版本。摘要说“测试失败”却找不到测试名和日志，后续很难继续排查。</p>
+<p>第四类是暂时分析和旧材料：已经被否定的猜测、重复日志、过期源码。这些最适合缩短，必要时仍可从原始记录恢复。</p>
+<h3>与短期、长期记忆怎样配合</h3>
+<p>短期上下文负责本轮正在做的事；项目长期记录保存跨会话仍有效的约定；个人偏好记录保存用户明确的长期习惯。不要把“今天测试超时”写成永久项目事实，也不要让长期偏好覆盖用户本次明确要求。</p>
+<p>长期记录进入本次上下文前要检查作用范围、更新时间和是否已被替代。保存得久不代表更权威。对于代码结构，当前仓库比一年前的笔记更可靠；对于权限，必须按当前配置判断，历史摘要中的“允许”不能自动恢复访问。</p>
+<h3>怎样落实“不能丢”</h3>
+<p>可以把输入拼装成三部分：受保护字段、可压缩历史、最新工具材料。压缩器只能处理第二部分；程序在压缩后比较受保护字段的标识和内容摘要，检查最新需求及未完成状态是否齐全。</p>
+<pre><code>protected: task_goal, active_constraints, pending_actions
+compressible: old_discussion, superseded_outputs
+references: source_id, path, revision, timestamp</code></pre>
+<p>上面是示意字段，不是某框架固定格式。若有一个尚未返回结果的工具调用，不能只保留请求却删掉它的对应关系。系统应该在安全边界压缩，或完整保留未完成调用的数据。</p>
+<h3>最后如何验证</h3>
+<p>准备几个很容易被摘要漏掉的条件：“不要删除文件”“必须兼容旧接口”“上次操作结果未知”。强制触发压缩，检查字段和后续行为。尤其测试否定词、用户后续纠正和跨会话过期信息。不能证明“模型永远不忘”，但可以让关键规则不依赖模型记忆，并通过程序测试发现退化。</p></div></section><div class="extension-intro"><h2>延伸问题</h2><p>以下是根据外部资料另外整理的问题，不是上面原记录的逐字转录。</p></div><section class="lesson-section question-section" id="ext-010"><h2>如何管理持续膨胀的Checkpoint？</h2><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2034667289245636223">TrustZone</a></p><div class="question-answer"><p>Checkpoint 可以理解为任务执行过程中的“存档”，里面保存恢复任务所需的状态。它不是完整聊天记录的同义词，也不是所有长期知识的存放处。如果每一步都把越来越长的日志和文件全文重新存一份，存储量会迅速增长。</p>
+<h3>先算清楚增长来自哪里</h3>
+<p>假设每次存档包含 1 MB 状态，一次任务有 100 步，最简单的全量保存方式就可能需要约 100 MB。若状态本身每步继续追加，增长还会更明显。实际实现可能使用不同存储方式，不能直接套这个数字；例子的目的，是提醒先检查每份状态里放了什么。</p>
+<h3>哪些内容应该放到别处</h3>
+<p>恢复需要的任务编号、当前步骤、必要参数与结果引用适合保留。大型原始日志、截图和文档可以单独存储，在状态里保存受权限控制的引用与校验信息。但引用不能指向马上被清理的临时文件，否则存档存在却无法恢复。</p>
+<p>长期记忆也应与任务存档区分：某个用户长期偏好不必在每一步重复复制，而某次任务尚未完成的工具调用也不能只写进模糊摘要。</p>
+<h3>删除要有明确规则</h3>
+<p>先确定保留目的：需要恢复最近未完成任务，还是需要审计某些历史操作？可以对不同状态采用不同保留周期，对完成任务做归档，对失败任务保留足够排查信息。具体删除接口和存储能力取决于框架及后端，不能假设一条通用命令能安全清掉所有旧记录。</p>
+<p>删除某个旧存档之前，还应检查新存档是否依赖它、相关产物是否仍被引用、是否有审核任务尚未结束。法律或组织要求保留的记录也不能按普通缓存处理。</p>
+<h3>怎样判断优化成功</h3>
+<p>不仅看数据库变小，还要实际恢复一个保存过的任务，验证文件引用有效、权限仍正确、不会重复外部操作。持续记录每任务存档数量、平均大小和恢复失败率。如果只缩小存储却破坏恢复能力，就失去了 checkpoint 的主要目的。</p></div><p class="answer-references">本题参考：<a href="https://docs.langchain.com/oss/python/langgraph/persistence">LangGraph Persistence</a></p></section><section class="lesson-section question-section" id="ext-030"><h2>大批日志怎样进入有限上下文？</h2><p class="question-origin">问题来源：<a href="https://www.nowcoder.com/discuss/926232883432296448">讨个offer咯</a></p><div class="question-answer"><p>不能把几 GB 日志直接塞进模型输入。模型一次能处理的输入长度有限，而大量日志往往是重复信息。正确方向是先用程序定位与问题相关的证据，再把必要片段交给模型，并保留回到原始记录的办法。</p>
+<h3>先确定查什么</h3>
+<p>例如任务是“解释 10:05 到 10:10 的请求超时”，先限定服务、时间范围、请求编号和错误类型。按这些条件筛选，通常比先让模型总结全部日志更有效。若有 trace ID，可以把同一次请求经过的服务关联起来，但要留意不同机器的时间偏差。</p>
+<h3>保留有解释力的上下文</h3>
+<p>只提取包含 ERROR 的一行可能不够，错误之前的参数、重试和状态变化可能决定原因。可以保留错误前后固定范围，以及同一请求的相关事件。对大量重复消息记录出现次数和首末时间，不需要把每一份都发给模型。</p>
+<p>但不能因为重复就删除少数特殊值。例如一千次普通超时里有一次权限错误，可能对应另一类问题。聚类或规则压缩之后，应保留异常类别和代表样本。</p>
+<h3>怎样让摘要能够核对</h3>
+<p>每个片段保留来源文件、时间范围和行号或事件编号。模型说“连接池耗尽”时，应指出对应证据；若只有大量超时而没有连接池状态，只能说这是一种待验证假设。</p>
+<p>原始日志放在受控存储中，模型需要更多细节时通过查询工具获取，而不是最开始把所有内容都送入上下文。敏感字段应先按需要脱敏，不能为了调试把凭证和用户隐私完整暴露。</p>
+<h3>怎样验证没有压掉关键信息</h3>
+<p>选一些已知根因的故障，比较使用筛选片段后是否仍能发现根因。专门加入罕见错误、跨服务事件和时间边界样本。目标不是摘要越短越好，而是在输入预算内保留足够证据，并能在不确定时继续查原始记录。</p></div></section><section id="references" class="references"><h2>参考资料</h2><p>产品实现可能随版本变化；示例中的假设与实测结论应当区分。</p><ol><li><a href="https://code.claude.com/docs/en/how-claude-code-works">Claude Code：上下文填满后的处理</a></li><li><a href="https://code.claude.com/docs/en/memory">Claude Code：项目指令与记忆</a></li><li><a href="https://code.claude.com/docs/en/context-window">Claude Code：上下文窗口</a></li><li><a href="https://docs.langchain.com/oss/python/langgraph/persistence">LangGraph Persistence</a></li></ol></section><nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-agent-runtime.html">上一篇：Agent、Claude Code 与 Codex</a><a rel="next" href="/post/learning-agent-memory.html">下一篇：长短期记忆</a></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回问题目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>
