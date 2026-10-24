@@ -32,7 +32,7 @@ class LearningSeriesTests(unittest.TestCase):
         for a in self.lessons:self.assertIn(builder.route(a['slug']),hub)
     def test_versioned_series_stylesheet(self):
         for html in self.pages.values():
-            self.assertIn('href="/assets/learning-series.css?v=20261024-answer-areas"',html)
+            self.assertIn('href="/assets/learning-series.css?v=20261024-natural-answers"',html)
     def test_generated_pages_current(self):
         for url,html in self.pages.items():self.assertEqual((ROOT/url.lstrip('/')).read_text(),html)
     def test_original_wording_is_heading_not_end_checklist(self):
@@ -40,7 +40,7 @@ class LearningSeriesTests(unittest.TestCase):
         for a in self.lessons:
             html=self.pages[builder.route(a['slug'])];p=Parser();p.feed(html);headings.update(dict(p.headings))
             self.assertNotIn('带着这些问题回看',html)
-            self.assertIn('class="question-answer writing-area is-empty"',html)
+            self.assertIn('class="answer-body is-empty"',html)
         self.assertEqual(len(self.qdata['originals']),79)
         for o in self.qdata['originals']:self.assertEqual(headings[o['id']],o['title'])
     def test_original_transcription_fingerprint(self):
@@ -79,19 +79,29 @@ class LearningSeriesTests(unittest.TestCase):
                 lessons,qdata=builder.load_data(answer_path=p)
                 lesson=next(a for a in lessons if qid in a['questionIds'])
                 html=builder.render_article(lesson,lessons,qdata)
-                self.assertIn(builder.writing_area('question-answer','我的回答',qdata['answers'][qid]['renderedHtml']),html)
-                self.assertIn(builder.writing_area('learning-notes','学习记录',qdata['answers'][qid]['renderedNotesHtml']),html)
+                self.assertIn(builder.writing_area(qdata['answers'][qid]['renderedHtml'],qdata['answers'][qid]['renderedNotesHtml']),html)
+                self.assertNotIn('writing-area-title',html)
                 if answer:self.assertIn(answer,html)
                 if notes:self.assertIn(notes,html)
-    def test_empty_areas_are_visible_labeled_and_not_fake_inputs(self):
+                body=builder.writing_area(qdata['answers'][qid]['renderedHtml'],qdata['answers'][qid]['renderedNotesHtml'])
+                self.assertEqual(body.count('class="question-answer"'),bool(answer))
+                self.assertEqual(body.count('class="learning-notes"'),bool(notes))
+                self.assertNotIn('is-empty',body)
+                if answer and notes:self.assertLess(body.index(answer),body.index(notes))
+    def test_empty_areas_are_single_unlabelled_article_bodies(self):
         for a in self.lessons:
             html=self.pages[builder.route(a['slug'])]
-            count=len(a['questionIds'])
-            self.assertEqual(html.count('class="question-answer writing-area is-empty"'),count)
-            self.assertEqual(html.count('class="learning-notes writing-area is-empty"'),count)
-            self.assertEqual(html.count('<h3 class="writing-area-title">我的回答</h3>'),count)
-            self.assertEqual(html.count('<h3 class="writing-area-title">学习记录</h3>'),count)
-            self.assertEqual(html.count('<div class="writing-area-body"></div>'),2*count)
+            self.assertEqual(html.count('<div class="answer-body is-empty"></div>'),len(a['questionIds']))
+            for unwanted in ['我的回答','学习记录','writing-area','class="learning-notes"']:
+                self.assertNotIn(unwanted,html)
+    def test_answer_style_has_no_tinted_boxes_or_sidebars(self):
+        css=(ROOT/'assets/learning-series.css').read_text()
+        for rule in css.split('}'):
+            if '.answer-body' in rule:
+                for unwanted in ['background:', 'border-left:', 'border-radius:']:
+                    self.assertNotIn(unwanted,rule)
+        self.assertIn('border-top: 1px solid #ededed',css)
+        self.assertIn('.learning-series .answer-body.is-empty { min-height: 56px;',css)
     def test_whitespace_only_content_keeps_empty_regions(self):
         data=json.loads(builder.ANSWERS.read_text())
         for entry in data['questions']:
@@ -104,9 +114,9 @@ class LearningSeriesTests(unittest.TestCase):
     def test_filled_regions_keep_long_prose_code_and_tables(self):
         text=('较长的学习理解。'*100)+'\n\n### 复现步骤\n\n```python\nprint("example")\n```\n\n| 项目 | 观察 |\n| --- | --- |\n| A | B |'
         rendered=builder.render_markdown(text)
-        for kind,title in [('question-answer','我的回答'),('learning-notes','学习记录')]:
-            html=builder.writing_area(kind,title,rendered)
-            self.assertIn('writing-area has-content',html)
+        for answer,notes in [(rendered,''),('',rendered),(rendered,rendered)]:
+            html=builder.writing_area(answer,notes)
+            self.assertIn('answer-body has-content',html)
             self.assertIn(rendered,html)
             self.assertIn('<table>',html)
             self.assertIn('<pre>',html)

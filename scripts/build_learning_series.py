@@ -67,7 +67,7 @@ def shell(title,description,path,body):
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)} · Khan Li</title><meta name="description" content="{e(description)}">
 <link rel="canonical" href="https://li-ronin.github.io{e(path)}"><link rel="icon" href="/images/alpaca.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/academic.css"><link rel="stylesheet" href="/assets/learning-series.css?v=20261024-answer-areas"></head>
+<link rel="stylesheet" href="/assets/academic.css"><link rel="stylesheet" href="/assets/learning-series.css?v=20261024-natural-answers"></head>
 <body><a class="skip-link" href="#main">跳到正文</a><div class="page learning-series">
 <nav class="site-nav" aria-label="站点导航"><a class="site-name" href="/">李可涵 Khan Li</a><div class="site-nav-links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="/notes/">Notes</a></div></nav>
 <main id="main" tabindex="-1">{body}</main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>'''
@@ -132,10 +132,12 @@ def source_links(qid,qdata):
 def knowledge_tags(tags):
     return '<p class="knowledge-tags"><span class="tag-label">知识标签</span>'+''.join('<span class="knowledge-tag">'+e(t)+'</span>' for t in tags)+'</p>'
 
-def writing_area(kind, title, content):
-    # These are article sections, not browser inputs. Empty bodies stay truly empty.
+def writing_area(answer, notes):
+    # One continuous article body; authoring fields remain independent in JSON.
+    content=''.join('<div class="'+kind+'">'+body+'</div>' for kind,body in
+                    [('question-answer',answer),('learning-notes',notes)] if body)
     state=' has-content' if content else ' is-empty'
-    return '<div class="'+kind+' writing-area'+state+'"><h3 class="writing-area-title">'+title+'</h3><div class="writing-area-body">'+content+'</div></div>'
+    return '<div class="answer-body'+state+'">'+content+'</div>'
 
 def render_hub(lessons,qdata):
     cards=[]
@@ -173,9 +175,8 @@ def render_article(a,lessons,qdata):
             if r['url'] not in reference_urls:references.append(r);reference_urls.add(r['url'])
             answer_refs.append('<a href="'+e(r['url'])+'">'+e(r['title'])+'</a>')
         ref_html='<p class="answer-references">本题参考：'+'；'.join(answer_refs)+'</p>' if answer_refs else ''
-        answer_html=writing_area('question-answer','我的回答',ans['renderedHtml'])
-        notes_html=writing_area('learning-notes','学习记录',ans['renderedNotesHtml'])
-        parts.append('<section class="lesson-section question-section" id="'+qid+'">'+''.join(headings)+origin_html+answer_html+notes_html+ref_html+'</section>')
+        answer_html=writing_area(ans['renderedHtml'],ans['renderedNotesHtml'])
+        parts.append('<section class="lesson-section question-section" id="'+qid+'">'+''.join(headings)+origin_html+answer_html+ref_html+'</section>')
     refs=''.join('<li><a href="'+e(r['url'])+'">'+e(r['title'])+'</a></li>' for r in references)
     references_html='<section id="references" class="references"><h2>参考资料</h2><ol>'+refs+'</ol></section>' if references else ''
     provenance='<p>原题中的项目来自所收集的记录，不代表本站作者经历。</p>' if a['slug']=='project-experience' else ''
