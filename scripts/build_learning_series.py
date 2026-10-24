@@ -129,6 +129,14 @@ def source_links(qid,qdata):
             seen.add(url);out.append('<a href="'+e(url)+'">'+e(s.get('author') or s.get('title') or '原文')+'</a>')
     return '、'.join(out)
 
+def knowledge_tags(tags):
+    return '<p class="knowledge-tags"><span class="tag-label">知识标签</span>'+''.join('<span class="knowledge-tag">'+e(t)+'</span>' for t in tags)+'</p>'
+
+def writing_area(kind, title, content):
+    # These are article sections, not browser inputs. Empty bodies stay truly empty.
+    state=' has-content' if content else ' is-empty'
+    return '<div class="'+kind+' writing-area'+state+'"><h3 class="writing-area-title">'+title+'</h3><div class="writing-area-body">'+content+'</div></div>'
+
 def render_hub(lessons,qdata):
     cards=[]
     for a in lessons:
@@ -155,9 +163,9 @@ def render_article(a,lessons,qdata):
         if originals:
             for n,o in enumerate(originals):
                 if n:headings.append('<p class="variant-label">相关原问题：</p>')
-                headings.append('<h2 id="'+o['id']+'">'+e(o['title'])+'</h2><p class="knowledge-tags">知识标签：'+e(' · '.join(o['tags']))+'</p>')
+                headings.append('<h2 id="'+o['id']+'">'+e(o['title'])+'</h2>'+knowledge_tags(o['tags']))
                 if o.get('editorNote'):headings.append('<p class="editor-note">'+e(o['editorNote'])+'</p>')
-        else:headings.append('<h2>'+e(questions[qid]['title'])+'</h2><p class="knowledge-tags">知识标签：'+e(' · '.join(questions[qid]['tags']))+'</p>')
+        else:headings.append('<h2>'+e(questions[qid]['title'])+'</h2>'+knowledge_tags(questions[qid]['tags']))
         origin=source_links(qid,qdata)
         origin_html='<p class="question-origin">问题来源：'+origin+'</p>' if origin else ''
         answer_refs=[]
@@ -165,8 +173,8 @@ def render_article(a,lessons,qdata):
             if r['url'] not in reference_urls:references.append(r);reference_urls.add(r['url'])
             answer_refs.append('<a href="'+e(r['url'])+'">'+e(r['title'])+'</a>')
         ref_html='<p class="answer-references">本题参考：'+'；'.join(answer_refs)+'</p>' if answer_refs else ''
-        answer_html='<div class="question-answer">'+ans['renderedHtml']+'</div>' if ans['renderedHtml'] else ''
-        notes_html='<div class="learning-notes"><h3>学习记录</h3>'+ans['renderedNotesHtml']+'</div>' if ans['renderedNotesHtml'] else ''
+        answer_html=writing_area('question-answer','我的回答',ans['renderedHtml'])
+        notes_html=writing_area('learning-notes','学习记录',ans['renderedNotesHtml'])
         parts.append('<section class="lesson-section question-section" id="'+qid+'">'+''.join(headings)+origin_html+answer_html+notes_html+ref_html+'</section>')
     refs=''.join('<li><a href="'+e(r['url'])+'">'+e(r['title'])+'</a></li>' for r in references)
     references_html='<section id="references" class="references"><h2>参考资料</h2><ol>'+refs+'</ol></section>' if references else ''
@@ -174,7 +182,7 @@ def render_article(a,lessons,qdata):
     prev='<a rel="prev" href="'+route(lessons[index-1]['slug'])+'">上一篇：'+e(lessons[index-1]['title'])+'</a>' if index else '<span></span>'
     nxt='<a rel="next" href="'+route(lessons[index+1]['slug'])+'">下一篇：'+e(lessons[index+1]['title'])+'</a>' if index+1<len(lessons) else '<span></span>'
     tags=list(dict.fromkeys(t for qid in a['questionIds'] for t in questions[qid]['tags']))[:10]
-    body='<article class="blog-article"><p class="breadcrumb"><a href="'+HUB+'">学习问题整理</a> / '+e(a['title'])+'</p><header class="article-header"><h1>'+e(a['title'])+'</h1><p class="article-date">更新于 <time datetime="'+DATE+'">'+DATE+'</time></p><p class="knowledge-tags">知识标签：'+e(' · '.join(tags))+'</p>'+provenance+'</header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol>'+toc+'</ol></nav>'+''.join(parts)+references_html+'<nav class="article-pagination" aria-label="系列上一篇和下一篇">'+prev+nxt+'</nav><p class="back-to-series"><a href="'+HUB+'">返回问题目录</a></p></article>'
+    body='<article class="blog-article"><p class="breadcrumb"><a href="'+HUB+'">学习问题整理</a> / '+e(a['title'])+'</p><header class="article-header"><h1>'+e(a['title'])+'</h1><p class="article-date">更新于 <time datetime="'+DATE+'">'+DATE+'</time></p>'+knowledge_tags(tags)+provenance+'</header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol>'+toc+'</ol></nav>'+''.join(parts)+references_html+'<nav class="article-pagination" aria-label="系列上一篇和下一篇">'+prev+nxt+'</nav><p class="back-to-series"><a href="'+HUB+'">返回问题目录</a></p></article>'
     return shell(a['title'],a['title']+'相关问题、知识标签与原文来源。',route(a['slug']),body)
 
 def outputs(lessons,qdata):

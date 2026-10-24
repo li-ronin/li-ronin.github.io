@@ -95,7 +95,7 @@ python3 -m unittest discover -s tests -v
 - `data/interviews.json` 保留 89 个知识问题的知识标签和来源索引。其中 59 个对应上述原始问题，另 30 个是外部资料的概念整理，页面单独标为延伸问题，不宣称逐字摘录。旧 `answer` 和 `answerSources` 已清空，不能作为答案的维护入口。
 - `data/learning-series.json` 仅维护文章标题、地址 slug 和问题分组。
 - `data/question-answers.json` 的 `questions` 数组包含 `id`、`answerMarkdown`、`learningNotesMarkdown`、`sources`。答案和学习记录目前为空，留给本站作者学习后填写；`sources` 是自行填写内容所引用的资料，不是问题原文来源。
-- 按 `id` 找到对应条目后，在 `answerMarkdown` 中写自己的理解，在 `learningNotesMarkdown` 中记录学习过程。两者可独立填写，空字符串或纯空白不显示任何内容或标题；不需要填写占位文字。参考资料按需填入 `sources`，每项包含 `title` 和 HTTPS `url`。
+- 按 `id` 找到对应条目后，在 `answerMarkdown` 中写自己的理解，在 `learningNotesMarkdown` 中记录学习过程。两者可独立填写；空字符串或纯空白保留带有「我的回答」「学习记录」标题的空白内容区域，不生成答案、提示语或占位文字。这些区域只是文章排版，不是网页输入框；填写仍在数据文件中进行。参考资料按需填入 `sources`，每项包含 `title` 和 HTTPS `url`。
 - `scripts/markdown_subset.py` 是标准库实现的有限 Markdown 渲染器，支持段落、标题、列表、表格、代码围栏、行内代码、加粗及 HTTPS 链接；不执行原始 HTML，不加载外部脚本。数学公式请使用 Unicode 或代码块，不使用 LaTeX。
 - `scripts/build_learning_series.py` 校验问题覆盖、重复 ID、Markdown 字段类型和不安全链接，生成文章和两个入口地址。`scripts/build_interviews.py` 是兼容命令。
 - `assets/learning-series.css` 只影响这一组文章，不改变旧博客或 Notes。无搜索框、下拉框、题库交互或 JavaScript 依赖。

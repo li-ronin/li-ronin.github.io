@@ -37,7 +37,7 @@ class LearningSeriesTests(unittest.TestCase):
         for a in self.lessons:
             html=self.pages[builder.route(a['slug'])];p=Parser();p.feed(html);headings.update(dict(p.headings))
             self.assertNotIn('带着这些问题回看',html)
-            self.assertNotIn('class="question-answer"',html)
+            self.assertIn('class="question-answer writing-area is-empty"',html)
         self.assertEqual(len(self.qdata['originals']),79)
         for o in self.qdata['originals']:self.assertEqual(headings[o['id']],o['title'])
     def test_original_transcription_fingerprint(self):
@@ -62,7 +62,7 @@ class LearningSeriesTests(unittest.TestCase):
             self.assertEqual(q['answer'],'')
             self.assertFalse(q.get('answerSources'))
         for html in self.pages.values():
-            for unwanted in ['class="question-answer"','class="learning-notes"','class="answer-references"','class="references"','项目经历与技术选择','阅读解答']:
+            for unwanted in ['class="answer-references"','class="references"','项目经历与技术选择','阅读解答']:
                 self.assertNotIn(unwanted,html)
         self.assertEqual(sum(html.count('原题中的项目来自所收集的记录，不代表本站作者经历。') for html in self.pages.values()),1)
     def test_future_personal_answer_and_notes_render_independently(self):
@@ -76,10 +76,38 @@ class LearningSeriesTests(unittest.TestCase):
                 lessons,qdata=builder.load_data(answer_path=p)
                 lesson=next(a for a in lessons if qid in a['questionIds'])
                 html=builder.render_article(lesson,lessons,qdata)
-                self.assertEqual('class="question-answer"' in html,bool(answer))
-                self.assertEqual('class="learning-notes"' in html,bool(notes))
+                self.assertIn(builder.writing_area('question-answer','我的回答',qdata['answers'][qid]['renderedHtml']),html)
+                self.assertIn(builder.writing_area('learning-notes','学习记录',qdata['answers'][qid]['renderedNotesHtml']),html)
                 if answer:self.assertIn(answer,html)
                 if notes:self.assertIn(notes,html)
+    def test_empty_areas_are_visible_labeled_and_not_fake_inputs(self):
+        for a in self.lessons:
+            html=self.pages[builder.route(a['slug'])]
+            count=len(a['questionIds'])
+            self.assertEqual(html.count('class="question-answer writing-area is-empty"'),count)
+            self.assertEqual(html.count('class="learning-notes writing-area is-empty"'),count)
+            self.assertEqual(html.count('<h3 class="writing-area-title">我的回答</h3>'),count)
+            self.assertEqual(html.count('<h3 class="writing-area-title">学习记录</h3>'),count)
+            self.assertEqual(html.count('<div class="writing-area-body"></div>'),2*count)
+    def test_whitespace_only_content_keeps_empty_regions(self):
+        data=json.loads(builder.ANSWERS.read_text())
+        for entry in data['questions']:
+            entry['answerMarkdown']=' \n '
+            entry['learningNotesMarkdown']='\t '
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)/'answers.json';p.write_text(json.dumps(data))
+            lessons,qdata=builder.load_data(answer_path=p)
+            self.assertEqual(builder.outputs(lessons,qdata),self.pages)
+    def test_filled_regions_keep_long_prose_code_and_tables(self):
+        text=('较长的学习理解。'*100)+'\n\n### 复现步骤\n\n```python\nprint("example")\n```\n\n| 项目 | 观察 |\n| --- | --- |\n| A | B |'
+        rendered=builder.render_markdown(text)
+        for kind,title in [('question-answer','我的回答'),('learning-notes','学习记录')]:
+            html=builder.writing_area(kind,title,rendered)
+            self.assertIn('writing-area has-content',html)
+            self.assertIn(rendered,html)
+            self.assertIn('<table>',html)
+            self.assertIn('<pre>',html)
+            self.assertNotIn('is-empty',html)
     def test_optional_markdown_type_validation(self):
         for field in ['answerMarkdown','learningNotesMarkdown']:
             data=json.loads(builder.ANSWERS.read_text());data['questions'][0][field]=None
@@ -91,15 +119,15 @@ class LearningSeriesTests(unittest.TestCase):
             html=self.pages[builder.route(lesson['slug'])]
             for qid in lesson['questionIds']:
                 for o in builder.original_questions(qid,self.qdata):
-                    self.assertIn('<h2 id="'+o['id']+'">'+builder.e(o['title'])+'</h2><p class="knowledge-tags">知识标签：'+builder.e(' · '.join(o['tags']))+'</p>',html)
+                    self.assertIn('<h2 id="'+o['id']+'">'+builder.e(o['title'])+'</h2>'+builder.knowledge_tags(o['tags']),html)
     def test_external_questions_distinct(self):
         for a in self.lessons:
             if any(not builder.original_questions(qid,self.qdata) for qid in a['questionIds']):self.assertIn('延伸问题',self.pages[builder.route(a['slug'])])
     def test_safe_static_html(self):
         for url,html in self.pages.items():
             p=Parser();p.feed(html)
-            self.assertTrue(set(p.tags).isdisjoint({'script','form','input','select','button','details','iframe'}))
-            for bad in ['待补充','面试题库','搜索题目','Sentinel_']:self.assertNotIn(bad,html)
+            self.assertTrue(set(p.tags).isdisjoint({'script','form','input','textarea','select','button','details','iframe'}))
+            for bad in ['待补充','面试题库','搜索题目','Sentinel_','contenteditable','placeholder=']:self.assertNotIn(bad,html)
             self.assertEqual(p.tags.count('h1'),1);self.assertIn('name="viewport"',html)
     def test_internal_links_and_fragment_ids(self):
         parsed={}
