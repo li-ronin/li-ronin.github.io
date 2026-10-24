@@ -1,54 +1,8 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>大模型训练与微调 · Khan Li</title><meta name="description" content="围绕原问题解释大模型训练与微调，包含具体例子与参考资料。">
+<title>大模型训练与微调 · Khan Li</title><meta name="description" content="大模型训练与微调相关问题、知识标签与原文来源。">
 <link rel="canonical" href="https://li-ronin.github.io/post/learning-llm-training-alignment.html"><link rel="icon" href="/images/alpaca.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/academic.css"><link rel="stylesheet" href="/assets/learning-series.css"></head>
 <body><a class="skip-link" href="#main">跳到正文</a><div class="page learning-series">
 <nav class="site-nav" aria-label="站点导航"><a class="site-name" href="/">李可涵 Khan Li</a><div class="site-nav-links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="/notes/">Notes</a></div></nav>
-<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">问题与解答</a> / 大模型训练与微调</p><header class="article-header"><h1>大模型训练与微调</h1><p class="article-date">更新于 <time datetime="2026-10-21">2026-10-21</time></p><p class="knowledge-tags">知识标签：SFT · DPO · GRPO · PPO · 数据集 · 数据质量 · 数据划分 · LoRA · 参数高效微调 · 量化</p></header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol><li><a href="#original-049">讲讲SFT DPO GRPO</a></li><li><a href="#original-050">所选的数据集大小是多少？</a></li><li><a href="#ext-016">如何在全参微调与低秩适配间取舍？</a></li><li><a href="#ext-017">量化精度与推理收益怎样一起评估？</a></li><li><a href="#ext-026">SFT的数据策略如何与训练目标对应？</a></li></ol></nav><section class="lesson-section question-section" id="llm-005"><h2 id="original-049">讲讲SFT DPO GRPO</h2><div class="question-answer"><p>SFT、DPO、GRPO 都可能用于预训练之后调整模型，但它们提供学习信号的方式不同：SFT 给示范答案，DPO 给同题答案的优劣比较，GRPO 让模型生成一组答案后根据奖励进行更新。</p>
-<h3>SFT：照着好示范学习</h3>
-<p>一条数据可以是“用户：把 2+3 算出来；助手：5”。训练时提高示范回答中每个正确词元的概率。损失常写成 −Σ log p(目标词元 | 前文)。这个式子的意思很直接：若模型给目标词元的概率很低，就罚得更重。它适合学输出格式、领域表达和基本指令遵循。示范错了，模型也可能学错；只让它反复看一种问法，还可能学成背答案。</p>
-<h3>DPO：学习哪一个回答更好</h3>
-<p>一条数据包含相同问题，以及 chosen 与 rejected 两个回答，例如一个回答给出有依据的结果，另一个编造事实。标准 DPO 比较当前模型对这两个答案的概率比，再与参考模型的概率比比较，通过一个分类式损失推动更偏好 chosen。参考模型通常是训练开始前固定的模型，用来限制偏好调整的方向和幅度。</p>
-<p>这里不是简单把 rejected 全部当成“每个字都错误”。两个回答可能都正确，只是一个更简洁或更符合要求。偏好标注必须说明标准，否则模型可能学到“越长越好”等偶然规律。标准离线 DPO 不需要在每个训练步骤都重新生成答案，也不需要单独训练一个奖励模型；但 DPO 有变体，不能把所有实现混为一谈。</p>
-<h3>GRPO：生成后根据组内奖励学习</h3>
-<p>给一个题目，让当前策略产生多份回答，再用规则或奖励函数评分。假设四份回答得到 [1,1,0,0]，均值是 0.5；使用组内标准化优势时，成功回答得到正的相对信号，失败回答得到负的相对信号。优势表示“相对这一组，哪份回答更值得增加概率”。若所有奖励相同，就缺少组内区分信号。</p>
-<p>这里的策略就是模型根据输入给不同回答分配的概率。更新通常还涉及新旧策略概率比、裁剪及可能的 KL 约束：裁剪限制一次概率调整的幅度，KL 则衡量两个输出概率分布的差异，可用于限制模型偏离参考模型。具体损失和默认配置随实现变化。GRPO 不需要 PPO 那样单独训练价值模型，但生成多条回答本身很花计算资源。代码任务可以用测试结果评分，不过测试不完整时，模型可能学会钻测试空子。</p>
-<h3>怎么选择</h3>
-<p>不会按要求回答，先检查 SFT 示范；已经能回答，但需要学习明确的人类偏好，可考虑 DPO；有可靠可计算奖励、能负担反复生成，可考虑 GRPO。三者不是固定顺序，也不能把训练方法名称当效果保证。至少用独立任务检查正确率、格式、长度和失败模式，避免奖励升高但真实能力变差。</p></div><p class="answer-references">本题参考：<a href="https://huggingface.co/docs/trl/en/sft_trainer">TRL：SFT 数据与训练</a>；<a href="https://arxiv.org/abs/2305.18290">DPO 原始论文</a>；<a href="https://huggingface.co/docs/trl/en/grpo_trainer">TRL：GRPO</a></p></section><section class="lesson-section question-section" id="llm-006"><h2 id="original-050">所选的数据集大小是多少？</h2><div class="question-answer"><p>具体项目用了多少条数据，必须从数据文件和训练记录统计，不能从模型大小反推一个“标准答案”。描述规模至少要同时给样本数、有效词元数、任务分布和去重后的数量，单独说“用了十万条”信息不够。</p>
-<h3>为什么样本数会误导</h3>
-<p>假设数据 A 有一万条，每条只需回答一个分类标签；数据 B 也有一万条，但每条是一段长代码及详细解释。它们的计算量、监督信息和难度明显不同。若长文本在训练前被截断，真正参与损失计算的内容还会进一步减少。应区分原始样本、清洗后样本、训练时实际消费的词元，以及重复训练的轮数。</p>
-<h3>先划分，再避免泄漏</h3>
-<p>训练集用于更新参数，验证集用于选择参数和训练轮数，测试集用于最后报告效果。不能不断看测试结果改数据，然后仍把它叫独立测试。相似文档、同一仓库的近重复函数、同一个模板改数字得到的问题，应尽量按来源或问题族一起划分，而不是随机拆散。否则测试可能测到记忆模板，而非处理新问题。</p>
-<h3>用逐步增加数据的实验决定规模</h3>
-<p>一个可执行的教学方案是先准备经过人工检查的一小批数据，跑通基线和训练过程；再按相同任务比例增加数据，每次用同一验证集评估。这里的小批可以是几百或几千条，具体取决于任务，不是通用最低数量。画出“有效训练词元—验证效果”曲线：持续改善说明数据可能仍有价值；训练损失下降而验证下降，可能过拟合；所有规模都不改善，应先查标签、格式、学习率和评测目标是否一致。</p>
-<p>还要分别看常见任务和少数难题。总分提升可能只是简单题增多，边界场景仍失败。保留一份数据说明，记录来源、授权、清洗规则、时间范围、标签标准、划分方法和内容哈希；哈希是根据文件内容计算的标识，用于判断是否换过数据。</p>
-<h3>最终如何陈述</h3>
-<p>可信的描述类似：“清洗前有多少，去重后多少；哪些任务各占多少；训练、验证、测试按什么单位隔离；实际训练多少有效词元；与更小数据量相比改善多少。”这些数字只有实际统计后才能填写。没有训练记录时，应先补做统计，而不是为了让答案完整编造规模。</p></div><p class="answer-references">本题参考：<a href="https://huggingface.co/docs/trl/en/sft_trainer">TRL：SFT 数据与训练</a></p></section><div class="extension-intro"><h2>延伸问题</h2><p>以下是根据外部资料另外整理的问题，不是上面原记录的逐字转录。</p></div><section class="lesson-section question-section" id="ext-016"><h2>如何在全参微调与低秩适配间取舍？</h2><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2013066841401099455">Finalchemist</a></p><div class="question-answer"><p>全参微调更新模型原来的全部或绝大多数参数；LoRA 冻结原有权重，训练附加的小矩阵来表示权重的改变量。选择哪一种，取决于任务变化、数据、显存、训练预算和部署方式，不是 LoRA 一定差或全参一定好。</p>
-<h3>用一个矩阵看 LoRA</h3>
-<p>原来线性层是 y=Wx。LoRA 改成 y=Wx+BAx，其中 W 不更新，只训练 A、B。若 W 是 4096×4096，原参数有约 1678 万；设秩 r=8，A 是 8×4096，B 是 4096×8，总共 65536 个可训练参数。r 控制改变量可表达的维度，越大通常越灵活，也越耗资源。实际实现还可能有缩放系数。</p>
-<p>这并不意味着训练只需这几万个数的内存。仍要执行基础模型的前向和反向传播，还要保存激活，只是不必为冻结的 W 保存同样的参数梯度和优化器状态。QLoRA 进一步用低位形式保存冻结底座，再训练适配矩阵，它不是“所有计算都用 4 位”。</p>
-<h3>如何做选择</h3>
-<p>如果任务主要是输出格式、特定领域表达或已有能力的适配，先用 LoRA 建基线通常能较低成本判断数据是否有效。如果有大量高质量数据、任务差异较大且资源足够，可比较全参微调是否带来额外收益。数据少时全参更容易过拟合，但 LoRA 也会过拟合，不能把它当自动正则化保证。</p>
-<p>比较应固定训练集、验证集和评测任务，报告可训练参数量、峰值显存、训练耗时以及正确率。LoRA 的 rank、作用层和学习率都影响结果，不能拿未调好的 LoRA 与精心调好的全参方案下结论。</p>
-<h3>部署时还要看什么</h3>
-<p>可以为不同任务保存不同适配器，共用底座，减少存储；也可在兼容条件下把改变量合并进权重。多个适配器并发服务、量化权重合并和切换方式会影响实际实现，不能只根据训练参数少就认为推理一定更快。最终应在目标硬件测实际部署，而不是只看训练论文中的收益。</p></div><p class="answer-references">本题参考：<a href="https://arxiv.org/abs/2106.09685">LoRA 原始论文</a>；<a href="https://arxiv.org/abs/2305.14314">QLoRA 原始论文</a></p></section><section class="lesson-section question-section" id="ext-017"><h2>量化精度与推理收益怎样一起评估？</h2><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2013066841401099455">Finalchemist</a></p><div class="question-answer"><p>量化是用较少位数近似表示原本的数值，例如把某些浮点权重映射到低位整数或低精度浮点格式。它可能减少存储和访存，但会引入误差；是否值得用，必须同时测模型能力和目标硬件上的实际性能。</p>
-<h3>先明确量化了什么</h3>
-<p>仅权重量化、权重加激活量化、KV 缓存量化是不同设置。位宽相同，分组大小、缩放因子、对称或非对称映射也可能不同。一个简化整数例子是 q=round(x/s)，恢复近似值 x≈s×q，其中 s 是尺度。若 x=0.23、s=0.1，则 q=2，恢复为 0.2，误差 0.03；真实方案还涉及可表示范围和截断。</p>
-<p>极端大值会拉大尺度，导致普通小值分辨率变差，所以按通道或按组使用不同尺度可能更合适，但需要额外存储和计算。不能把“4 位”当成一个完整的量化方案。</p>
-<h3>精度怎样测</h3>
-<p>先比较量化前后的固定任务集：问答正确率、代码测试通过率、结构化字段准确率、长上下文表现。困惑度可以观察语言建模变化，但不能单独代表业务质量。专门检查原模型本就接近决策边界的任务，以及数值、罕见词和长序列，平均分可能掩盖局部严重退化。</p>
-<h3>性能怎样测</h3>
-<p>在同一硬件、推理框架、输入输出长度及并发配置下，测模型加载内存、峰值内存、首字延迟、逐词生成速度和整体吞吐。低位数据需要硬件与算子真正支持；若每次都解量化成高精度再执行，节省的带宽可能被转换开销抵消。小批量和大批量的瓶颈也可能不同。</p>
-<p>例如某方案内存降低，但生成速度没有改善，仍可能因为能容纳更大并发而有价值；也可能业务只要求单请求低延迟，因此不适合。应先给定可接受的质量下降范围，再选择满足范围的性能方案，不要先追求最低位宽，最后才找理由解释错误。</p>
-<p>还要固定模型版本、量化校准数据和库版本，校准集不要混入最终测试答案。结果应该能被同一配置重复测到，而不是仅报告一次最快运行。</p></div><p class="answer-references">本题参考：<a href="https://arxiv.org/abs/2305.14314">QLoRA：量化底座与适配</a></p></section><section class="lesson-section question-section" id="ext-026"><h2>SFT的数据策略如何与训练目标对应？</h2><p class="question-origin">问题来源：<a href="https://www.nowcoder.com/discuss/911218249889480704">雾中列车</a></p><div class="question-answer"><p>SFT 数据应该由希望模型学会的行为决定，而不是先找到大量问答再全部混进去。模型看到的示范越接近实际使用方式，训练结果越有可能对应目标。</p>
-<h3>先把目标写成可观察行为</h3>
-<p>例如希望模型“根据给定日志解释故障，并在证据不足时提出下一步检查”。一条合适样本应包含日志、必要环境信息，以及有依据的解释或澄清问题。若训练答案总是直接给一个确定根因，模型可能学会过度自信，即使数据里的语言很漂亮。</p>
-<p>若目标是工具调用，数据应包含工具名称、参数、工具返回和后续回答，而不只是文字描述“现在调用工具”。若目标是固定 JSON 输出，示范的字段和类型要一致，并包含缺失信息的处理方式。训练与推理使用的聊天模板、角色标记和结束标记也应一致，否则模型学到的格式可能不被实际程序识别。</p>
-<h3>不同数据分别教什么</h3>
-<p>普通成功样本教标准行为；边界样本教哪些条件必须先澄清；失败恢复样本教工具报错后如何检查而非重复乱试；无答案样本教什么时候不能编造。数量比例应参考真实场景及错误成本。把拒答样本加得太多，可能使本来能回答的问题也被拒绝。</p>
-<p>检查监督范围也很重要。以助手回答为目标的训练，通常只对应该学习的输出位置计算损失，而不是无区别要求模型复述所有用户输入。具体配置取决于数据形式与训练器，应检查实际处理后的 tokens 和标签，而非只看原始 JSON 长得正确。</p>
-<h3>清洗与划分</h3>
-<p>去掉相互矛盾、抄错和无法验证的答案；对自动生成数据抽样审核，防止模型错误循环传播。按文档来源、代码仓库或任务模板隔离训练与测试，避免近重复泄漏。记录每类数据数量、长度、质量抽查结果和处理版本。</p>
-<h3>怎样证明数据策略有效</h3>
-<p>先测未微调基线，再逐步加入某类数据，看对应能力是否改善，同时检查其他能力有没有退化。比如加入失败恢复样本后，工具出错任务成功率提高，但正常任务多了无意义重试，就需要调整。训练损失下降只说明模型更会拟合示范，不代表示范本身教对了行为。</p></div><p class="answer-references">本题参考：<a href="https://huggingface.co/docs/trl/en/sft_trainer">TRL：SFT 数据与训练</a></p></section><section id="references" class="references"><h2>参考资料</h2><p>产品实现可能随版本变化；示例中的假设与实测结论应当区分。</p><ol><li><a href="https://huggingface.co/docs/trl/en/sft_trainer">TRL：SFT 数据与训练</a></li><li><a href="https://arxiv.org/abs/2305.18290">DPO 原始论文</a></li><li><a href="https://huggingface.co/docs/trl/en/grpo_trainer">TRL：GRPO</a></li><li><a href="https://arxiv.org/abs/2106.09685">LoRA 原始论文</a></li><li><a href="https://arxiv.org/abs/2305.14314">QLoRA 原始论文</a></li></ol></section><nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-llm-attention-inference.html">上一篇：自注意力与大模型推理</a><a rel="next" href="/post/learning-rag-data-updates.html">下一篇：RAG 文档处理与更新</a></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回问题目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>
+<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">学习问题整理</a> / 大模型训练与微调</p><header class="article-header"><h1>大模型训练与微调</h1><p class="article-date">更新于 <time datetime="2026-10-24">2026-10-24</time></p><p class="knowledge-tags">知识标签：SFT · DPO · GRPO · PPO · 数据集 · 数据质量 · 数据划分 · LoRA · 参数高效微调 · 量化</p></header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol><li><a href="#original-049">讲讲SFT DPO GRPO</a></li><li><a href="#original-050">所选的数据集大小是多少？</a></li><li><a href="#ext-016">如何在全参微调与低秩适配间取舍？</a></li><li><a href="#ext-017">量化精度与推理收益怎样一起评估？</a></li><li><a href="#ext-026">SFT的数据策略如何与训练目标对应？</a></li></ol></nav><section class="lesson-section question-section" id="llm-005"><h2 id="original-049">讲讲SFT DPO GRPO</h2><p class="knowledge-tags">知识标签：SFT · DPO · GRPO · PPO</p></section><section class="lesson-section question-section" id="llm-006"><h2 id="original-050">所选的数据集大小是多少？</h2><p class="knowledge-tags">知识标签：数据集 · 数据质量 · 数据划分</p></section><div class="extension-intro"><h2>延伸问题</h2><p>以下是根据外部资料另外整理的问题，不是上面原记录的逐字转录。</p></div><section class="lesson-section question-section" id="ext-016"><h2>如何在全参微调与低秩适配间取舍？</h2><p class="knowledge-tags">知识标签：LoRA · 参数高效微调</p><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2013066841401099455">Finalchemist</a></p></section><section class="lesson-section question-section" id="ext-017"><h2>量化精度与推理收益怎样一起评估？</h2><p class="knowledge-tags">知识标签：量化 · INT4 · INT8</p><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2013066841401099455">Finalchemist</a></p></section><section class="lesson-section question-section" id="ext-026"><h2>SFT的数据策略如何与训练目标对应？</h2><p class="knowledge-tags">知识标签：SFT · 数据构建</p><p class="question-origin">问题来源：<a href="https://www.nowcoder.com/discuss/911218249889480704">雾中列车</a></p></section><nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-llm-attention-inference.html">上一篇：自注意力与大模型推理</a><a rel="next" href="/post/learning-rag-data-updates.html">下一篇：RAG 文档处理与更新</a></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回问题目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>

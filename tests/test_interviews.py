@@ -1,4 +1,4 @@
-"""Question-first blog: verbatim occurrences, direct answers and safe static output."""
+"""Question-first blog: verbatim occurrences, optional personal answers and safe static output."""
 import copy
 import hashlib
 import importlib.util
@@ -37,7 +37,7 @@ class LearningSeriesTests(unittest.TestCase):
         for a in self.lessons:
             html=self.pages[builder.route(a['slug'])];p=Parser();p.feed(html);headings.update(dict(p.headings))
             self.assertNotIn('带着这些问题回看',html)
-            self.assertIn('class="question-answer"',html)
+            self.assertNotIn('class="question-answer"',html)
         self.assertEqual(len(self.qdata['originals']),79)
         for o in self.qdata['originals']:self.assertEqual(headings[o['id']],o['title'])
     def test_original_transcription_fingerprint(self):
@@ -45,7 +45,7 @@ class LearningSeriesTests(unittest.TestCase):
         payload=json.dumps([(o['id'],o['title'],o['sourceId'],o['sourceRefNumber']) for o in originals],ensure_ascii=False,separators=(',',':'))
         self.assertEqual(hashlib.sha256(payload.encode()).hexdigest(), '9e4d2f060308219882f631dcd55cfe659b6ff208162193113b5f0b73ba1f4333')
         self.assertEqual(len({o['canonicalId'] for o in originals}),59)
-    def test_all_concepts_have_direct_answers(self):
+    def test_all_concepts_have_authoring_slots(self):
         qids={q['id'] for q in self.qdata['questions']}
         self.assertEqual(set(self.qdata['answers']),qids);self.assertEqual(len(qids),89)
         for a in self.lessons:
@@ -53,6 +53,45 @@ class LearningSeriesTests(unittest.TestCase):
             for qid in a['questionIds']:
                 self.assertIn('id="'+qid+'"',html)
                 self.assertIn(self.qdata['answers'][qid]['renderedHtml'],html)
+    def test_empty_fields_and_legacy_answers(self):
+        for ans in self.qdata['answers'].values():
+            self.assertEqual(ans['answerMarkdown'],'')
+            self.assertEqual(ans['learningNotesMarkdown'],'')
+            self.assertEqual(ans['sources'],[])
+        for q in self.qdata['questions']:
+            self.assertEqual(q['answer'],'')
+            self.assertFalse(q.get('answerSources'))
+        for html in self.pages.values():
+            for unwanted in ['class="question-answer"','class="learning-notes"','class="answer-references"','class="references"','项目经历与技术选择','阅读解答']:
+                self.assertNotIn(unwanted,html)
+        self.assertEqual(sum(html.count('原题中的项目来自所收集的记录，不代表本站作者经历。') for html in self.pages.values()),1)
+    def test_future_personal_answer_and_notes_render_independently(self):
+        data=json.loads(builder.ANSWERS.read_text())
+        qid=data['questions'][0]['id']
+        for answer,notes in [('我的理解。',''),('','实际学习记录。'),('短答案。','复现过程。')]:
+            with self.subTest(answer=answer,notes=notes), tempfile.TemporaryDirectory() as tmp:
+                data['questions'][0]['answerMarkdown']=answer
+                data['questions'][0]['learningNotesMarkdown']=notes
+                p=Path(tmp)/'answers.json';p.write_text(json.dumps(data))
+                lessons,qdata=builder.load_data(answer_path=p)
+                lesson=next(a for a in lessons if qid in a['questionIds'])
+                html=builder.render_article(lesson,lessons,qdata)
+                self.assertEqual('class="question-answer"' in html,bool(answer))
+                self.assertEqual('class="learning-notes"' in html,bool(notes))
+                if answer:self.assertIn(answer,html)
+                if notes:self.assertIn(notes,html)
+    def test_optional_markdown_type_validation(self):
+        for field in ['answerMarkdown','learningNotesMarkdown']:
+            data=json.loads(builder.ANSWERS.read_text());data['questions'][0][field]=None
+            with tempfile.TemporaryDirectory() as tmp:
+                p=Path(tmp)/'answers.json';p.write_text(json.dumps(data))
+                with self.assertRaises(ValueError):builder.load_data(answer_path=p)
+    def test_original_tags_are_displayed_by_question(self):
+        for lesson in self.lessons:
+            html=self.pages[builder.route(lesson['slug'])]
+            for qid in lesson['questionIds']:
+                for o in builder.original_questions(qid,self.qdata):
+                    self.assertIn('<h2 id="'+o['id']+'">'+builder.e(o['title'])+'</h2><p class="knowledge-tags">知识标签：'+builder.e(' · '.join(o['tags']))+'</p>',html)
     def test_external_questions_distinct(self):
         for a in self.lessons:
             if any(not builder.original_questions(qid,self.qdata) for qid in a['questionIds']):self.assertIn('延伸问题',self.pages[builder.route(a['slug'])])

@@ -87,19 +87,19 @@ python3 -m unittest discover -s tests -v
 
 修改通过独立分支和 Pull Request 提供。需要回退时，撤销该 PR 的合并提交即可恢复旧首页；不要删除 `post/`、图片或旧资源目录。
 
-## Agent 与大模型问题与解答
+## Agent 与大模型学习问题整理
 
-`/post/agent-llm-learning-notes.html` 是问题目录，13 个主题分别放在 `/post/learning-*.html`，Blog 中各自列出。每篇以原问题为小节标题，答案紧接其后，不再使用专题正文加末尾问题清单的形式。
+`/post/agent-llm-learning-notes.html` 是问题目录，13 个主题分别放在 `/post/learning-*.html`，Blog 中各自列出。每篇以原问题为小节标题，保留知识标签和问题来源。
 
-- `data/original-questions.json` 保留用户提供的 79 个原始问题位置、原文和来源映射。相近问法可以共享解答，但原文仍显示，不悄悄改写或丢弃。残缺句子保留原样，并显示编者注。
-- `data/interviews.json` 保留 89 个知识问题的知识标签和来源索引。其中 59 个对应上述原始问题，另 30 个是外部资料的概念整理，页面单独标为延伸问题，不宣称逐字摘录。
+- `data/original-questions.json` 保留收集的 79 个原始问题位置、原文和来源映射。相近问法可以共用一个知识条目，但原文仍分别显示。残缺句子保留原样，并显示编者注。
+- `data/interviews.json` 保留 89 个知识问题的知识标签和来源索引。其中 59 个对应上述原始问题，另 30 个是外部资料的概念整理，页面单独标为延伸问题，不宣称逐字摘录。旧 `answer` 和 `answerSources` 已清空，不能作为答案的维护入口。
 - `data/learning-series.json` 仅维护文章标题、地址 slug 和问题分组。
-- `data/question-answers.json` 的 `questions` 数组包含 `id`、`answerMarkdown`、`sources`。没有可信个人经历时，解释问题含义与分析方法，不编造项目或数据。
+- `data/question-answers.json` 的 `questions` 数组包含 `id`、`answerMarkdown`、`learningNotesMarkdown`、`sources`。答案和学习记录目前为空，留给本站作者学习后填写；`sources` 是自行填写内容所引用的资料，不是问题原文来源。
+- 按 `id` 找到对应条目后，在 `answerMarkdown` 中写自己的理解，在 `learningNotesMarkdown` 中记录学习过程。两者可独立填写，空字符串或纯空白不显示任何内容或标题；不需要填写占位文字。参考资料按需填入 `sources`，每项包含 `title` 和 HTTPS `url`。
 - `scripts/markdown_subset.py` 是标准库实现的有限 Markdown 渲染器，支持段落、标题、列表、表格、代码围栏、行内代码、加粗及 HTTPS 链接；不执行原始 HTML，不加载外部脚本。数学公式请使用 Unicode 或代码块，不使用 LaTeX。
-- `scripts/build_learning_series.py` 校验问题覆盖、重复 ID、空答案和不安全链接，生成文章和两个入口地址。`scripts/build_interviews.py` 是兼容命令。
+- `scripts/build_learning_series.py` 校验问题覆盖、重复 ID、Markdown 字段类型和不安全链接，生成文章和两个入口地址。`scripts/build_interviews.py` 是兼容命令。
 - `assets/learning-series.css` 只影响这一组文章，不改变旧博客或 Notes。无搜索框、下拉框、题库交互或 JavaScript 依赖。
-- 原始问题来源与技术答案的参考资料分开显示。外部问题来源不是答案正确性的证明。
-- 不运行旧 Hexo 构建来覆盖静态站点。
+- 原始问题来源与以后填写的参考资料分开显示；不运行旧 Hexo 构建来覆盖静态站点。
 
 修改后运行：
 
@@ -111,4 +111,4 @@ python3 scripts/build_indexes.py --check
 python3 -m unittest discover -s tests -v
 ```
 
-技术准确性、逐步解释与易读性需人工复核，静态测试和字数不等于质量证明。浏览器检查覆盖问题目录、原问题锚点、参考链接、上一篇/下一篇以及窄屏代码和表格。
+浏览器检查覆盖问题目录、原问题锚点、来源链接和上一篇/下一篇。填写内容后，再检查窄屏段落、代码和表格的显示。

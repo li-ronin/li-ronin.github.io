@@ -155,13 +155,8 @@
           ]
         }
       ],
-      "answer": "Computer Use 的核心是“观察—决策—执行—再观察”的闭环，而不是模型直接接管操作系统。宿主获取截图等界面信息发给模型，模型返回点击、输入、滚动等结构化动作，执行器在桌面环境中执行，再把结果和新截图送回。云电脑提供的是远端桌面、应用和隔离环境；模型服务可以与桌面运行在不同机器上。\n\n工程上应给截图标注尺寸，确保缩放后的坐标正确映射，并在页面变化后重新观察，避免用旧截图点击新界面。一次点击返回成功，只能说明动作被执行，不能证明业务操作已成功；例如提交表单后，还要核对确认页或实际记录。\n\n隔离环境、最小权限、网络限制和人工确认共同降低风险。网页内容只是被观察的数据，不能因它声称“请执行某命令”就获得权限。上述是通用实现思路；具体工具名称和动作协议应以所选模型版本文档为准。",
-      "answerSources": [
-        {
-          "title": "Anthropic：Computer use tool",
-          "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "coding-001",
@@ -255,13 +250,8 @@
           ]
         }
       ],
-      "answer": "自注意力让序列中的每个位置，根据当前内容选择应从其他位置聚合哪些信息。对输入表示 X 做三组可学习的线性投影得到 Q、K、V：Q 表示当前要查询的信息，K 用于匹配，V 是实际被聚合的内容。单头计算为 softmax(QKᵀ / √dₖ + M)V，其中 M 是掩码；因果模型禁止访问未来位置。缩放项用于控制点积分数的量级，避免 Softmax 过早饱和。\n\n多头注意力分别在不同表示子空间中计算，再拼接并投影，不是简单重复同一个头。注意力通常还要与位置表示、残差连接、归一化和前馈网络组合。这里的“关注权重”是计算机制，不应直接当成人类可读的因果解释；实现时可以先用短序列核对张量形状、掩码方向与每行权重和。",
-      "answerSources": [
-        {
-          "title": "Attention Is All You Need",
-          "url": "https://arxiv.org/html/1706.03762v7"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "llm-002",
@@ -305,17 +295,8 @@
           ]
         }
       ],
-      "answer": "LLM 是 NLP 的一类模型，不是与 NLP 并列的新学科。所谓传统 NLP 包含规则、统计方法、任务专用神经网络及早期预训练模型，不能一概说成“不能生成”或“没有上下文”。现代通用 LLM 的突出特点是大规模预训练、可通过自然语言统一指定多种任务，以及借助上下文示例或后训练适配用途；专用小模型在成本、延迟和明确任务上仍可能更合适。\n\n典型生成式 LLM 流程是：整理并去重数据、分词，以预测下一个词元等目标预训练；随后用指令与示范回答做 SFT，再按需要进行偏好优化或强化学习，并持续评估能力、安全性和领域效果。不是所有模型都必须经过完全相同的阶段，也不是一定先 DPO 再 GRPO。模型规模、数据配比、训练目标和计算预算需要一起看，不能只用参数量解释效果。",
-      "answerSources": [
-        {
-          "title": "The Llama 3 Herd of Models",
-          "url": "https://arxiv.org/abs/2407.21783"
-        },
-        {
-          "title": "Hugging Face SFT Trainer",
-          "url": "https://huggingface.co/docs/trl/en/sft_trainer"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "llm-003",
@@ -403,13 +384,8 @@
           ]
         }
       ],
-      "answer": "先说明具体实现。以 Java ThreadPoolExecutor 为例，常见配置包括 corePoolSize、maximumPoolSize、keepAliveTime 及其时间单位、工作队列、ThreadFactory 和拒绝策略。提交任务时，线程数低于核心数通常先建线程，否则尝试入队；队列不能接收且尚未到最大线程数时才继续扩容，再无法接收则拒绝。因此无界队列可能让 maximumPoolSize 很难发挥预期作用，并把压力变成排队和内存增长。\n\n调参不能机械套用“CPU核数×某个常数”。CPU 密集任务以可用计算资源为起点；阻塞任务还要考虑等待比例、下游连接池和限流。工程上用有界队列、超时、取消与拒绝/背压明确过载行为，再压测吞吐、排队时间、尾延迟和资源占用。线程越多不等于越快；C++ 等其他实现也未必拥有 Java 的同名参数或调度顺序。",
-      "answerSources": [
-        {
-          "title": "Java 21 ThreadPoolExecutor",
-          "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ThreadPoolExecutor.html"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "harness-002",
@@ -503,13 +479,8 @@
           ]
         }
       ],
-      "answer": "一次模型输入通常包含行为约束、当前任务、相关历史或状态、工具定义，以及按需检索的材料。这里的“Prompt”可以泛指整份输入，不只是用户在输入框里写的那句话。不同 API 的消息角色和工具传递方式不同，不能机械地认定每个系统必须具备相同的文本模板。\n\n应该优先保留目标、关键约束和下一步所需的证据。工具定义只提供当前可能用到的能力；检索材料、历史细节和示例按相关性加载。把所有文件都塞进去，会消耗预算并引入噪声；删得只剩一句目标，则可能丢掉必要条件。\n\n一种可行做法是给每类上下文设置预算和来源标记，并通过失败样本做增删实验：去掉某段内容后正确率是否下降，加入后是否真正改善？“必须注入”应由正确性、安全边界和任务依赖决定，而非模板长度决定。",
-      "answerSources": [
-        {
-          "title": "Anthropic：Effective context engineering for AI agents",
-          "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "harness-003",
@@ -610,13 +581,8 @@
           ]
         }
       ],
-      "answer": "上下文压缩不是修改模型参数，而是重组下一次推理要看到的信息：裁剪冗余日志、将旧对话概括为任务摘要，并保留最近的有效操作与可回查的原始材料。压缩后的摘要属于有损表示，不能当作完整原始记录。\n\n触发阈值应预留下一轮输入增长和模型输出空间。一种预算方式是：当前输入 + 预期工具返回 + 输出预留 + 安全余量，接近可用上下文上限时触发。具体比例需要根据模型、工具返回大小和任务轨迹实验确定，不存在通用的“达到某百分比一定最好”。\n\n验证时既看节省的 Token，也看关键约束召回、后续任务成功率和重复操作率。摘要应有版本和原文索引，发现重要细节丢失时能够重新读取。这里描述的是可实现的设计方法，不等同于某个商业产品内部的完整算法。",
-      "answerSources": [
-        {
-          "title": "Anthropic：Compaction overview",
-          "url": "https://platform.claude.com/docs/en/build-with-claude/compaction"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "context-004",
@@ -747,13 +713,8 @@
           ]
         }
       ],
-      "answer": "追加功能时不宜简单重放全部聊天，也不应把旧任务当作从未发生。先恢复会话对应的状态：原目标、已完成工作、当前代码或文件版本、已作决定和未解决问题，再将新要求作为增量更新，重新检查它是否改变验收标准。\n\n“恢复会话”与“恢复运行环境”是两回事。数据库里的消息仍在，不代表工作目录、依赖、远端资源或用户授权仍有效。建议重新读取当前仓库状态和关键产物，而不是完全相信上次摘要；只把与新修改有关的旧信息注入模型。\n\n例如追加一个接口，应恢复现有接口约定和相关测试，再规划差异实现，不需要重新注入无关的全部日志。以 LangGraph 为例，线程级 checkpoint 支持状态延续，但外部系统状态仍要由应用自行验证。",
-      "answerSources": [
-        {
-          "title": "LangGraph：Persistence",
-          "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "tools-001",
@@ -818,17 +779,8 @@
           "note": "公开正文的精选概念重述，非逐题转载"
         }
       ],
-      "answer": "以客户端工具为例，宿主先向模型提供工具名称、用途和参数 Schema；模型返回调用请求，宿主验证参数和权限后执行函数，再把带调用标识的结果送回模型。模型据此继续调用工具或生成回答。模型输出“调用某工具”不等于函数已经执行，执行结果才是后续判断的依据。\n\nSkill 主要组织任务说明、流程和可复用资源；工具提供实际执行能力。Skill 可以教模型何时调用工具，也可以包含脚本，但脚本仍要由执行环境运行。因此两者通常互补，不能用一段 Skill 文本替代读文件、访问数据库等真实操作。\n\n模型调用次数也没有固定答案：一次请求可产生多个工具调用，多轮任务可能反复推理。加载一份 Skill 不必额外调用一次模型，是否产生新请求取决于宿主的加载与推理流程。",
-      "answerSources": [
-        {
-          "title": "Anthropic：Tool use overview",
-          "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview"
-        },
-        {
-          "title": "Agent Skills：Specification",
-          "url": "https://agentskills.io/specification"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "tools-002",
@@ -879,13 +831,8 @@
           ]
         }
       ],
-      "answer": "Skill 宜围绕可重复完成的任务设计，而不是把所有知识写进一个大文件。按 Agent Skills 的公开规范，名称和描述用于发现，SKILL.md 正文提供任务指引，较大的参考资料、脚本和模板按需读取。这种渐进加载能减少不相关内容长期占用上下文。\n\n编写时可明确四件事：何时使用、需要什么输入、如何执行、怎样判断完成。同时给出容易误用的边界，例如“只生成草稿，不负责发送”。通用步骤与业务特例应分开，但不必为了分层而增加多层跳转。\n\n维护时用真实任务回归测试：是否选中了正确 Skill、是否遗漏前提、脚本失败能否被识别。说明写得完整并不等于结果可靠，最终仍要验证产物。上述组织方式是工程建议，不要求所有 Agent 都采用固定层数。",
-      "answerSources": [
-        {
-          "title": "Agent Skills：Specification",
-          "url": "https://agentskills.io/specification"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "planning-001",
@@ -974,13 +921,8 @@
           ]
         }
       ],
-      "answer": "多 Agent 编排应先明确任务依赖，而不是先确定要创建几个角色。常见方式包括主控拆分并汇总、多个独立任务并行，以及把控制权移交给专门 Agent。子 Agent 的差异可以来自上下文、职责、工具和输出契约，不一定需要不同模型。\n\n一种实用设计是把每个子任务的输入、边界、交付物与完成条件写清楚；独立子任务并行，有依赖的任务等待上游结果。汇总时不能只拼接文本，还要处理结论冲突、缺失证据和失败状态。\n\n工具可以共享定义，但不必共享全部权限、凭据或可变状态。只读检索者通常无需写入权限；多个写入者则要处理冲突。是否值得拆分，应比较质量收益与新增的 Token、延迟、协调成本，单 Agent 已足够时不必增加编排。",
-      "answerSources": [
-        {
-          "title": "LangChain：Multi-agent",
-          "url": "https://docs.langchain.com/oss/python/langchain/multi-agent"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "project-001",
@@ -1405,13 +1347,8 @@
           ]
         }
       ],
-      "answer": "Skill 匹配通常先依赖名称和描述筛选候选，再读取候选的详细说明，决定是否使用。应用可以直接把精简目录交给模型，也可以先用关键词、分类器或检索减少候选数量；这些是不同实现方式，并非 Skill 格式本身规定的唯一算法。\n\n好的描述应写清任务、输入和触发条件，同时说明不适用场景。比如“处理表格”过于宽泛，“读取和修改含公式的工作簿，并验证重算结果”更便于区分能力。\n\n评估时应同时统计漏选、误选和加载成本。对相似 Skill 增加容易混淆的对照任务；置信度不足时可继续读取说明或询问缺失条件，而不是一次匹配后永不回头。权限校验仍由执行系统承担，匹配成功不代表获准执行所有操作。",
-      "answerSources": [
-        {
-          "title": "Agent Skills：Adding skills support",
-          "url": "https://agentskills.io/client-implementation/adding-skills-support"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "tools-004",
@@ -1506,13 +1443,8 @@
           ]
         }
       ],
-      "answer": "可以先按作用范围分层：工作上下文服务于当前一次推理；会话状态保存当前任务的消息、计划和中间结果；长期记忆保存跨会话仍有价值的事实、偏好或经验。长期记忆也可以区分事实、经历和操作方法，但这些是组织维度，不是必须配置的固定数据库数量。\n\n存储持久化与“进入模型上下文”不是一回事。大量历史可以放在外部存储，推理时只召回相关部分。例如 LangGraph 用线程级 checkpoint 保存运行状态，用 store 管理跨线程数据，两者服务范围不同。\n\n建议为记忆记录来源、时间、适用主体和有效期。用户事实不能跨用户召回，历史推断不能覆盖新的明确陈述；操作授权也不应仅凭一条旧记忆恢复。设计质量应通过召回相关性、错误记忆传播和跨用户泄漏测试验证。",
-      "answerSources": [
-        {
-          "title": "LangChain：Memory overview",
-          "url": "https://docs.langchain.com/oss/python/concepts/memory"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "memory-002",
@@ -1730,13 +1662,8 @@
           ]
         }
       ],
-      "answer": "向量检索擅长找到与查询语义接近的文本，但跨多份材料的实体关系和全局主题未必集中在相似度最高的几个片段中。GraphRAG 将图结构或图上的摘要引入检索。以 Microsoft GraphRAG 为例，Local Search 结合实体相关的图信息与原文片段；Global Search 聚合社区报告，面向需要理解整个资料集合的问题。\n\n它适合关系密集、跨文档关联或全局归纳需求明确的场景，但“有图”不等于自动具备正确的多跳推理。实体抽取、消歧、关系和摘要都可能出错，还会增加索引构建、更新与查询成本。一个可检验的选型过程是：先建立向量或混合检索基线，再按实体关联、全局归纳、普通事实查询分别比较证据完整性、回答正确性、延迟和成本；只有收益稳定覆盖额外复杂度时，图才值得引入。",
-      "answerSources": [
-        {
-          "title": "Microsoft GraphRAG 查询方式",
-          "url": "https://microsoft.github.io/graphrag/query/overview/"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "project-003",
@@ -1877,21 +1804,8 @@
           "note": "公开正文的精选概念重述，非逐题转载"
         }
       ],
-      "answer": "SFT 学习“示范答案应该怎样写”：通常对给定输入与目标输出计算词元级交叉熵，训练时使用已有目标词元作为条件；是否只对回答部分计算损失取决于数据格式与训练配置。它主要依赖高质量示范，不能仅靠复制答案保证推理正确。\n\n标准 DPO 学习“同一输入下哪个回答更好”：使用偏好对与参考策略，通过当前模型和参考模型的相对对数概率构造偏好损失；通常不需要单独训练显式奖励模型，也不要求在每次优化更新时在线生成候选。\n\n原始 GRPO 属于在线策略优化：对同一问题采样一组回答，用奖励的组内相对差异估计优势，再进行带约束的策略更新，省去 PPO 中通常使用的独立价值模型。奖励可以来自规则或模型，但必须可靠；奖励投机、组内奖励缺少差异和采样成本都是实际问题。三者分别强调示范、偏好比较和基于反馈的探索，不是三个可随意互换的名称。",
-      "answerSources": [
-        {
-          "title": "Hugging Face SFT Trainer",
-          "url": "https://huggingface.co/docs/trl/en/sft_trainer"
-        },
-        {
-          "title": "Direct Preference Optimization",
-          "url": "https://arxiv.org/abs/2305.18290"
-        },
-        {
-          "title": "DeepSeekMath：GRPO原论文",
-          "url": "https://arxiv.org/html/2402.03300v3"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "llm-006",
@@ -2268,17 +2182,8 @@
           ]
         }
       ],
-      "answer": "ReAct 将推理与行动交替进行：根据当前信息选择动作，接收环境观察，再决定下一步。它适合需要边探索边调整的任务；关键是让外部结果修正决策，而不是让模型一次性猜完所有步骤。\n\nPlan-Execute-Replan 则把较高层计划显式保存下来：先分解目标，执行一步或一组步骤，再用实际结果更新剩余计划。它便于检查进度与依赖，但初始计划可能错误，额外的规划轮次也会增加成本。“有计划”并不意味着过程必须僵硬。\n\n二者可以组合：上层按计划管理阶段，执行器在每一步内部采用 ReAct。比如修复程序时，上层安排复现、修改、回归，执行器根据测试结果决定具体命令。评估应看任务成功、偏离目标与恢复能力，而非仅比较流程名称。",
-      "answerSources": [
-        {
-          "title": "Yao 等：ReAct",
-          "url": "https://arxiv.org/abs/2210.03629"
-        },
-        {
-          "title": "LangGraph：Workflows and agents",
-          "url": "https://docs.langchain.com/oss/python/langgraph/workflows-agents"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "tools-005",
@@ -2362,13 +2267,8 @@
           ]
         }
       ],
-      "answer": "一个可落地的 RAG 链路分离线入库与在线查询。离线先解析材料、清洗、切块，保存原文位置、版本等元数据，再建立向量和/或关键词索引。在线先理解查询中的实体、时间与约束，必要时补全多轮指代，然后执行检索；召回候选后去重、融合、重排，再按上下文预算组织证据，交给生成模型回答并附来源。\n\n这是工程组织方式，不代表每次都必须调用所有模块。简单问题可以检索后直接生成，复杂问题可以多轮检索；查询改写也应通过评测证明有益。必须把权限过滤放在资料进入模型之前。排障时分别检查“库中是否有证据、是否召回、是否排进上下文、模型是否忠实使用”，否则一句“RAG效果差”无法定位问题。没有足够证据时应说明缺口，而不是让模型补成事实。",
-      "answerSources": [
-        {
-          "title": "LangChain Retrieval",
-          "url": "https://docs.langchain.com/oss/python/deepagents/retrieval"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "rag-010",
@@ -2408,13 +2308,8 @@
           ]
         }
       ],
-      "answer": "Chunk 是检索和提供上下文的单元，大小没有通用最优值。太小容易把定义、条件和结论拆开；太大又会混入无关内容、稀释检索信号并消耗上下文。通常先沿标题、段落、句子等自然边界切分，保留标题路径；表格需保留表头与行列语义，代码则尽量保留完整函数或逻辑块。长度限制应按实际 tokenizer 的词元数检查，而不是把字符数直接当 token。\n\n重叠能减轻边界信息丢失，但会增加索引量和重复上下文。建议用同一批带证据位置的查询，对不同块大小、重叠和父子块策略做对照；观察证据召回率、答案正确性与上下文成本，而不是只看向量相似度。可以用较小块定位，再扩展到父段落供模型阅读，将“匹配粒度”和“阅读粒度”分开。",
-      "answerSources": [
-        {
-          "title": "Azure AI Search 文档切块",
-          "url": "https://learn.microsoft.com/en-us/azure/search/vector-search-how-to-chunk-documents"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "rag-011",
@@ -2511,13 +2406,8 @@
           "note": "公开正文的精选概念重述，非逐题转载"
         }
       ],
-      "answer": "多路检索先各自召回，再对同一文档或片段标识去重并融合。不要直接把 BM25 分数与向量余弦相似度相加：它们的尺度和分布通常不同。一个稳健基线是 RRF，对文档在各路结果中的名次累加 1/(k + rank)；这里 k 是平滑常数，不是召回条数。它利用排名而不是要求原始分数可比。\n\n融合后可用重排模型对“查询—候选片段”重新评分，再结合证据多样性和 token 预算选择最终上下文。加权融合或分数归一化也可以使用，但权重应从代表性查询的验证集调出。评估不仅看最终答案，还要分别看候选召回和排序：如果正确证据从未进入候选集合，重排器无法凭空把它找回来。",
-      "answerSources": [
-        {
-          "title": "Azure AI Search RRF混合排名",
-          "url": "https://learn.microsoft.com/en-us/azure/search/hybrid-search-ranking"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "rag-013",
@@ -2603,17 +2493,8 @@
           ]
         }
       ],
-      "answer": "应保留的是后续正确决策所依赖的信息，而不是尽量保留最多文字。通常包括当前目标、明确约束、已经确认的关键事实、未解决问题、最新有效计划，以及已执行操作的结果。对不能重复的外部操作，必须区分成功、失败和结果未知。\n\n一种可行实现是把这些字段放在结构化任务状态中，压缩只处理历史叙述，不能直接覆盖受保护字段；原始证据另存并保留索引。摘要可以写“测试已完成”，但最好同时关联测试版本、结果和报告地址，便于核验。\n\n“提示模型不要丢失”只是软约束。真正的保证还需字段校验、版本控制、与原状态对比，以及失败时回退。测试时在早期对话放入关键限制，经过多次压缩后检查系统是否仍遵守，以此发现只在长任务中出现的信息损失。",
-      "answerSources": [
-        {
-          "title": "Anthropic：Effective context engineering for AI agents",
-          "url": "https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents"
-        },
-        {
-          "title": "LangGraph：Persistence",
-          "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "coding-002",
@@ -2821,13 +2702,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "当步骤、输入输出和分支条件较明确时，优先采用固定工作流：程序决定下一步，模型负责其中的识别、生成等局部任务。这样更容易测试、限制权限和控制成本。例如“校验格式—提取字段—人工审核”通常无需每一步都由模型重新规划。\n\n当任务路径必须根据运行结果探索，且难以事先枚举步骤时，再让 Agent 动态选择工具和行动。灵活性会带来更多推理轮次、波动和失败路径，因此需要预算、停止条件以及外部结果验证。\n\n实际系统常用混合结构：外围工作流固定审批和交付门槛，内部 Agent 自由调查。选择依据是任务的不确定性与风险，而不是“Agent 比 Workflow 更先进”。应先建立简单方案基线，再验证增加自主性是否带来可测收益。",
-      "answerSources": [
-        {
-          "title": "Anthropic：Building effective agents",
-          "url": "https://www.anthropic.com/engineering/building-effective-agents"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-003",
@@ -2866,13 +2742,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "MCP 通过统一客户端与服务器之间的能力发现、消息交换和调用接口，减少每个 Agent 产品为每个外部系统单独设计接入协议的工作。宿主应用管理客户端连接，服务器暴露工具、资源等能力；工具背后的业务实现仍由服务提供者负责。\n\n它统一的是连接与交互契约，不负责替模型决定任务计划，也不保证某个工具安全、便宜或适合当前请求。数据库查询的业务权限、参数验证、超时和审计仍需要在应用与服务端实现。\n\n例如一个知识服务实现一次 MCP 接口后，可被兼容客户端复用；但更换客户端前仍须核对协议版本、认证方式和支持能力。对只有一个固定 API 的简单应用，直接调用可能更省事，不必为了使用协议而增加一层。",
-      "answerSources": [
-        {
-          "title": "MCP：Architecture overview（2026-07-28）",
-          "url": "https://modelcontextprotocol.io/docs/2026-07-28/learn/architecture"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-005",
@@ -2950,17 +2821,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "限制 Agent 不能只依靠 Prompt 中的一句“不要乱操作”。应把权限落实到执行层：按任务发放最小工具集和资源范围，用文件系统与网络隔离限制实际访问；高风险操作在执行前经过独立的授权检查。模型即使产生越权请求，执行器也应拒绝。\n\n循环控制可以组合最大步数、时间和费用预算，以及重复动作检测。相同失败连续出现时，先比较输入和环境是否改变；没有新依据就停止重试或转人工。预算超限应留下可恢复的状态与失败原因，而不是把中断伪装为完成。\n\n这些措施降低风险，但沙箱不是绝对安全证明。建议用恶意网页指令、工具超时、循环调用和权限不足等案例测试，分别确认决策层能识别问题、执行层能阻断问题。",
-      "answerSources": [
-        {
-          "title": "Anthropic：Claude Code sandboxing",
-          "url": "https://www.anthropic.com/engineering/claude-code-sandboxing"
-        },
-        {
-          "title": "LangGraph：Graph API / recursion limits",
-          "url": "https://docs.langchain.com/oss/python/langgraph/graph-api"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-007",
@@ -3038,17 +2900,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "Checkpoint 记录了程序状态，不意味着外部副作用天然“只执行一次”。例如邮件已发送，但结果还未写入 checkpoint 时进程崩溃，恢复后重跑节点就可能再次发送。LangGraph 文档也明确提醒：恢复时节点中的部分代码可能重新执行。\n\n可行设计是给逻辑操作分配稳定的幂等键，由接收方或数据库唯一约束去重，并保存操作状态与结果。能查询外部结果时，先核对是否已经完成；单纯“先查再写”仍有并发窗口，不能替代原子约束。\n\n若目标 API 不支持幂等，又无法可靠查询结果，应把超时标为“结果未知”，等待核验，而非盲目重试。用故障注入覆盖“请求前、对方成功后、本地落库前”等断点，才能验证恢复流程是否会重复产生副作用。",
-      "answerSources": [
-        {
-          "title": "LangGraph：Re-execution and idempotency",
-          "url": "https://docs.langchain.com/oss/python/langgraph/graph-api#re-execution-and-idempotency"
-        },
-        {
-          "title": "Amazon Builders’ Library：Making retries safe with idempotent APIs",
-          "url": "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-009",
@@ -3087,13 +2940,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "并发写状态时，首先为每个字段定义语义。计数可以按增量合并，独立结果可以按稳定 ID 汇总，互斥的决策则通常需要串行裁决或显式冲突处理。不能把所有字段都用“后写覆盖”或“列表追加”处理。\n\n以 LangGraph 为例，reducer 定义如何把字段旧值与节点更新合并；没有 reducer 的字段默认使用替换语义。并行更新同一字段时，应明确允许的合并规则，否则可能发生冲突，而不是自动获得正确结果。\n\n自定义合并逻辑还要考虑顺序和重放。列表追加不具备去重能力，任务重试可能产生重复项；集合合并虽能去重，却会丢失顺序。建议打乱更新顺序、重复提交同一更新并模拟重试，检查最终状态是否符合业务约束。",
-      "answerSources": [
-        {
-          "title": "LangGraph：Reducers",
-          "url": "https://docs.langchain.com/oss/python/langgraph/graph-api#reducers"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-010",
@@ -3249,17 +3097,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "仅有内容向量的普通全连接自注意力，没有直接提供序列中第几个位置的信息，因此 Transformer 需要位置机制来表达顺序与距离。常见做法包括把绝对位置向量加入词元表示、在注意力分数中加入相对位置偏置，以及对 Q、K 应用旋转位置编码 RoPE。它们不是同一种操作。\n\nRoPE 按位置对向量的二维分量进行旋转，使旋转后的 Q 与 K 点积包含相对位置差的信息；它不是简单给每个词元加一个位置向量。位置机制允许模型利用顺序，但不保证能直接推广到任意长度。扩大上下文时仍需验证位置缩放策略、训练长度分布和长距离任务效果，不能把“公式能计算更大位置”当成“长上下文能力已经可靠”。",
-      "answerSources": [
-        {
-          "title": "RoFormer：旋转位置编码",
-          "url": "https://arxiv.org/abs/2104.09864"
-        },
-        {
-          "title": "Attention Is All You Need",
-          "url": "https://arxiv.org/html/1706.03762v7"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-014",
@@ -3299,13 +3138,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "自回归解码每次追加新词元；在因果注意力下，已有前缀的 K、V 可以保留，后续步骤只为新词元计算相关表示，并让新 Q 读取历史 K、V。KV Cache 避免重复处理前缀，但不会消除对历史缓存的读取，也不意味着每生成一个词元的耗时与上下文长度无关。Prefill 处理输入前缀，decode 逐步生成，二者应分开衡量。\n\n对常规、未量化且未分片的注意力缓存，可粗估字节数为 2 × batch × 层数 × 序列长度 × KV头数 × 每头维度 × 每元素字节数；2 分别对应 K 和 V。实际还受分页、滑动窗口和实现布局影响。长上下文、高并发会明显增加缓存容量与带宽压力，优化应同时观察显存、首词元延迟和逐词元延迟，而不只关注模型权重大小。",
-      "answerSources": [
-        {
-          "title": "Hugging Face：KV缓存机制",
-          "url": "https://huggingface.co/docs/transformers/en/cache_explanation"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-015",
@@ -3345,13 +3179,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "MHA 通常让每个 Query 头都有各自的 K、V 头。MQA 让所有 Query 头共享一组 K、V；GQA 则把 Query 头分组，每组共享一组 K、V，位于两者之间。它们保留多个 Query 头，改变的是 K、V 的共享粒度，不能理解成把所有注意力头都删成一个。\n\n在每头维度等条件相同的情况下，更少的 KV 头意味着更小的 KV Cache，也减少自回归解码中的缓存读取量。这主要缓解显存和带宽开销，并不使全部模型计算按相同比例减少。共享越强，表达能力的约束也越大；质量与效率需实测。已有 MHA 模型通常不能只改一个运行时参数就无损变成 GQA，需适当的权重转换与训练适配。",
-      "answerSources": [
-        {
-          "title": "GQA原论文",
-          "url": "https://arxiv.org/abs/2305.13245"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-016",
@@ -3390,13 +3219,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "全参数微调允许更新全部模型参数，适配空间较大，但需要保存更多梯度与优化器状态。LoRA 冻结原权重 W，只训练低秩增量 ΔW = BA；秩 r 远小于原矩阵维度时，可训练参数显著减少。对 m×n 矩阵，增量参数量约为 r(m+n)，而不是 mn。它通常能减少训练状态与任务适配文件的开销，但前向和反向仍要经过基座，并非训练成本归零。\n\n选型要同时看任务与基座差距、数据量、显存预算、目标模块和秩。LoRA 不保证在所有任务上与全参微调等效；也不能把 LoRA 与量化混为一谈，QLoRA 才进一步组合低比特基座等机制。应在同一划分与预算下比较领域效果、通用能力回退、峰值显存和吞吐，再决定低秩适配是否足够。",
-      "answerSources": [
-        {
-          "title": "LoRA原论文",
-          "url": "https://arxiv.org/abs/2106.09685"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-017",
@@ -3437,13 +3261,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "先明确量化对象与格式：只量化权重、同时量化激活、量化 KV Cache，影响的瓶颈不同；INT4、INT8 或 FP8 也不能只按位数视为同一种方案。量化用较少比特表示数值，通常节约存储和带宽，但会引入舍入、截断等误差，还可能需要校准数据。\n\n工程评估应固定模型、任务集、硬件、输入输出长度和 batch，对照未量化基线，同时记录任务质量、峰值显存、首词元延迟、逐词元延迟及吞吐。不要把模型文件缩小直接等同于推理加速：硬件是否支持相应算子、反量化开销以及实际瓶颈都会影响结果。重要能力需分别验证，避免平均分掩盖少数高风险任务的退化；校准数据也应与评测数据隔离。",
-      "answerSources": [
-        {
-          "title": "Hugging Face 量化概览",
-          "url": "https://huggingface.co/docs/transformers/en/quantization/overview"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-018",
@@ -3482,13 +3301,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "推测解码先用成本较低的草稿模型提出多个候选词元，再让目标模型并行验证，而不是让大模型逐个独立完成所有步骤。严格实现的推测采样需要相应的接受、拒绝与重采样规则，才能保持目标模型的采样分布；它不是“草稿看起来差不多就直接采用”。\n\n收益取决于草稿生成成本、接受率、候选长度和验证开销。如果草稿与目标差异过大，频繁拒绝会浪费工作；草稿本身太慢、服务已经被其他瓶颈限制时也可能不划算。应在代表性任务、实际解码设置和并发下比较端到端延迟、吞吐及额外显存，而不是引用单个模型的加速倍数。保持分布不等于固定随机种子下每次生成完全相同的字面序列。",
-      "answerSources": [
-        {
-          "title": "Fast Inference from Transformers via Speculative Decoding",
-          "url": "https://arxiv.org/abs/2211.17192"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-019",
@@ -3643,13 +3457,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "TF-IDF 用词频反映一个词在文档中的重要程度，用逆文档频率降低常见词的区分价值。BM25 也利用词频和稀有程度，但对词频采用饱和增长，并通过文档长度归一化减轻长文档天然包含更多匹配词的优势。常见参数 k1 控制词频饱和程度，b 控制长度归一化强度；参数名称不能代替对分词和数据分布的理解。\n\n二者都依赖词项匹配，擅长保留人名、产品型号和专业术语等精确线索，但不天然解决同义表达与跨语言语义。中文切词、停用词和字段配置会影响结果。实践中可把 BM25 与向量检索互补使用，并用真实查询检查哪些失败来自分词、关键词缺失或语义改写，不能只因某算法较新就跳过关键词基线。",
-      "answerSources": [
-        {
-          "title": "Elasticsearch BM25 相似度配置",
-          "url": "https://www.elastic.co/docs/reference/elasticsearch/index-settings/similarity"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-023",
@@ -3688,13 +3497,8 @@
       ],
       "origin": "外部来源概念重述",
       "learningNotesOrigin": "整理者补充学习方向，并非原文答案",
-      "answer": "“有引用”不等于“有证据”。先把回答拆成可核验的事实主张，再检查每个引用片段是否真正支持该主张：实体、时间、范围、前提和否定条件是否一致，是否只支持句子的一部分，是否需要多段证据联合支持。仅在同一主题下出现相似关键词，并不足以建立支持关系。\n\n可分别衡量引用正确性与覆盖度：前者看给出的引用是否有效，后者看需要证据的重要主张是否被覆盖。再抽样人工复核，尤其注意来源冲突、过期材料和从相关性推到因果性的情况。自动蕴含判断或模型评审可以辅助，但评审模型也会出错；如果证据只支持较弱结论，应缩小结论，而不是用多贴几个链接弥补。",
-      "answerSources": [
-        {
-          "title": "ALCE：生成带引用文本的评测",
-          "url": "https://arxiv.org/abs/2305.14627"
-        }
-      ]
+      "answer": "",
+      "answerSources": []
     },
     {
       "id": "ext-024",

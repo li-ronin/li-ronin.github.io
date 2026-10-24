@@ -1,7 +1,7 @@
 [
   {
     "date": "2026-10-21",
-    "title": "Agent 与大模型：问题与解答",
+    "title": "Agent 与大模型：学习问题整理",
     "url": "/post/agent-llm-learning-notes.html",
     "kind": "blog"
   },
@@ -223,7 +223,7 @@
   },
   {
     "date": "2026-10-21",
-    "title": "项目经历与技术选择",
+    "title": "项目相关问题",
     "url": "/post/learning-project-experience.html",
     "kind": "blog"
   }

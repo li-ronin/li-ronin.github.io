@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render a script-free, multi-article learning series from reviewed HTML fragments."""
+"""Render a script-free, multi-article learning series with optional personal answers and learning notes."""
 import argparse
 from html import escape
 from html.parser import HTMLParser
@@ -16,8 +16,8 @@ LEGACY = '/post/ai-interview-learning-archive.html'
 SLUGS = ['agent-runtime', 'context-memory', 'agent-memory', 'tools-skills', 'planning-multi-agent',
          'llm-attention-inference', 'llm-training-alignment', 'rag-data-updates', 'rag-knowledge-engineering',
          'ai-coding-computer-use', 'agent-evaluation-reliability', 'concurrency-backpressure', 'project-experience']
-TITLE = 'Agent 与大模型：问题与解答'
-DATE = '2026-10-21'
+TITLE = 'Agent 与大模型：学习问题整理'
+DATE = '2026-10-24'
 ORIGINALS = ROOT / 'data/original-questions.json'
 ANSWERS = ROOT / 'data/question-answers.json'
 import sys
@@ -94,17 +94,21 @@ def load_data(path=DATA, answer_path=ANSWERS, original_path=ORIGINALS):
         ids={'main','references'};fragments=[]
         for qid in a['questionIds']:
             ans=by_id[qid]
-            if not isinstance(ans.get('answerMarkdown'),str) or len(ans['answerMarkdown'].strip())<80:raise ValueError('Missing substantive answer: '+qid)
-            html=render_markdown(ans['answerMarkdown']);v=FragmentValidator();v.feed(html);v.close()
-            own=[qid,*[o['id'] for o in originals if o['canonicalId']==qid],*v.ids]
+            own=[qid,*[o['id'] for o in originals if o['canonicalId']==qid]]
+            for field, rendered in [('answerMarkdown','renderedHtml'),('learningNotesMarkdown','renderedNotesHtml')]:
+                value=ans.get(field,'')
+                if not isinstance(value,str):raise ValueError('Markdown must be a string: '+qid+' '+field)
+                html=render_markdown(value) if value.strip() else ''
+                v=FragmentValidator();v.feed(html);v.close()
+                own.extend(v.ids);fragments.extend(v.fragments)
+                ans[rendered]=html
+                for bad in ['待补充','面试题库']:
+                    if bad in value:raise ValueError('Unwanted placeholder or framing')
             if len(own)!=len(set(own)) or ids.intersection(own):raise ValueError('Duplicate DOM ID')
-            ids.update(own);fragments.extend(v.fragments)
-            ans['renderedHtml']=html
+            ids.update(own)
             if not isinstance(ans.get('sources'),list):raise ValueError('Answer sources must be list')
             for r in ans['sources']:
                 if not r.get('title') or not valid_url(r.get('url','')):raise ValueError('Unsafe technical reference')
-            for bad in ['待补充','面试题库']:
-                if bad in ans['answerMarkdown']:raise ValueError('Unwanted placeholder or framing')
         if not set(fragments)<=ids:raise ValueError('Broken answer fragment')
     qdata['originals']=originals;qdata['answers']=by_id
     return lessons,qdata
@@ -134,9 +138,9 @@ def render_hub(lessons,qdata):
     aliases=[]
     for q in qdata['questions']:
         a=next(a for a in lessons if q['id'] in a['questionIds'])
-        aliases.append('<p class="legacy-target" id="'+q['id']+'">'+e(question_label(q['id'],qdata))+'：<a href="'+route(a['slug'])+'#'+q['id']+'">阅读解答</a></p>')
-    body='<article><header class="article-header"><h1>'+TITLE+'</h1><p class="article-date">更新于 '+DATE+'</p><p>按知识主题整理问题。打开一篇文章后，先看到原问题，再阅读对应的解释、例子与参考资料。相近问题放在一起，但保留不同的原始问法。</p><p>补充整理的问题单独标为“延伸问题”。涉及个人项目的内容说明如何分析和验证，不虚构项目经历或实测结果。</p></header><ol class="series-list">'+''.join(cards)+'</ol>'+''.join(aliases)+'</article>'
-    return shell(TITLE,'保留原问题，逐题解释 Agent、上下文、工具、RAG、大模型和并发知识。',HUB,body)
+        aliases.append('<p class="legacy-target" id="'+q['id']+'">'+e(question_label(q['id'],qdata))+'：<a href="'+route(a['slug'])+'#'+q['id']+'">查看问题</a></p>')
+    body='<article><header class="article-header"><h1>'+TITLE+'</h1><p class="article-date">更新于 '+DATE+'</p><p>按知识主题收集问题，保留原始问法和来源。</p><p>补充整理的问题单独标为“延伸问题”。</p></header><ol class="series-list">'+''.join(cards)+'</ol>'+''.join(aliases)+'</article>'
+    return shell(TITLE,'按知识主题整理 Agent、上下文、工具、RAG、大模型和并发相关问题。',HUB,body)
 
 def render_article(a,lessons,qdata):
     index=SLUGS.index(a['slug']);questions={q['id']:q for q in qdata['questions']}
@@ -151,9 +155,9 @@ def render_article(a,lessons,qdata):
         if originals:
             for n,o in enumerate(originals):
                 if n:headings.append('<p class="variant-label">相关原问题：</p>')
-                headings.append('<h2 id="'+o['id']+'">'+e(o['title'])+'</h2>')
+                headings.append('<h2 id="'+o['id']+'">'+e(o['title'])+'</h2><p class="knowledge-tags">知识标签：'+e(' · '.join(o['tags']))+'</p>')
                 if o.get('editorNote'):headings.append('<p class="editor-note">'+e(o['editorNote'])+'</p>')
-        else:headings.append('<h2>'+e(questions[qid]['title'])+'</h2>')
+        else:headings.append('<h2>'+e(questions[qid]['title'])+'</h2><p class="knowledge-tags">知识标签：'+e(' · '.join(questions[qid]['tags']))+'</p>')
         origin=source_links(qid,qdata)
         origin_html='<p class="question-origin">问题来源：'+origin+'</p>' if origin else ''
         answer_refs=[]
@@ -161,13 +165,17 @@ def render_article(a,lessons,qdata):
             if r['url'] not in reference_urls:references.append(r);reference_urls.add(r['url'])
             answer_refs.append('<a href="'+e(r['url'])+'">'+e(r['title'])+'</a>')
         ref_html='<p class="answer-references">本题参考：'+'；'.join(answer_refs)+'</p>' if answer_refs else ''
-        parts.append('<section class="lesson-section question-section" id="'+qid+'">'+''.join(headings)+origin_html+'<div class="question-answer">'+ans['renderedHtml']+'</div>'+ref_html+'</section>')
+        answer_html='<div class="question-answer">'+ans['renderedHtml']+'</div>' if ans['renderedHtml'] else ''
+        notes_html='<div class="learning-notes"><h3>学习记录</h3>'+ans['renderedNotesHtml']+'</div>' if ans['renderedNotesHtml'] else ''
+        parts.append('<section class="lesson-section question-section" id="'+qid+'">'+''.join(headings)+origin_html+answer_html+notes_html+ref_html+'</section>')
     refs=''.join('<li><a href="'+e(r['url'])+'">'+e(r['title'])+'</a></li>' for r in references)
+    references_html='<section id="references" class="references"><h2>参考资料</h2><ol>'+refs+'</ol></section>' if references else ''
+    provenance='<p>原题中的项目来自所收集的记录，不代表本站作者经历。</p>' if a['slug']=='project-experience' else ''
     prev='<a rel="prev" href="'+route(lessons[index-1]['slug'])+'">上一篇：'+e(lessons[index-1]['title'])+'</a>' if index else '<span></span>'
     nxt='<a rel="next" href="'+route(lessons[index+1]['slug'])+'">下一篇：'+e(lessons[index+1]['title'])+'</a>' if index+1<len(lessons) else '<span></span>'
     tags=list(dict.fromkeys(t for qid in a['questionIds'] for t in questions[qid]['tags']))[:10]
-    body='<article class="blog-article"><p class="breadcrumb"><a href="'+HUB+'">问题与解答</a> / '+e(a['title'])+'</p><header class="article-header"><h1>'+e(a['title'])+'</h1><p class="article-date">更新于 <time datetime="'+DATE+'">'+DATE+'</time></p><p class="knowledge-tags">知识标签：'+e(' · '.join(tags))+'</p></header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol>'+toc+'</ol></nav>'+''.join(parts)+'<section id="references" class="references"><h2>参考资料</h2><p>产品实现可能随版本变化；示例中的假设与实测结论应当区分。</p><ol>'+refs+'</ol></section><nav class="article-pagination" aria-label="系列上一篇和下一篇">'+prev+nxt+'</nav><p class="back-to-series"><a href="'+HUB+'">返回问题目录</a></p></article>'
-    return shell(a['title'],'围绕原问题解释'+a['title']+'，包含具体例子与参考资料。',route(a['slug']),body)
+    body='<article class="blog-article"><p class="breadcrumb"><a href="'+HUB+'">学习问题整理</a> / '+e(a['title'])+'</p><header class="article-header"><h1>'+e(a['title'])+'</h1><p class="article-date">更新于 <time datetime="'+DATE+'">'+DATE+'</time></p><p class="knowledge-tags">知识标签：'+e(' · '.join(tags))+'</p>'+provenance+'</header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol>'+toc+'</ol></nav>'+''.join(parts)+references_html+'<nav class="article-pagination" aria-label="系列上一篇和下一篇">'+prev+nxt+'</nav><p class="back-to-series"><a href="'+HUB+'">返回问题目录</a></p></article>'
+    return shell(a['title'],a['title']+'相关问题、知识标签与原文来源。',route(a['slug']),body)
 
 def outputs(lessons,qdata):
     hub=render_hub(lessons,qdata)

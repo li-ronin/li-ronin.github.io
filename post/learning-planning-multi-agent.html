@@ -1,68 +1,8 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>任务规划与多 Agent · Khan Li</title><meta name="description" content="围绕原问题解释任务规划与多 Agent，包含具体例子与参考资料。">
+<title>任务规划与多 Agent · Khan Li</title><meta name="description" content="任务规划与多 Agent相关问题、知识标签与原文来源。">
 <link rel="canonical" href="https://li-ronin.github.io/post/learning-planning-multi-agent.html"><link rel="icon" href="/images/alpaca.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/assets/academic.css"><link rel="stylesheet" href="/assets/learning-series.css"></head>
 <body><a class="skip-link" href="#main">跳到正文</a><div class="page learning-series">
 <nav class="site-nav" aria-label="站点导航"><a class="site-name" href="/">李可涵 Khan Li</a><div class="site-nav-links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="/notes/">Notes</a></div></nav>
-<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">问题与解答</a> / 任务规划与多 Agent</p><header class="article-header"><h1>任务规划与多 Agent</h1><p class="article-date">更新于 <time datetime="2026-10-21">2026-10-21</time></p><p class="knowledge-tags">知识标签：规划 · 任务分解 · Replan · 多Agent · 编排 · 权限隔离 · ReAct · Plan-Execute · A2A · MCP</p></header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol><li><a href="#original-019">面向一个复杂任务，你的coding agent的plan是怎么做的？</a></li><li><a href="#original-020">追问：你说用了多agent编排，具体是怎么做的？</a></li><li><a href="#original-021">追问：每个子agent的区别是什么？</a></li><li><a href="#original-022">追问：为什么要这么设计？设计的理由是什么？能不能所有的子agent共享工具？为什么？</a></li><li><a href="#original-060">ReAct 和 Plan-Execute-Replan 的执行过程有什么区别？</a></li><li><a href="#ext-005">A2A与MCP分别连接哪些参与者？</a></li><li><a href="#ext-009">多个节点同时写状态，怎样定义合并规则？</a></li></ol></nav><section class="lesson-section question-section" id="planning-001"><h2 id="original-019">面向一个复杂任务，你的coding agent的plan是怎么做的？</h2><div class="question-answer"><p>复杂任务的 Plan，就是把用户目标拆成可执行、可检查的步骤，并记录步骤之间的先后关系。不是先生成一份漂亮的清单，然后无论发生什么都照做。</p>
-<h3>用“给服务增加文件上传”举例</h3>
-<p>用户只说“支持文件上传”，直接开始写代码可能漏掉文件大小、允许类型、存储位置和失败处理。首先把目标变成可以检查的要求，例如：允许上传 CSV，超过大小限制要拒绝，上传成功后返回文件标识。这里是教学例子，实际限制要根据真实需求确定。</p>
-<p>接着调查现有代码：有没有上传接口、认证方式和存储组件。计划不能完全脱离仓库，否则可能安排重写一个已经存在的模块。</p>
-<p>一个可执行计划可以是：确认接口行为 → 添加上传处理 → 添加错误分支 → 添加测试 → 运行相关回归。每步应写清输入、预期产物和完成证据。例如“添加错误分支”的证据是超大文件和不允许类型的测试按预期失败，而不是模型说“已处理异常”。</p>
-<h3>什么时候可以并行</h3>
-<p>文档草稿和测试案例设计可能并行；实际端到端测试需要接口实现后才能运行。程序可以保存 <code>depends_on</code> 表示前置步骤。只有依赖完成，步骤才能开始。如果多个步骤会修改同一个文件，要么串行，要么隔离工作目录后统一合并，不能仅凭“可并行”三个字忽略冲突。</p>
-<h3>计划由谁更新</h3>
-<p>模型可以提出步骤和调整建议，程序负责记录状态，例如未开始、运行中、成功、失败、阻塞。实际工具返回失败时，不能仍把步骤标记成功。用户修改要求时，也应重新判断哪些已完成步骤仍有效。</p>
-<p>例如发现项目没有预想中的对象存储服务，原计划的存储步骤无法执行。这时要说明缺少什么，选择已有支持的方式或请求必要信息，再更新后续步骤。反复执行同一个失败命令不算重新规划。</p>
-<h3>怎样避免计划越来越复杂</h3>
-<p>计划粒度要适中。“实现整个服务”太大，无法知道卡在哪；“打开文件、读第 1 行、读第 2 行”又太细，会让管理成本超过任务本身。适合拆分的是有明确结果、可以独立验证、失败后能解释原因的工作单元。</p>
-<p>还要设置预算和停止条件：最多尝试多少次、总耗时多少、哪些失败需要人工决定。否则模型可能不断修改计划却不交付结果。</p>
-<h3>检查计划是不是真的有用</h3>
-<p>做一次故障测试：故意让一个必要依赖不可用。观察系统是否停止依赖它的步骤、保留已完成成果、说明阻塞并提出有依据的下一步。再做一次需求变更测试，检查旧目标是否被替换。如果计划只是一段展示文字，而执行完全不读取它，那么它并没有真正参与任务管理。</p></div></section><section class="lesson-section question-section" id="planning-002"><h2 id="original-020">追问：你说用了多agent编排，具体是怎么做的？</h2><p class="variant-label">相关原问题：</p><h2 id="original-021">追问：每个子agent的区别是什么？</h2><p class="variant-label">相关原问题：</p><h2 id="original-022">追问：为什么要这么设计？设计的理由是什么？能不能所有的子agent共享工具？为什么？</h2><div class="question-answer"><p>多 Agent 编排，就是把一个任务拆给几个分别调用模型、拥有各自输入记录的工作单元，再由主程序或主 Agent 收集结果、检查并继续。子 Agent 不一定使用不同的模型；即使使用同一个模型，任务、材料和权限不同，也会承担不同工作。</p>
-<h3>一个具体的三人式分工</h3>
-<p>假设需要修复一个 C++ 缺陷，可以安排：</p>
-<ul><li>调查 Agent：只读源码和日志，找出可能原因，返回文件位置与证据。</li><li>实现 Agent：根据已确认问题修改指定文件，返回补丁和修改理由。</li><li>验证 Agent：运行测试、检查边界行为，报告实际结果。</li></ul>
-<p>主 Agent 负责保持用户目标、解决结论冲突、决定是否需要继续修改。不能只把三份文字拼在一起就宣布成功。调查结论是推测还是验证过的事实，也应该明确标记。</p>
-<h3>具体怎样传递任务</h3>
-<p>发给子 Agent 的内容应包含目标、范围、必要上下文、允许的工具、预期输出和完成条件。例如“检查 sum.cpp 的空输入分支，只读，不修改文件；返回相关行号和能复现的输入”。不要只说“你去看看”，也不一定要把主会话的全部内容复制过去。</p>
-<p>子 Agent 返回时，最好给出结论、证据位置、产物位置、未解决问题。长日志留在文件中，主 Agent按需读取。若任务依赖另一个子 Agent 的结果，应等依赖完成后再启动，而不是让两者同时猜测对方会产出什么。</p>
-<h3>所有子 Agent 能共享工具吗</h3>
-<p>技术上可以给它们同一套工具实现，但“能调用同一函数”和“有相同权限”不是一回事。调查和验证通常不需要发布权限；实现可能只允许改某些目录。减少不必要能力，可以缩小误操作范围，也减少模型选择工具时的干扰。</p>
-<p>共享只读工具往往问题较少；共享写工具需要考虑并发冲突。两个 Agent 同时读取旧版文件再各自写回，后写的可能覆盖前一个修改。可以采用不同工作目录、不同文件分工、文件锁或串行合并，并在合并后重新运行测试。仅在 Prompt 里写“别冲突”不够。</p>
-<h3>为什么这样设计，什么时候不值得</h3>
-<p>好处分两类：互不依赖的工作可并行缩短时间；大量调查材料留在子会话里，主会话不必装下所有日志。代价也明显：重复读取、更多模型费用、交接丢信息、意见不一致。</p>
-<p>一个小改动如果单 Agent 几步能完成，拆成五个子 Agent 可能更慢。应该用同一批任务比较单 Agent 和多 Agent 的成功率、耗时、费用、人工介入次数。角色名称不同不代表能力自动互补；真正有效的差异来自独立检查角度、明确职责和执行约束。</p></div><p class="answer-references">本题参考：<a href="https://code.claude.com/docs/en/sub-agents">Claude Code 子 Agent</a></p></section><section class="lesson-section question-section" id="planning-003"><h2 id="original-060">ReAct 和 Plan-Execute-Replan 的执行过程有什么区别？</h2><p class="question-origin">问题来源：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></p><div class="question-answer"><p>ReAct 可以先理解为“根据当前信息决定下一步，执行后再看结果，再决定下一步”；Plan-Execute-Replan 则把“先列计划、按计划执行、必要时修改计划”作为更明确的阶段。它们不是完全互斥的两种模型，而是组织多次模型调用和工具执行的不同方式。</p>
-<h3>用同一任务走一遍</h3>
-<p>任务是“修复程序读取 CSV 时的错误”。ReAct 式过程可能是：看到错误描述后请求读日志；读到某行解析失败后请求查看相关函数；发现引号处理问题后生成修改；运行测试；看到另一类边界失败，再修改。每一步都利用刚得到的结果选择下一步，不要求一开始知道所有步骤。</p>
-<p>Plan-Execute-Replan 可以先生成计划：复现问题、定位解析逻辑、修改、增加边界测试、运行回归。执行到定位时发现问题不在解析器，而在文件编码，原计划的修改对象就错了。系统重新规划，把“修改解析器”换成“处理输入编码并验证”，之后继续执行。</p>
-<p>“Replan”并不是把原清单换一种说法，而是因为新证据改变了目标理解、依赖关系或处理方法。</p>
-<h3>二者在程序里有什么区别</h3>
-<p>一个简单 ReAct 程序可以保存当前消息和工具结果，在每轮询问模型下一步；一个显式计划系统还会保存步骤列表、状态、依赖和完成条件。前者容易启动，适合信息未知、需要边查边做的任务；后者更方便追踪长任务进度、检查漏项和恢复中断。</p>
-<p>但没有计划列表不代表完全不规划，有计划列表也不代表不会临场调整。执行计划中的“定位问题”时，内部仍然可以用多轮读日志、读代码的 ReAct 式交互。实际系统常把二者组合。</p>
-<h3>容易出现哪些问题</h3>
-<p>ReAct 式系统可能围着同一个报错反复尝试，需要检测重复行动和限制预算。显式计划系统可能把错误前提写进计划后僵硬执行，因此应在关键步骤结束、依赖失败或用户变更要求时检查计划是否还成立。</p>
-<p>两者都不能把模型输出的“成功”当成真实成功：测试应由程序运行，退出码和结果要记录。也不需要为了使用 ReAct 就公开模型全部内部推理；工程上关心的是可检查的下一步、工具请求和实际观察结果。</p>
-<h3>怎样比较而不是背定义</h3>
-<p>准备两个案例：一个步骤明确的批量文件转换，一个需要多次调查的未知缺陷。分别记录工具次数、重复操作、漏做步骤、最终正确率。观察是否因为计划管理减少了遗漏，还是反而增加了无效开销。结论应针对任务和实现，而不是“某种方式永远更高级”。</p></div><p class="answer-references">本题参考：<a href="https://arxiv.org/abs/2210.03629">ReAct 原论文</a></p></section><div class="extension-intro"><h2>延伸问题</h2><p>以下是根据外部资料另外整理的问题，不是上面原记录的逐字转录。</p></div><section class="lesson-section question-section" id="ext-005"><h2>A2A与MCP分别连接哪些参与者？</h2><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2028511483969937686">代码随想录</a></p><div class="question-answer"><p>MCP 与 A2A 都与 Agent 系统有关，但主要解决的问题不同。MCP 更常用于应用连接工具和资料；A2A 关注应用如何与另一个 Agent 服务交换任务、状态和结果。它们可以同时使用，不必二选一。</p>
-<h3>用旅行规划作类比，但看清程序边界</h3>
-<p>假设一个旅行助手需要查天气。天气服务接受城市和日期，返回天气数据，这是很明确的工具调用，可以通过 MCP 或普通 API 接入。</p>
-<p>如果旅行助手把“根据这些限制整理一份会议行程”交给另一个独立服务，这个服务可能自行查资料、等待用户补充信息，再返回文档。双方需要知道任务是否进行中、是否需要输入、产物在哪里。A2A 为这类协作提供任务和消息等表达方式。这里的另一个 Agent 仍然是程序服务，不必想象成具有人的意识的同事。</p>
-<h3>什么区别最重要</h3>
-<p>工具通常暴露清楚的操作与参数；远端 Agent 可能对任务执行有更大的自主处理空间，且任务持续较长时间。但这不是绝对的能力边界：工具也可以复杂，Agent 也可以只做简单工作。判断协议用途时，要看需要交换的是具体工具调用，还是跨服务的任务状态与产物。</p>
-<p>例如主应用通过 A2A 发出分析任务，远端服务内部再通过 MCP 查询数据库。这一层分工完全合理。A2A 并不会替代数据库接口，MCP 也不要求每个服务器都成为独立规划者。</p>
-<h3>安全与可靠性仍需实现</h3>
-<p>远端服务声称具有某种能力，不等于自动值得信任。需要验证服务身份、访问权限、超时和取消行为。收到“任务完成”也应核对产物是否满足要求，不能只相信状态文字。</p>
-<p>阅读规范时应固定版本，因为消息字段和扩展能力会演进。初学时先画出实际有哪些进程、谁发送请求、谁执行操作、结果保存在哪里，再选择协议，比只记住“MCP 接工具，A2A 接 Agent”更有帮助。</p></div><p class="answer-references">本题参考：<a href="https://a2a-protocol.org/latest/specification/">A2A Protocol Specification</a>；<a href="https://modelcontextprotocol.io/specification/2025-06-18/architecture">MCP 2025-06-18 架构规范</a></p></section><section class="lesson-section question-section" id="ext-009"><h2>多个节点同时写状态，怎样定义合并规则？</h2><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2034667289245636223">TrustZone</a></p><div class="question-answer"><p>多个节点同时写状态时，问题不是“怎样让它们都执行”，而是它们写到同一个字段后，最终应保留什么。这个合并规则常被叫作 reducer。初学时可以把它当成一个普通函数：接收旧值和新值，返回合并后的值。</p>
-<h3>先区分不同类型的数据</h3>
-<p>假设两个检索节点分别找到文档 A 和 B。如果它们都写 <code>results</code>，直接覆盖会丢掉一个结果；可以按文档编号合并成去重集合。但如果两个节点都写 <code>final_answer</code>，把两段文字简单拼接通常不是正确答案，需要指定一个汇总步骤决定最终文本。</p>
-<p>对于计数也不能一概相加：两个节点报告各自新增处理数时相加合理；两个节点都报告累计总数时相加会重复计算。合并规则取决于字段含义，而不是只取决于数据类型。</p>
-<h3>为什么并行顺序会影响结果</h3>
-<p>假设规则是“谁最后写就听谁的”，不同运行时的完成顺序可能不同，结果就不稳定。对无序收集的证据，可以设计按稳定 ID 合并、再按固定键排序的规则。对必须按顺序发生的状态变化，例如“已审核”与“已拒绝”，应该检查合法转移或交给单一节点处理，而不是随意覆盖。</p>
-<pre><code>输入：已有 {doc-1: 内容A}
-更新：新增 {doc-2: 内容B}
-结果：{doc-1: 内容A, doc-2: 内容B}</code></pre>
-<p>如果两个更新包含相同 ID 但内容不同，还要有版本比较或冲突报告，不能把它误当成普通去重。</p>
-<h3>怎样验证规则</h3>
-<p>把同一组更新按不同顺序应用，看结果是否符合预期；把某个更新重复应用，观察是否错误地增加重复项；测试空输入与冲突值。这些测试能够暴露恢复重放时常见的重复累积。</p>
-<p>LangGraph 等框架允许为状态字段定义合并处理，但框架不知道你的“结果列表”究竟应该去重、累加还是拒绝冲突。应当先写清每个字段的意义，再选择对应实现。</p></div><p class="answer-references">本题参考：<a href="https://docs.langchain.com/oss/python/langgraph/graph-api">LangGraph Graph API</a></p></section><section id="references" class="references"><h2>参考资料</h2><p>产品实现可能随版本变化；示例中的假设与实测结论应当区分。</p><ol><li><a href="https://code.claude.com/docs/en/sub-agents">Claude Code 子 Agent</a></li><li><a href="https://arxiv.org/abs/2210.03629">ReAct 原论文</a></li><li><a href="https://a2a-protocol.org/latest/specification/">A2A Protocol Specification</a></li><li><a href="https://modelcontextprotocol.io/specification/2025-06-18/architecture">MCP 2025-06-18 架构规范</a></li><li><a href="https://docs.langchain.com/oss/python/langgraph/graph-api">LangGraph Graph API</a></li></ol></section><nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-tools-skills.html">上一篇：工具调用与 Skill</a><a rel="next" href="/post/learning-llm-attention-inference.html">下一篇：自注意力与大模型推理</a></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回问题目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>
+<main id="main" tabindex="-1"><article class="blog-article"><p class="breadcrumb"><a href="/post/agent-llm-learning-notes.html">学习问题整理</a> / 任务规划与多 Agent</p><header class="article-header"><h1>任务规划与多 Agent</h1><p class="article-date">更新于 <time datetime="2026-10-24">2026-10-24</time></p><p class="knowledge-tags">知识标签：规划 · 任务分解 · Replan · 多Agent · 编排 · 权限隔离 · ReAct · Plan-Execute · A2A · MCP</p></header><nav class="article-contents" aria-label="文章目录"><h2>本篇问题</h2><ol><li><a href="#original-019">面向一个复杂任务，你的coding agent的plan是怎么做的？</a></li><li><a href="#original-020">追问：你说用了多agent编排，具体是怎么做的？</a></li><li><a href="#original-021">追问：每个子agent的区别是什么？</a></li><li><a href="#original-022">追问：为什么要这么设计？设计的理由是什么？能不能所有的子agent共享工具？为什么？</a></li><li><a href="#original-060">ReAct 和 Plan-Execute-Replan 的执行过程有什么区别？</a></li><li><a href="#ext-005">A2A与MCP分别连接哪些参与者？</a></li><li><a href="#ext-009">多个节点同时写状态，怎样定义合并规则？</a></li></ol></nav><section class="lesson-section question-section" id="planning-001"><h2 id="original-019">面向一个复杂任务，你的coding agent的plan是怎么做的？</h2><p class="knowledge-tags">知识标签：规划 · 任务分解 · Replan</p></section><section class="lesson-section question-section" id="planning-002"><h2 id="original-020">追问：你说用了多agent编排，具体是怎么做的？</h2><p class="knowledge-tags">知识标签：多Agent · 编排 · 权限隔离</p><p class="variant-label">相关原问题：</p><h2 id="original-021">追问：每个子agent的区别是什么？</h2><p class="knowledge-tags">知识标签：多Agent · 编排 · 权限隔离</p><p class="variant-label">相关原问题：</p><h2 id="original-022">追问：为什么要这么设计？设计的理由是什么？能不能所有的子agent共享工具？为什么？</h2><p class="knowledge-tags">知识标签：多Agent · 编排 · 权限隔离</p></section><section class="lesson-section question-section" id="planning-003"><h2 id="original-060">ReAct 和 Plan-Execute-Replan 的执行过程有什么区别？</h2><p class="knowledge-tags">知识标签：ReAct · Plan-Execute · Replan</p><p class="question-origin">问题来源：<a href="https://www.nowcoder.com/discuss/941992971027636224">阿星不是程序员</a></p></section><div class="extension-intro"><h2>延伸问题</h2><p>以下是根据外部资料另外整理的问题，不是上面原记录的逐字转录。</p></div><section class="lesson-section question-section" id="ext-005"><h2>A2A与MCP分别连接哪些参与者？</h2><p class="knowledge-tags">知识标签：A2A · MCP</p><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2028511483969937686">代码随想录</a></p></section><section class="lesson-section question-section" id="ext-009"><h2>多个节点同时写状态，怎样定义合并规则？</h2><p class="knowledge-tags">知识标签：Reducer · 并发状态</p><p class="question-origin">问题来源：<a href="https://zhuanlan.zhihu.com/p/2034667289245636223">TrustZone</a></p></section><nav class="article-pagination" aria-label="系列上一篇和下一篇"><a rel="prev" href="/post/learning-tools-skills.html">上一篇：工具调用与 Skill</a><a rel="next" href="/post/learning-llm-attention-inference.html">下一篇：自注意力与大模型推理</a></nav><p class="back-to-series"><a href="/post/agent-llm-learning-notes.html">返回问题目录</a></p></article></main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>
