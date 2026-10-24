@@ -30,6 +30,9 @@ class LearningSeriesTests(unittest.TestCase):
         self.assertEqual(len(self.lessons),13);self.assertEqual(len(self.pages),15)
         hub=self.pages[builder.HUB];self.assertNotIn('class="question-answer"',hub)
         for a in self.lessons:self.assertIn(builder.route(a['slug']),hub)
+    def test_versioned_series_stylesheet(self):
+        for html in self.pages.values():
+            self.assertIn('href="/assets/learning-series.css?v=20261024-answer-areas"',html)
     def test_generated_pages_current(self):
         for url,html in self.pages.items():self.assertEqual((ROOT/url.lstrip('/')).read_text(),html)
     def test_original_wording_is_heading_not_end_checklist(self):

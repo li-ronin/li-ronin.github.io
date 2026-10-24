@@ -67,7 +67,7 @@ def shell(title,description,path,body):
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{e(title)} · Khan Li</title><meta name="description" content="{e(description)}">
 <link rel="canonical" href="https://li-ronin.github.io{e(path)}"><link rel="icon" href="/images/alpaca.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/academic.css"><link rel="stylesheet" href="/assets/learning-series.css"></head>
+<link rel="stylesheet" href="/assets/academic.css"><link rel="stylesheet" href="/assets/learning-series.css?v=20261024-answer-areas"></head>
 <body><a class="skip-link" href="#main">跳到正文</a><div class="page learning-series">
 <nav class="site-nav" aria-label="站点导航"><a class="site-name" href="/">李可涵 Khan Li</a><div class="site-nav-links"><a href="/">Home</a><a href="/blog/">Blog</a><a href="/notes/">Notes</a></div></nav>
 <main id="main" tabindex="-1">{body}</main><footer class="site-footer"><span>© 李可涵 Khan Li</span><a href="/blog/">返回 Blog</a></footer></div></body></html>'''
